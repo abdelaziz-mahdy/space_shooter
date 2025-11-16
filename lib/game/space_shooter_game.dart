@@ -1,18 +1,36 @@
+import 'dart:io';
+import 'dart:math';
 import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/events.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../components/player_ship.dart';
-import '../components/enemy_ship.dart';
+import '../components/star_particle.dart';
 import '../managers/enemy_manager.dart';
 import '../managers/loot_manager.dart';
 import '../managers/level_manager.dart';
+import '../managers/stats_manager.dart';
+import '../managers/star_manager.dart';
+import '../ui/game_hud.dart';
+import '../ui/touch_joystick.dart';
+import '../ui/game_over_overlay.dart';
 
-class SpaceShooterGame extends FlameGame with HasCollisionDetection {
+class SpaceShooterGame extends FlameGame
+    with HasCollisionDetection, KeyboardEvents {
   late PlayerShip player;
   late EnemyManager enemyManager;
   late LootManager lootManager;
   late LevelManager levelManager;
+  late StatsManager statsManager;
+  late StarManager starManager;
+  late GameHUD hud;
+  TouchJoystick? joystick;
+
+  bool isGameOver = false;
+  bool isPausedForUpgrade = false;
 
   @override
   Color backgroundColor() => const Color(0xFF000000);
@@ -21,34 +39,114 @@ class SpaceShooterGame extends FlameGame with HasCollisionDetection {
   Future<void> onLoad() async {
     await super.onLoad();
 
-    // Initialize player in the center
-    player = PlayerShip(
-      position: size / 2,
-    );
-    await add(player);
+    await initializeGame();
+  }
+
+  Future<void> initializeGame() async {
+    isGameOver = false;
+
+    // Initialize player in the center of the world
+    player = PlayerShip(position: Vector2.zero());
+    world.add(player);
+
+    // Set up camera to follow player smoothly
+    camera.viewfinder.anchor = Anchor.center;
+    camera.follow(player, maxSpeed: double.infinity); // Instant camera follow
+
+    // Initialize star manager for infinite star spawning
+    starManager = StarManager(player: player);
+    world.add(starManager);
 
     // Initialize managers
+    statsManager = StatsManager(game: this);
+    world.add(statsManager);
+
     lootManager = LootManager(game: this);
-    await add(lootManager);
+    world.add(lootManager);
 
     levelManager = LevelManager(game: this);
-    await add(levelManager);
+    world.add(levelManager);
 
-    enemyManager = EnemyManager(
-      game: this,
-      player: player,
-    );
-    await add(enemyManager);
+    enemyManager = EnemyManager(game: this, player: player);
+    world.add(enemyManager);
+
+    // Add HUD (stays on screen, not in world)
+    hud = GameHUD();
+    camera.viewport.add(hud);
+
+    // Add touch joystick for mobile/touch devices
+    if (_isMobile()) {
+      joystick = TouchJoystick();
+      camera.viewport.add(joystick!);
+    }
 
     // Start spawning enemies
     enemyManager.startSpawning();
   }
 
+  bool _isMobile() {
+    // Check if running on mobile platform
+    if (kIsWeb) return false;
+    return Platform.isAndroid || Platform.isIOS;
+  }
+
+  @override
+  KeyEventResult onKeyEvent(
+    KeyEvent event,
+    Set<LogicalKeyboardKey> keysPressed,
+  ) {
+    if (event is KeyDownEvent) {
+      player.handleKeyDown(event.logicalKey);
+    } else if (event is KeyUpEvent) {
+      player.handleKeyUp(event.logicalKey);
+    }
+    return KeyEventResult.handled;
+  }
+
   void pauseForUpgrade() {
-    pauseEngine();
+    // Don't actually pause the engine - just set a flag
+    // The overlay will block interactions and we stop spawning enemies
+    isPausedForUpgrade = true;
+    enemyManager.stopSpawning();
+    print('[SpaceShooterGame] Game paused for upgrade');
   }
 
   void resumeFromUpgrade() {
-    resumeEngine();
+    // Resume spawning
+    isPausedForUpgrade = false;
+    enemyManager.startSpawning();
+    print('[SpaceShooterGame] Game resumed from upgrade');
+  }
+
+  void gameOver() {
+    if (isGameOver) return;
+    isGameOver = true;
+
+    enemyManager.stopSpawning();
+
+    final gameOverScreen = GameOverOverlay(
+      enemiesKilled: statsManager.enemiesKilled,
+      timeAlive: statsManager.getTimeAliveFormatted(),
+      timeAliveSeconds: statsManager.timeAlive,
+      wavesCompleted: enemyManager.getCurrentWave() - 1,
+      onRestart: restart,
+      onMainMenu: returnToMainMenu,
+    );
+
+    camera.viewport.add(gameOverScreen);
+  }
+
+  void returnToMainMenu() {
+    // This will be called from Flutter layer
+    print('[Game] Returning to main menu');
+  }
+
+  Future<void> restart() async {
+    // Remove all components from world and viewport
+    world.removeAll(world.children);
+    camera.viewport.removeAll(camera.viewport.children);
+
+    // Reinitialize the game
+    await initializeGame();
   }
 }

@@ -1,6 +1,5 @@
-import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
-import 'game/space_shooter_game.dart';
+import 'ui/main_menu.dart';
 
 void main() {
   runApp(const GameApp());
@@ -14,11 +13,7 @@ class GameApp extends StatelessWidget {
     return MaterialApp(
       title: 'Space Shooter',
       theme: ThemeData.dark(),
-      home: Scaffold(
-        body: GameWidget(
-          game: SpaceShooterGame(),
-        ),
-      ),
+      home: const MainMenu(),
     );
   }
 }
