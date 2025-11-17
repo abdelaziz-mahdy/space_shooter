@@ -8,8 +8,23 @@ class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
   int currentLevel = 1;
   int currentXP = 0;
   int xpToNextLevel = 10;
+  bool _hasShownInitialUpgrade = false;
 
   LevelManager({required SpaceShooterGame game});
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+
+    // Show upgrade overlay on first frame for testing
+    if (!_hasShownInitialUpgrade && isMounted) {
+      _hasShownInitialUpgrade = true;
+      // Delay slightly to ensure game is fully loaded
+      Future.delayed(Duration(milliseconds: 500), () {
+        showUpgradeSelection();
+      });
+    }
+  }
 
   void addXP(int amount) {
     currentXP += amount;

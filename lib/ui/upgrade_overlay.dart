@@ -15,7 +15,7 @@ class UpgradeOverlay extends PositionComponent
   UpgradeOverlay({
     required this.onUpgradeSelected,
     required this.availableUpgrades,
-  }) : super(priority: 100);
+  }) : super(priority: 100, anchor: Anchor.topLeft);
 
   @override
   Future<void> onLoad() async {
@@ -185,11 +185,8 @@ class UpgradeCard extends PositionComponent with TapCallbacks {
       ..style = PaintingStyle.stroke
       ..strokeWidth = borderWidth;
 
-    final rect = Rect.fromCenter(
-      center: Offset.zero,
-      width: size.x,
-      height: size.y,
-    );
+    // Draw from top-left (0,0) - anchor will handle centering
+    final rect = Rect.fromLTWH(0, 0, size.x, size.y);
 
     canvas.drawRRect(
       RRect.fromRectAndRadius(rect, Radius.circular(10 * scaleFactor.clamp(0.8, 1.2))),
@@ -201,17 +198,17 @@ class UpgradeCard extends PositionComponent with TapCallbacks {
       borderPaint,
     );
 
-    // Icon
+    // Icon - centered horizontally, upper portion of card
     final iconStyle = TextPaint(style: TextStyle(fontSize: iconFontSize));
 
     iconStyle.render(
       canvas,
       upgrade.icon,
-      Vector2(0, -60 * scaleFactor.clamp(0.8, 1.2)),
+      Vector2(size.x / 2, size.y * 0.3),
       anchor: Anchor.center,
     );
 
-    // Name
+    // Name - centered horizontally, middle of card
     final nameStyle = TextPaint(
       style: TextStyle(
         color: Color(0xFFFFFFFF),
@@ -223,11 +220,11 @@ class UpgradeCard extends PositionComponent with TapCallbacks {
     nameStyle.render(
       canvas,
       upgrade.name,
-      Vector2(0, 10 * scaleFactor.clamp(0.8, 1.2)),
+      Vector2(size.x / 2, size.y * 0.55),
       anchor: Anchor.center,
     );
 
-    // Description
+    // Description - centered horizontally, lower portion of card
     final descStyle = TextPaint(
       style: TextStyle(color: Color(0xFFCCCCCC), fontSize: descFontSize),
     );
@@ -235,7 +232,7 @@ class UpgradeCard extends PositionComponent with TapCallbacks {
     descStyle.render(
       canvas,
       upgrade.description,
-      Vector2(0, 50 * scaleFactor.clamp(0.8, 1.2)),
+      Vector2(size.x / 2, size.y * 0.75),
       anchor: Anchor.center,
     );
   }
