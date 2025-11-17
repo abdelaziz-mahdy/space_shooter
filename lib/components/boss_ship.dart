@@ -4,10 +4,11 @@ import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import 'package:flutter/material.dart';
 import '../game/space_shooter_game.dart';
+import 'base_rendered_component.dart';
 import 'loot.dart';
 import 'player_ship.dart';
 
-class BossShip extends PositionComponent
+class BossShip extends BaseRenderedComponent
     with HasGameRef<SpaceShooterGame>, CollisionCallbacks {
   final PlayerShip player;
   final Color color;
@@ -31,12 +32,17 @@ class BossShip extends PositionComponent
     await super.onLoad();
     anchor = Anchor.center;
 
-    // Pentagon shape for boss
+    // Hexagon shape for boss (from top-left coordinate system)
     final sides = 6;
     final points = <Vector2>[];
+    final centerX = size.x / 2;
+    final centerY = size.y / 2;
     for (int i = 0; i < sides; i++) {
       final angle = (i * 2 * pi / sides) - pi / 2;
-      points.add(Vector2(cos(angle) * size.x / 2, sin(angle) * size.y / 2));
+      points.add(Vector2(
+        centerX + cos(angle) * size.x / 2,
+        centerY + sin(angle) * size.y / 2,
+      ));
     }
     add(PolygonHitbox(points));
   }
@@ -45,8 +51,8 @@ class BossShip extends PositionComponent
   void update(double dt) {
     super.update(dt);
 
-    // Don't update if game is paused for upgrade
-    if (gameRef.isPausedForUpgrade) return;
+    // Don't update if game is paused
+    if (gameRef.isPaused) return;
 
     // Move towards player's current position
     final direction = (player.position - position).normalized();
@@ -92,10 +98,8 @@ class BossShip extends PositionComponent
   }
 
   @override
-  void render(Canvas canvas) {
-    super.render(canvas);
-
-    // Draw hexagon boss
+  void renderShape(Canvas canvas) {
+    // Draw hexagon boss from top-left coordinate system
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.fill;
@@ -107,10 +111,12 @@ class BossShip extends PositionComponent
 
     final sides = 6;
     final path = Path();
+    final centerX = size.x / 2;
+    final centerY = size.y / 2;
     for (int i = 0; i < sides; i++) {
       final angle = (i * 2 * pi / sides) - pi / 2;
-      final x = cos(angle) * size.x / 2;
-      final y = sin(angle) * size.y / 2;
+      final x = centerX + cos(angle) * size.x / 2;
+      final y = centerY + sin(angle) * size.y / 2;
       if (i == 0) {
         path.moveTo(x, y);
       } else {
@@ -121,7 +127,7 @@ class BossShip extends PositionComponent
     canvas.drawPath(path, paint);
     canvas.drawPath(path, strokePaint);
 
-    // Draw "BOSS" text
+    // Draw "BOSS" text above
     final textPaint = TextPaint(
       style: TextStyle(
         color: Color(0xFFFFFFFF),
@@ -132,19 +138,19 @@ class BossShip extends PositionComponent
     textPaint.render(
       canvas,
       'BOSS',
-      Vector2(0, -size.y / 2 - 20),
+      Vector2(size.x / 2, -20),
       anchor: Anchor.center,
     );
 
-    // Draw health bar
+    // Draw health bar above text
     final healthBarWidth = size.x;
     final healthBarHeight = 5.0;
-    final healthBarY = -size.y / 2 - 35;
+    final healthBarY = -35.0;
 
     final healthBgPaint = Paint()..color = const Color(0xFF333333);
     canvas.drawRect(
       Rect.fromLTWH(
-        -healthBarWidth / 2,
+        0,
         healthBarY,
         healthBarWidth,
         healthBarHeight,
@@ -156,7 +162,7 @@ class BossShip extends PositionComponent
     final healthPaint = Paint()..color = const Color(0xFFFFFF00);
     canvas.drawRect(
       Rect.fromLTWH(
-        -healthBarWidth / 2,
+        0,
         healthBarY,
         healthBarWidth * healthPercent,
         healthBarHeight,

@@ -88,6 +88,9 @@ class GameOverOverlay extends PositionComponent
   void render(Canvas canvas) {
     super.render(canvas);
 
+    // Update size for responsiveness
+    size = gameRef.camera.viewport.size;
+
     // Dark overlay
     final bgPaint = Paint()..color = const Color(0xDD000000);
     canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y), bgPaint);

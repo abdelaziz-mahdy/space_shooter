@@ -69,9 +69,31 @@ class UpgradeOverlay extends PositionComponent
     print('[UpgradeOverlay] Parent: ${parent?.runtimeType}, isMounted: $isMounted');
   }
 
+  void _repositionCards() {
+    if (cards.isEmpty) return;
+
+    final cardWidth = cards.first.size.x;
+    final cardHeight = cards.first.size.y;
+    final spacing = 30.0;
+    final totalWidth =
+        (cardWidth * cards.length) + (spacing * (cards.length - 1));
+    final startX = (size.x - totalWidth) / 2;
+
+    for (int i = 0; i < cards.length; i++) {
+      cards[i].position = Vector2(
+        startX + (i * (cardWidth + spacing)) + cardWidth / 2,
+        size.y / 2,
+      );
+    }
+  }
+
   @override
   void render(Canvas canvas) {
     super.render(canvas);
+
+    // Update size and reposition cards for responsiveness
+    size = gameRef.camera.viewport.size.clone();
+    _repositionCards();
 
     // Debug: Print render call only once
     if (!_hasRendered) {
@@ -83,11 +105,16 @@ class UpgradeOverlay extends PositionComponent
     final bgPaint = Paint()..color = const Color(0xCC000000);
     canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y), bgPaint);
 
+    // Responsive sizing based on viewport
+    final scaleFactor = (size.x / 800.0).clamp(0.7, 1.5);
+    final titleFontSize = (48 * scaleFactor).clamp(32.0, 64.0);
+    final subtitleFontSize = (24 * scaleFactor).clamp(16.0, 32.0);
+
     // Title
     final titleStyle = TextPaint(
       style: TextStyle(
         color: Color(0xFFFFFFFF),
-        fontSize: 48,
+        fontSize: titleFontSize,
         fontWeight: FontWeight.bold,
       ),
     );
@@ -95,18 +122,18 @@ class UpgradeOverlay extends PositionComponent
     titleStyle.render(
       canvas,
       'LEVEL UP!',
-      Vector2(size.x / 2, 100),
+      Vector2(size.x / 2, 100 * scaleFactor.clamp(0.8, 1.2)),
       anchor: Anchor.center,
     );
 
     final subtitleStyle = TextPaint(
-      style: TextStyle(color: Color(0xFFCCCCCC), fontSize: 24),
+      style: TextStyle(color: Color(0xFFCCCCCC), fontSize: subtitleFontSize),
     );
 
     subtitleStyle.render(
       canvas,
       'Choose an upgrade',
-      Vector2(size.x / 2, 160),
+      Vector2(size.x / 2, 160 * scaleFactor.clamp(0.8, 1.2)),
       anchor: Anchor.center,
     );
   }
@@ -141,6 +168,13 @@ class UpgradeCard extends PositionComponent with TapCallbacks {
       _hasRendered = true;
     }
 
+    // Responsive sizing based on card size
+    final scaleFactor = (size.x / 200.0).clamp(0.7, 1.5);
+    final iconFontSize = (64 * scaleFactor).clamp(40.0, 80.0);
+    final nameFontSize = (22 * scaleFactor).clamp(16.0, 28.0);
+    final descFontSize = (16 * scaleFactor).clamp(12.0, 20.0);
+    final borderWidth = (3 * scaleFactor).clamp(2.0, 5.0);
+
     // Card background
     final cardPaint = Paint()
       ..color = isHovered ? const Color(0xFF333333) : const Color(0xFF222222)
@@ -149,7 +183,7 @@ class UpgradeCard extends PositionComponent with TapCallbacks {
     final borderPaint = Paint()
       ..color = const Color(0xFF00FFFF)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 3;
+      ..strokeWidth = borderWidth;
 
     final rect = Rect.fromCenter(
       center: Offset.zero,
@@ -158,22 +192,22 @@ class UpgradeCard extends PositionComponent with TapCallbacks {
     );
 
     canvas.drawRRect(
-      RRect.fromRectAndRadius(rect, const Radius.circular(10)),
+      RRect.fromRectAndRadius(rect, Radius.circular(10 * scaleFactor.clamp(0.8, 1.2))),
       cardPaint,
     );
 
     canvas.drawRRect(
-      RRect.fromRectAndRadius(rect, const Radius.circular(10)),
+      RRect.fromRectAndRadius(rect, Radius.circular(10 * scaleFactor.clamp(0.8, 1.2))),
       borderPaint,
     );
 
     // Icon
-    final iconStyle = TextPaint(style: TextStyle(fontSize: 64));
+    final iconStyle = TextPaint(style: TextStyle(fontSize: iconFontSize));
 
     iconStyle.render(
       canvas,
       upgrade.icon,
-      Vector2(0, -60),
+      Vector2(0, -60 * scaleFactor.clamp(0.8, 1.2)),
       anchor: Anchor.center,
     );
 
@@ -181,7 +215,7 @@ class UpgradeCard extends PositionComponent with TapCallbacks {
     final nameStyle = TextPaint(
       style: TextStyle(
         color: Color(0xFFFFFFFF),
-        fontSize: 22,
+        fontSize: nameFontSize,
         fontWeight: FontWeight.bold,
       ),
     );
@@ -189,19 +223,19 @@ class UpgradeCard extends PositionComponent with TapCallbacks {
     nameStyle.render(
       canvas,
       upgrade.name,
-      Vector2(0, 10),
+      Vector2(0, 10 * scaleFactor.clamp(0.8, 1.2)),
       anchor: Anchor.center,
     );
 
     // Description
     final descStyle = TextPaint(
-      style: TextStyle(color: Color(0xFFCCCCCC), fontSize: 16),
+      style: TextStyle(color: Color(0xFFCCCCCC), fontSize: descFontSize),
     );
 
     descStyle.render(
       canvas,
       upgrade.description,
-      Vector2(0, 50),
+      Vector2(0, 50 * scaleFactor.clamp(0.8, 1.2)),
       anchor: Anchor.center,
     );
   }

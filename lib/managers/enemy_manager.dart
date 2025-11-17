@@ -22,7 +22,6 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
   bool isBossWave = false;
   double waveDelay = 3.0;
   double waveTimer = 0;
-  static const double waveDuration = 120.0; // 2 minutes per wave
 
   EnemyManager({required this.player, required SpaceShooterGame game});
 
@@ -49,15 +48,20 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
           10 + (currentWave * 2); // Increase enemies per wave
     }
 
+    // Progressive wave duration: starts at 10s, adds 5s per wave, caps at 90s
+    final waveDuration = min(10.0 + (currentWave * 5.0), 90.0);
+
     gameRef.statsManager.startWave(currentWave, enemiesToSpawnInWave, waveDuration);
+
+    print('[EnemyManager] Wave $currentWave started - Duration: ${waveDuration}s, Enemies: $enemiesToSpawnInWave');
   }
 
   @override
   void update(double dt) {
     super.update(dt);
 
-    // Don't update if game is paused for upgrade
-    if (gameRef.isPausedForUpgrade) return;
+    // Don't update if game is paused
+    if (gameRef.isPaused) return;
 
     if (!isSpawning) return;
 
@@ -95,8 +99,9 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
       }
     }
 
-    // Gradually increase difficulty
-    spawnInterval = max(0.3, 2.0 - (currentWave * 0.05));
+    // Gradually increase spawn rate (faster spawns as waves progress)
+    // Start at 1.0s and decrease to 0.2s minimum
+    spawnInterval = max(0.2, 1.0 - (currentWave * 0.03));
   }
 
   void spawnBoss() {

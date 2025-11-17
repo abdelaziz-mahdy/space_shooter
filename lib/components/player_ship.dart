@@ -5,12 +5,14 @@ import 'package:flame/collisions.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
 import '../utils/position_util.dart';
+import '../utils/visual_center_mixin.dart';
+import 'base_rendered_component.dart';
 import 'enemy_ship.dart';
 import 'bullet.dart';
 import '../game/space_shooter_game.dart';
 
-class PlayerShip extends PositionComponent
-    with HasGameRef<SpaceShooterGame>, CollisionCallbacks {
+class PlayerShip extends BaseRenderedComponent
+    with HasGameRef<SpaceShooterGame>, CollisionCallbacks, HasVisualCenter {
   static const double baseShootInterval = 0.5;
   double shootTimer = 0;
   double shootInterval = baseShootInterval;
@@ -43,15 +45,23 @@ class PlayerShip extends PositionComponent
     await super.onLoad();
     anchor = Anchor.center;
 
-    // Add collision detection
+    // Triangle hitbox matching the rendered triangle (from top-left coordinate system)
+    final h = size.y;
+    final w = size.x;
+    final topY = h / 6;       // 1/6 down from top
+    final bottomY = 5 * h / 6; // 5/6 down from top
+
     add(
       PolygonHitbox([
-        Vector2(0, -size.y / 2),
-        Vector2(size.x / 2, size.y / 2),
-        Vector2(-size.x / 2, size.y / 2),
+        Vector2(w / 2, topY),  // Top center
+        Vector2(w, bottomY),   // Bottom right
+        Vector2(0, bottomY),   // Bottom left
       ]),
     );
   }
+
+  @override
+  Vector2 getVisualCenter() => position.clone();
 
   void handleKeyDown(LogicalKeyboardKey key) {
     _pressedKeys.add(key);
@@ -80,8 +90,8 @@ class PlayerShip extends PositionComponent
   void update(double dt) {
     super.update(dt);
 
-    // Don't update if game is paused for upgrade
-    if (gameRef.isPausedForUpgrade) return;
+    // Don't update if game is paused
+    if (gameRef.isPaused) return;
 
     // Handle keyboard movement
     velocity = Vector2.zero();
@@ -167,11 +177,14 @@ class PlayerShip extends PositionComponent
     // Use PositionUtil for consistent direction calculation
     final direction = PositionUtil.getDirectionTo(this, targetEnemy!);
 
-    // Calculate the tip of the triangle in world coordinates
-    // The tip is at (0, -size.y/2) in local space
-    // Use positionOf to transform local coordinates to absolute world coordinates
-    final tipInLocal = Vector2(0, -size.y / 2);
-    final bulletSpawnPosition = positionOf(tipInLocal);
+    // Spawn bullet from the triangle's tip (accounting for rotation)
+    // Tip is at (0, -h/2) in local coordinates
+    final tipLocalOffset = Vector2(0, -size.y / 2);
+    final cosA = cos(angle);
+    final sinA = sin(angle);
+    final rotatedTipX = tipLocalOffset.x * cosA - tipLocalOffset.y * sinA;
+    final rotatedTipY = tipLocalOffset.x * sinA + tipLocalOffset.y * cosA;
+    final bulletSpawnPosition = position + Vector2(rotatedTipX, rotatedTipY);
 
     if (projectileCount == 1) {
       final bullet = Bullet(
@@ -211,31 +224,38 @@ class PlayerShip extends PositionComponent
   }
 
   @override
-  void render(Canvas canvas) {
-    super.render(canvas);
+  void renderShape(Canvas canvas) {
+    // Draw from top-left (0,0) - anchor will handle centering
+    // Triangle pointing up with centroid offset
+    final h = size.y;
+    final w = size.x;
 
-    // Draw white triangle
+    // For anchor.center to work correctly, draw triangle within bounds (0,0) to (size.x, size.y)
+    // Top point at (w/2, h/6), bottom edge at y = 5h/6
+    final topY = h / 6;  // 1/6 down from top
+    final bottomY = 5 * h / 6;  // 5/6 down from top
+
     final paint = Paint()
       ..color = const Color(0xFFFFFFFF)
       ..style = PaintingStyle.fill;
 
     final path = Path()
-      ..moveTo(0, -size.y / 2)
-      ..lineTo(size.x / 2, size.y / 2)
-      ..lineTo(-size.x / 2, size.y / 2)
+      ..moveTo(w / 2, topY)  // Top center
+      ..lineTo(w, bottomY)   // Bottom right
+      ..lineTo(0, bottomY)   // Bottom left
       ..close();
 
     canvas.drawPath(path, paint);
 
-    // Draw health bar
+    // Draw health bar below the triangle
     final healthBarWidth = size.x + 20;
     final healthBarHeight = 4.0;
-    final healthBarY = size.y / 2 + 10;
+    final healthBarY = size.y + 5;  // Just below component
 
     final healthBgPaint = Paint()..color = const Color(0xFF333333);
     canvas.drawRect(
       Rect.fromLTWH(
-        -healthBarWidth / 2,
+        (size.x - healthBarWidth) / 2,
         healthBarY,
         healthBarWidth,
         healthBarHeight,
@@ -252,7 +272,7 @@ class PlayerShip extends PositionComponent
           : const Color(0xFFFF0000);
     canvas.drawRect(
       Rect.fromLTWH(
-        -healthBarWidth / 2,
+        (size.x - healthBarWidth) / 2,
         healthBarY,
         healthBarWidth * healthPercent,
         healthBarHeight,

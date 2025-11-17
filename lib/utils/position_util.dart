@@ -1,12 +1,15 @@
 import 'package:flame/components.dart';
+import 'visual_center_mixin.dart';
 
 /// Centralized utility for handling position calculations between components
 /// to ensure consistency across the game
 class PositionUtil {
-  /// Get the center position of a component in world coordinates
-  /// This works for components with anchor = Anchor.center
+  /// Get the actual visual center position of a component in world coordinates
+  /// Uses HasVisualCenter mixin if available, otherwise returns position
   static Vector2 getCenter(PositionComponent component) {
-    return component.position.clone();
+    return component is HasVisualCenter
+        ? component.getVisualCenter()
+        : component.position.clone();
   }
 
   /// Calculate the direction vector from one component to another

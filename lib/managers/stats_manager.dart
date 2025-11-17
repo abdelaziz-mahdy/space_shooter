@@ -34,8 +34,8 @@ class StatsManager extends Component with HasGameRef<SpaceShooterGame> {
   void update(double dt) {
     super.update(dt);
 
-    // Don't update if game is paused for upgrade
-    if (gameRef.isPausedForUpgrade) return;
+    // Don't update if game is paused
+    if (gameRef.isPaused) return;
 
     timeAlive += dt;
     waveTime -= dt; // Countdown

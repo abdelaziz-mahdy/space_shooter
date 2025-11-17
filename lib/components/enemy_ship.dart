@@ -5,13 +5,15 @@ import 'package:flame/collisions.dart';
 import 'package:flutter/rendering.dart';
 import '../game/space_shooter_game.dart';
 import '../utils/position_util.dart';
+import '../utils/visual_center_mixin.dart';
+import 'base_rendered_component.dart';
 import 'loot.dart';
 import 'player_ship.dart';
 
 enum EnemyShape { triangle, square, pentagon }
 
-class EnemyShip extends PositionComponent
-    with HasGameRef<SpaceShooterGame>, CollisionCallbacks {
+class EnemyShip extends BaseRenderedComponent
+    with HasGameRef<SpaceShooterGame>, CollisionCallbacks, HasVisualCenter {
   final PlayerShip player;
   final EnemyShape shape;
   final Color color;
@@ -36,33 +38,45 @@ class EnemyShip extends PositionComponent
     await super.onLoad();
     anchor = Anchor.center;
 
-    // Add collision hitbox based on shape
+    // Add collision hitbox matching rendered shapes (from top-left coordinate system)
     switch (shape) {
       case EnemyShape.triangle:
+        final h = size.y;
+        final w = size.x;
+        final topY = h / 6;
+        final bottomY = 5 * h / 6;
+
         add(
           PolygonHitbox([
-            Vector2(0, -size.y / 2),
-            Vector2(size.x / 2, size.y / 2),
-            Vector2(-size.x / 2, size.y / 2),
+            Vector2(w / 2, topY),  // Top center
+            Vector2(w, bottomY),   // Bottom right
+            Vector2(0, bottomY),   // Bottom left
           ]),
         );
         break;
+
       case EnemyShape.square:
         add(
           PolygonHitbox([
-            Vector2(-size.x / 2, -size.y / 2),
-            Vector2(size.x / 2, -size.y / 2),
-            Vector2(size.x / 2, size.y / 2),
-            Vector2(-size.x / 2, size.y / 2),
+            Vector2(0, 0),
+            Vector2(size.x, 0),
+            Vector2(size.x, size.y),
+            Vector2(0, size.y),
           ]),
         );
         break;
+
       case EnemyShape.pentagon:
         final sides = 5;
         final points = <Vector2>[];
+        final centerX = size.x / 2;
+        final centerY = size.y / 2;
         for (int i = 0; i < sides; i++) {
           final angle = (i * 2 * pi / sides) - pi / 2;
-          points.add(Vector2(cos(angle) * size.x / 2, sin(angle) * size.y / 2));
+          points.add(Vector2(
+            centerX + cos(angle) * size.x / 2,
+            centerY + sin(angle) * size.y / 2,
+          ));
         }
         add(PolygonHitbox(points));
         break;
@@ -70,11 +84,14 @@ class EnemyShip extends PositionComponent
   }
 
   @override
+  Vector2 getVisualCenter() => position.clone();
+
+  @override
   void update(double dt) {
     super.update(dt);
 
-    // Don't update if game is paused for upgrade
-    if (gameRef.isPausedForUpgrade) return;
+    // Don't update if game is paused
+    if (gameRef.isPaused) return;
 
     // Use PositionUtil for consistent position calculations
     final direction = PositionUtil.getDirectionTo(this, player);
@@ -120,9 +137,7 @@ class EnemyShip extends PositionComponent
   }
 
   @override
-  void render(Canvas canvas) {
-    super.render(canvas);
-
+  void renderShape(Canvas canvas) {
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.fill;
@@ -134,32 +149,38 @@ class EnemyShip extends PositionComponent
 
     switch (shape) {
       case EnemyShape.triangle:
+        // Draw from top-left - anchor will handle centering
+        final h = size.y;
+        final w = size.x;
+        final topY = h / 6;
+        final bottomY = 5 * h / 6;
+
         final path = Path()
-          ..moveTo(0, -size.y / 2)
-          ..lineTo(size.x / 2, size.y / 2)
-          ..lineTo(-size.x / 2, size.y / 2)
+          ..moveTo(w / 2, topY)  // Top center
+          ..lineTo(w, bottomY)   // Bottom right
+          ..lineTo(0, bottomY)   // Bottom left
           ..close();
         canvas.drawPath(path, paint);
         canvas.drawPath(path, strokePaint);
         break;
 
       case EnemyShape.square:
-        final rect = Rect.fromCenter(
-          center: Offset.zero,
-          width: size.x,
-          height: size.y,
-        );
+        // Draw from top-left (0,0) to (size.x, size.y)
+        final rect = Rect.fromLTWH(0, 0, size.x, size.y);
         canvas.drawRect(rect, paint);
         canvas.drawRect(rect, strokePaint);
         break;
 
       case EnemyShape.pentagon:
+        // Draw pentagon centered in the bounding box
         final sides = 5;
         final path = Path();
+        final centerX = size.x / 2;
+        final centerY = size.y / 2;
         for (int i = 0; i < sides; i++) {
           final angle = (i * 2 * pi / sides) - pi / 2;
-          final x = cos(angle) * size.x / 2;
-          final y = sin(angle) * size.y / 2;
+          final x = centerX + cos(angle) * size.x / 2;
+          final y = centerY + sin(angle) * size.y / 2;
           if (i == 0) {
             path.moveTo(x, y);
           } else {
@@ -172,15 +193,15 @@ class EnemyShip extends PositionComponent
         break;
     }
 
-    // Draw health bar
+    // Draw health bar above the shape
     final healthBarWidth = size.x;
     final healthBarHeight = 3.0;
-    final healthBarY = -size.y / 2 - 8;
+    final healthBarY = -5.0; // Above the component
 
     final healthBgPaint = Paint()..color = const Color(0xFF333333);
     canvas.drawRect(
       Rect.fromLTWH(
-        -healthBarWidth / 2,
+        0,
         healthBarY,
         healthBarWidth,
         healthBarHeight,
@@ -192,7 +213,7 @@ class EnemyShip extends PositionComponent
     final healthPaint = Paint()..color = const Color(0xFF00FF00);
     canvas.drawRect(
       Rect.fromLTWH(
-        -healthBarWidth / 2,
+        0,
         healthBarY,
         healthBarWidth * healthPercent,
         healthBarHeight,

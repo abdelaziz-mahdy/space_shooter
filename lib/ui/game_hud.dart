@@ -45,22 +45,28 @@ class GameHUD extends PositionComponent with HasGameRef<SpaceShooterGame> {
   void render(Canvas canvas) {
     super.render(canvas);
 
+    // Update size to match viewport dynamically for responsiveness
+    size = gameRef.camera.viewport.size;
+
     final levelManager = gameRef.levelManager;
     final statsManager = gameRef.statsManager;
     final enemyManager = gameRef.enemyManager;
 
-    // Level display
+    // Responsive positioning and sizing
+    final padding = 20.0;
+    final barWidth = (size.x * 0.3).clamp(200.0, 400.0); // 30% of width, clamped
+    final barHeight = 20.0;
+
+    // Level display (top left)
     levelText.render(
       canvas,
       'Level ${levelManager.getLevel()}',
-      Vector2(20, 20),
+      Vector2(padding, padding),
     );
 
-    // XP bar
-    final barWidth = 300.0;
-    final barHeight = 20.0;
-    final barX = 20.0;
-    final barY = 50.0;
+    // XP bar (below level)
+    final barX = padding;
+    final barY = padding + 30;
 
     // Background
     final bgPaint = Paint()..color = const Color(0xFF333333);

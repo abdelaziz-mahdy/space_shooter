@@ -1,10 +1,12 @@
 import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
+import '../utils/visual_center_mixin.dart';
+import 'base_rendered_component.dart';
 import 'enemy_ship.dart';
 import '../game/space_shooter_game.dart';
 
-class Bullet extends PositionComponent with HasGameRef<SpaceShooterGame>, CollisionCallbacks {
+class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, CollisionCallbacks, HasVisualCenter {
   final Vector2 direction;
   final double damage;
   final double speed;
@@ -27,11 +29,14 @@ class Bullet extends PositionComponent with HasGameRef<SpaceShooterGame>, Collis
   }
 
   @override
+  Vector2 getVisualCenter() => position.clone();
+
+  @override
   void update(double dt) {
     super.update(dt);
 
-    // Don't update if game is paused for upgrade
-    if (gameRef.isPausedForUpgrade) return;
+    // Don't update if game is paused
+    if (gameRef.isPaused) return;
 
     position += direction * speed * dt;
     lifetime += dt;
@@ -56,13 +61,13 @@ class Bullet extends PositionComponent with HasGameRef<SpaceShooterGame>, Collis
   }
 
   @override
-  void render(Canvas canvas) {
-    super.render(canvas);
-
+  void renderShape(Canvas canvas) {
     final paint = Paint()
       ..color = const Color(0xFFFFFF00)
       ..style = PaintingStyle.fill;
 
-    canvas.drawCircle(Offset.zero, size.x / 2, paint);
+    // Draw circle in the center of the bounding box (from top-left)
+    final center = Offset(size.x / 2, size.y / 2);
+    canvas.drawCircle(center, size.x / 2, paint);
   }
 }

@@ -9,6 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../components/player_ship.dart';
 import '../components/star_particle.dart';
+import '../components/debug_overlay.dart';
 import '../managers/enemy_manager.dart';
 import '../managers/loot_manager.dart';
 import '../managers/level_manager.dart';
@@ -30,7 +31,7 @@ class SpaceShooterGame extends FlameGame
   TouchJoystick? joystick;
 
   bool isGameOver = false;
-  bool isPausedForUpgrade = false;
+  bool isPaused = false; // Used for upgrades and game over
 
   @override
   Color backgroundColor() => const Color(0xFF000000);
@@ -42,6 +43,16 @@ class SpaceShooterGame extends FlameGame
     await initializeGame();
   }
 
+  @override
+  void update(double dt) {
+    super.update(dt);
+
+    // Manually update camera to follow player with no lag
+    if (player.isMounted) {
+      camera.viewfinder.position = player.position;
+    }
+  }
+
   Future<void> initializeGame() async {
     isGameOver = false;
 
@@ -51,7 +62,13 @@ class SpaceShooterGame extends FlameGame
 
     // Set up camera to follow player smoothly
     camera.viewfinder.anchor = Anchor.center;
-    camera.follow(player, maxSpeed: double.infinity); // Instant camera follow
+    camera.viewfinder.visibleGameSize = size;
+    camera.viewport.anchor = Anchor.center;
+    camera.viewport.position = size / 2; // Center the viewport
+
+    // Use a fixed viewfinder that always keeps player centered
+    camera.viewfinder.position = player.position;
+    // Don't use camera.follow() as it can have lag
 
     // Initialize star manager for infinite star spawning
     starManager = StarManager(player: player);
@@ -106,14 +123,14 @@ class SpaceShooterGame extends FlameGame
   void pauseForUpgrade() {
     // Don't actually pause the engine - just set a flag
     // The overlay will block interactions and we stop spawning enemies
-    isPausedForUpgrade = true;
+    isPaused = true;
     enemyManager.stopSpawning();
     print('[SpaceShooterGame] Game paused for upgrade');
   }
 
   void resumeFromUpgrade() {
     // Resume spawning
-    isPausedForUpgrade = false;
+    isPaused = false;
     enemyManager.startSpawning();
     print('[SpaceShooterGame] Game resumed from upgrade');
   }
@@ -122,6 +139,8 @@ class SpaceShooterGame extends FlameGame
     if (isGameOver) return;
     isGameOver = true;
 
+    // Pause the game to stop all movement and updates
+    isPaused = true;
     enemyManager.stopSpawning();
 
     final gameOverScreen = GameOverOverlay(
@@ -142,6 +161,10 @@ class SpaceShooterGame extends FlameGame
   }
 
   Future<void> restart() async {
+    // Reset flags
+    isGameOver = false;
+    isPaused = false;
+
     // Remove all components from world and viewport
     world.removeAll(world.children);
     camera.viewport.removeAll(camera.viewport.children);

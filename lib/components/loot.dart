@@ -2,11 +2,13 @@ import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import '../utils/position_util.dart';
+import '../utils/visual_center_mixin.dart';
+import 'base_rendered_component.dart';
 import 'player_ship.dart';
 import '../game/space_shooter_game.dart';
 
-class Loot extends PositionComponent
-    with HasGameRef<SpaceShooterGame>, CollisionCallbacks {
+class Loot extends BaseRenderedComponent
+    with HasGameRef<SpaceShooterGame>, CollisionCallbacks, HasVisualCenter {
   static const double attractionRange = 100;
   static const double attractionSpeed = 200;
   final int xpValue;
@@ -23,11 +25,14 @@ class Loot extends PositionComponent
   }
 
   @override
+  Vector2 getVisualCenter() => position.clone();
+
+  @override
   void update(double dt) {
     super.update(dt);
 
-    // Don't update if game is paused for upgrade
-    if (gameRef.isPausedForUpgrade) return;
+    // Don't update if game is paused
+    if (gameRef.isPaused) return;
 
     // Attract to player using PositionUtil
     final player = gameRef.player;
@@ -54,9 +59,7 @@ class Loot extends PositionComponent
   }
 
   @override
-  void render(Canvas canvas) {
-    super.render(canvas);
-
+  void renderShape(Canvas canvas) {
     final paint = Paint()
       ..color = const Color(0xFF00FFFF)
       ..style = PaintingStyle.fill;
@@ -65,7 +68,9 @@ class Loot extends PositionComponent
       ..color = const Color(0x4400FFFF)
       ..style = PaintingStyle.fill;
 
-    canvas.drawCircle(Offset.zero, size.x / 2 + 3, glow);
-    canvas.drawCircle(Offset.zero, size.x / 2, paint);
+    // Draw circle in center of bounding box (from top-left)
+    final center = Offset(size.x / 2, size.y / 2);
+    canvas.drawCircle(center, size.x / 2 + 3, glow);
+    canvas.drawCircle(center, size.x / 2, paint);
   }
 }
