@@ -15,9 +15,7 @@ import '../managers/loot_manager.dart';
 import '../managers/level_manager.dart';
 import '../managers/stats_manager.dart';
 import '../managers/star_manager.dart';
-import '../ui/game_hud.dart';
 import '../ui/touch_joystick.dart';
-import '../ui/game_over_overlay.dart';
 
 class SpaceShooterGame extends FlameGame
     with HasCollisionDetection, KeyboardEvents {
@@ -27,11 +25,16 @@ class SpaceShooterGame extends FlameGame
   late LevelManager levelManager;
   late StatsManager statsManager;
   late StarManager starManager;
-  late GameHUD hud;
   TouchJoystick? joystick;
 
   bool isGameOver = false;
   bool isPaused = false; // Used for upgrades and game over
+
+  // Callbacks for Flutter UI
+  VoidCallback? onShowUpgrade;
+  VoidCallback? onHideUpgrade;
+  VoidCallback? onShowGameOver;
+  VoidCallback? onReturnToMenu;
 
   @override
   Color backgroundColor() => const Color(0xFF000000);
@@ -87,10 +90,6 @@ class SpaceShooterGame extends FlameGame
     enemyManager = EnemyManager(game: this, player: player);
     world.add(enemyManager);
 
-    // Add HUD (stays on screen, not in world)
-    hud = GameHUD();
-    camera.viewport.add(hud);
-
     // Add touch joystick for mobile/touch devices
     if (_isMobile()) {
       joystick = TouchJoystick();
@@ -126,6 +125,11 @@ class SpaceShooterGame extends FlameGame
     isPaused = true;
     enemyManager.stopSpawning();
     print('[SpaceShooterGame] Game paused for upgrade');
+
+    // Trigger Flutter UI to show upgrade dialog
+    if (onShowUpgrade != null) {
+      onShowUpgrade!();
+    }
   }
 
   void resumeFromUpgrade() {
@@ -143,21 +147,18 @@ class SpaceShooterGame extends FlameGame
     isPaused = true;
     enemyManager.stopSpawning();
 
-    final gameOverScreen = GameOverOverlay(
-      enemiesKilled: statsManager.enemiesKilled,
-      timeAlive: statsManager.getTimeAliveFormatted(),
-      timeAliveSeconds: statsManager.timeAlive,
-      wavesCompleted: enemyManager.getCurrentWave() - 1,
-      onRestart: restart,
-      onMainMenu: returnToMainMenu,
-    );
-
-    camera.viewport.add(gameOverScreen);
+    // Trigger Flutter UI to show game over screen
+    if (onShowGameOver != null) {
+      onShowGameOver!();
+    }
   }
 
   void returnToMainMenu() {
     // This will be called from Flutter layer
     print('[Game] Returning to main menu');
+    if (onReturnToMenu != null) {
+      onReturnToMenu!();
+    }
   }
 
   Future<void> restart() async {

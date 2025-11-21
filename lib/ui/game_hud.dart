@@ -13,6 +13,7 @@ class GameHUD extends PositionComponent with HasGameRef<SpaceShooterGame> {
   Future<void> onLoad() async {
     await super.onLoad();
 
+    anchor = Anchor.topLeft;
     position = Vector2.zero();
     size = gameRef.camera.viewport.size;
 
@@ -42,11 +43,15 @@ class GameHUD extends PositionComponent with HasGameRef<SpaceShooterGame> {
   }
 
   @override
+  void update(double dt) {
+    super.update(dt);
+    // Continuously sync size with viewport for window resizing
+    size = gameRef.camera.viewport.size;
+  }
+
+  @override
   void render(Canvas canvas) {
     super.render(canvas);
-
-    // Update size to match viewport dynamically for responsiveness
-    size = gameRef.camera.viewport.size;
 
     final levelManager = gameRef.levelManager;
     final statsManager = gameRef.statsManager;

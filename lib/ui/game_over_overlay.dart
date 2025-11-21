@@ -28,6 +28,7 @@ class GameOverOverlay extends PositionComponent
   Future<void> onLoad() async {
     await super.onLoad();
 
+    anchor = Anchor.topLeft;
     size = gameRef.camera.viewport.size;
     position = Vector2.zero();
 
@@ -85,11 +86,15 @@ class GameOverOverlay extends PositionComponent
   }
 
   @override
+  void update(double dt) {
+    super.update(dt);
+    // Continuously sync size with viewport for window resizing
+    size = gameRef.camera.viewport.size;
+  }
+
+  @override
   void render(Canvas canvas) {
     super.render(canvas);
-
-    // Update size for responsiveness
-    size = gameRef.camera.viewport.size;
 
     // Dark overlay
     final bgPaint = Paint()..color = const Color(0xDD000000);

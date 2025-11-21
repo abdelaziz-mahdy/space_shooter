@@ -88,12 +88,16 @@ class UpgradeOverlay extends PositionComponent
   }
 
   @override
-  void render(Canvas canvas) {
-    super.render(canvas);
-
-    // Update size and reposition cards for responsiveness
+  void update(double dt) {
+    super.update(dt);
+    // Continuously sync size with viewport and reposition cards
     size = gameRef.camera.viewport.size.clone();
     _repositionCards();
+  }
+
+  @override
+  void render(Canvas canvas) {
+    super.render(canvas);
 
     // Debug: Print render call only once
     if (!_hasRendered) {

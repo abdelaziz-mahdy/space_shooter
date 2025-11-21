@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flame/game.dart';
-import '../game/space_shooter_game.dart';
+import 'game_screen.dart';
 import '../services/score_service.dart';
 
 class MainMenu extends StatefulWidget {
@@ -32,9 +31,7 @@ class _MainMenuState extends State<MainMenu> {
   void _startGame() {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => GameWidget(
-          game: SpaceShooterGame(),
-        ),
+        builder: (context) => const GameScreen(),
       ),
     );
   }

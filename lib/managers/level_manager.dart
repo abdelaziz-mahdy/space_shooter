@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'package:flame/components.dart';
 import '../game/space_shooter_game.dart';
-import '../ui/upgrade_overlay.dart';
 import '../upgrades/upgrade.dart';
 
 class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
@@ -46,26 +45,9 @@ class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
   Future<void> showUpgradeSelection() async {
     print('[LevelManager] showUpgradeSelection called');
 
+    // Just pause the game - Flutter UI will handle the rest via callbacks
     gameRef.pauseForUpgrade();
-    print('[LevelManager] Game paused');
-
-    // This will be handled by the overlay system
-    final upgrades = getRandomUpgrades(3);
-    print('[LevelManager] Generated ${upgrades.length} upgrades: ${upgrades.map((u) => u.name).join(", ")}');
-
-    final overlay = UpgradeOverlay(
-      onUpgradeSelected: (Upgrade upgrade) {
-        print('[LevelManager] Upgrade selected: ${upgrade.name}');
-        upgrade.apply(gameRef.player);
-        gameRef.resumeFromUpgrade();
-        print('[LevelManager] Game resumed');
-      },
-      availableUpgrades: upgrades,
-    );
-
-    print('[LevelManager] Adding overlay to viewport');
-    await gameRef.camera.viewport.add(overlay);
-    print('[LevelManager] Overlay added to viewport');
+    print('[LevelManager] Game paused - waiting for Flutter UI');
   }
 
   List<Upgrade> getRandomUpgrades(int count) {
