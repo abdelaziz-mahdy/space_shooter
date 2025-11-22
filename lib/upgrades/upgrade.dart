@@ -1,5 +1,14 @@
 import 'dart:math';
 import '../components/player_ship.dart';
+import '../config/weapon_unlock_config.dart';
+
+/// Upgrade rarity levels
+enum UpgradeRarity {
+  common,
+  rare,
+  epic,
+  legendary,
+}
 
 /// Abstract base class for all upgrades
 abstract class Upgrade {
@@ -17,6 +26,17 @@ abstract class Upgrade {
 
   /// Apply this upgrade to the player
   void apply(PlayerShip player);
+
+  /// Get the rarity of this upgrade
+  UpgradeRarity get rarity => UpgradeRarity.common;
+
+  /// Check if this upgrade is valid/useful for the current player state
+  /// Override this to prevent showing upgrades that don't make sense
+  bool isValidFor(PlayerShip player) => true;
+
+  /// Get a list of status changes this upgrade provides
+  /// Returns a list of strings describing each stat modification
+  List<String> getStatusChanges() => [];
 }
 
 /// Increases player damage
@@ -35,6 +55,9 @@ class DamageUpgrade extends Upgrade {
   void apply(PlayerShip player) {
     player.damage += damageIncrease;
   }
+
+  @override
+  List<String> getStatusChanges() => ['+$damageIncrease damage'];
 }
 
 /// Increases fire rate
@@ -53,6 +76,9 @@ class FireRateUpgrade extends Upgrade {
   void apply(PlayerShip player) {
     player.shootInterval = max(0.1, player.shootInterval - fireRateDecrease);
   }
+
+  @override
+  List<String> getStatusChanges() => ['Reduced fire interval by ${fireRateDecrease}s'];
 }
 
 /// Increases targeting range
@@ -71,6 +97,9 @@ class RangeUpgrade extends Upgrade {
   void apply(PlayerShip player) {
     player.targetRange += rangeIncrease;
   }
+
+  @override
+  List<String> getStatusChanges() => ['+${rangeIncrease.toInt()} target range'];
 }
 
 /// Adds additional projectiles
@@ -89,6 +118,9 @@ class MultiShotUpgrade extends Upgrade {
   void apply(PlayerShip player) {
     player.projectileCount += additionalProjectiles;
   }
+
+  @override
+  List<String> getStatusChanges() => ['+$additionalProjectiles projectile'];
 }
 
 /// Increases bullet speed
@@ -107,6 +139,9 @@ class BulletSpeedUpgrade extends Upgrade {
   void apply(PlayerShip player) {
     player.bulletSpeed += speedIncrease;
   }
+
+  @override
+  List<String> getStatusChanges() => ['+${speedIncrease.toInt()} bullet speed'];
 }
 
 /// Increases movement speed
@@ -125,6 +160,9 @@ class MoveSpeedUpgrade extends Upgrade {
   void apply(PlayerShip player) {
     player.moveSpeed += speedIncrease;
   }
+
+  @override
+  List<String> getStatusChanges() => ['+${speedIncrease.toInt()} move speed'];
 }
 
 /// Increases maximum health
@@ -144,6 +182,12 @@ class MaxHealthUpgrade extends Upgrade {
     player.maxHealth += healthIncrease;
     player.health += healthIncrease;
   }
+
+  @override
+  List<String> getStatusChanges() => [
+    '+${healthIncrease.toInt()} max health',
+    '+${healthIncrease.toInt()} current health'
+  ];
 }
 
 /// Increases XP attraction radius
@@ -162,12 +206,824 @@ class MagnetUpgrade extends Upgrade {
   void apply(PlayerShip player) {
     player.magnetRadius += radiusIncrease;
   }
+
+  @override
+  List<String> getStatusChanges() => ['+${radiusIncrease.toInt()} magnet radius'];
+}
+
+/// Regenerate health over time
+class HealthRegenUpgrade extends Upgrade {
+  final double regenRate;
+
+  HealthRegenUpgrade({this.regenRate = 2.0})
+      : super(
+          id: 'health_regen',
+          name: 'Health Regen',
+          description: '+$regenRate HP/sec',
+          icon: '💚',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.healthRegen += regenRate;
+  }
+
+  @override
+  List<String> getStatusChanges() => ['+$regenRate HP/second regeneration'];
+}
+
+/// Increase bullet pierce (bullets can hit multiple enemies)
+class PierceUpgrade extends Upgrade {
+  final int pierceIncrease;
+
+  PierceUpgrade({this.pierceIncrease = 1})
+      : super(
+          id: 'pierce',
+          name: 'Piercing Shots',
+          description: '+$pierceIncrease Pierce',
+          icon: '🔱',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.bulletPierce += pierceIncrease;
+  }
+
+  @override
+  List<String> getStatusChanges() => ['+$pierceIncrease bullet pierce'];
+}
+
+/// Increase critical hit chance
+class CritChanceUpgrade extends Upgrade {
+  final double critChanceIncrease;
+
+  CritChanceUpgrade({this.critChanceIncrease = 0.1})
+      : super(
+          id: 'crit_chance',
+          name: 'Critical Strikes',
+          description: '+${(critChanceIncrease * 100).toInt()}% Crit Chance',
+          icon: '💥',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.critChance += critChanceIncrease;
+  }
+
+  @override
+  List<String> getStatusChanges() => ['+${(critChanceIncrease * 100).toInt()}% crit chance'];
+}
+
+/// Increase critical hit damage multiplier
+class CritDamageUpgrade extends Upgrade {
+  final double critDamageIncrease;
+
+  CritDamageUpgrade({this.critDamageIncrease = 0.5})
+      : super(
+          id: 'crit_damage',
+          name: 'Devastating Crits',
+          description: '+${(critDamageIncrease * 100).toInt()}% Crit Damage',
+          icon: '💢',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.critDamage += critDamageIncrease;
+  }
+
+  @override
+  List<String> getStatusChanges() => ['+${(critDamageIncrease * 100).toInt()}% crit damage multiplier'];
+}
+
+/// Add lifesteal (heal on hit)
+class LifestealUpgrade extends Upgrade {
+  final double lifestealPercent;
+
+  LifestealUpgrade({this.lifestealPercent = 0.1})
+      : super(
+          id: 'lifesteal',
+          name: 'Lifesteal',
+          description: '+${(lifestealPercent * 100).toInt()}% Lifesteal',
+          icon: '🩸',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.lifesteal += lifestealPercent;
+  }
+
+  @override
+  List<String> getStatusChanges() => ['+${(lifestealPercent * 100).toInt()}% lifesteal'];
+}
+
+/// Increase XP gain
+class XPBoostUpgrade extends Upgrade {
+  final double xpMultiplier;
+
+  XPBoostUpgrade({this.xpMultiplier = 0.25})
+      : super(
+          id: 'xp_boost',
+          name: 'XP Boost',
+          description: '+${(xpMultiplier * 100).toInt()}% XP Gain',
+          icon: '📈',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.xpMultiplier += xpMultiplier;
+  }
+
+  @override
+  List<String> getStatusChanges() => ['+${(xpMultiplier * 100).toInt()}% XP gain'];
+}
+
+/// Reduce damage taken
+class ArmorUpgrade extends Upgrade {
+  final double damageReduction;
+
+  ArmorUpgrade({this.damageReduction = 0.1})
+      : super(
+          id: 'armor',
+          name: 'Armor Plating',
+          description: '-${(damageReduction * 100).toInt()}% Damage Taken',
+          icon: '🛡️',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.damageReduction += damageReduction;
+  }
+
+  @override
+  List<String> getStatusChanges() => ['+${(damageReduction * 100).toInt()}% damage reduction'];
+}
+
+/// Increase dodge chance
+class DodgeUpgrade extends Upgrade {
+  final double dodgeChance;
+
+  DodgeUpgrade({this.dodgeChance = 0.1})
+      : super(
+          id: 'dodge',
+          name: 'Evasion',
+          description: '+${(dodgeChance * 100).toInt()}% Dodge Chance',
+          icon: '💨',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.dodgeChance += dodgeChance;
+  }
+
+  @override
+  List<String> getStatusChanges() => ['+${(dodgeChance * 100).toInt()}% dodge chance'];
+}
+
+/// Bullets explode on hit
+class ExplosiveShotsUpgrade extends Upgrade {
+  final double explosionRadius;
+
+  ExplosiveShotsUpgrade({this.explosionRadius = 30.0})
+      : super(
+          id: 'explosive_shots',
+          name: 'Explosive Rounds',
+          description: 'Bullets explode on impact',
+          icon: '💣',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.explosionRadius += explosionRadius;
+  }
+
+  @override
+  List<String> getStatusChanges() => ['+${explosionRadius.toInt()} explosion radius'];
+}
+
+/// Bullets home towards enemies
+class HomingUpgrade extends Upgrade {
+  final double homingStrength;
+
+  HomingUpgrade({this.homingStrength = 50.0})
+      : super(
+          id: 'homing',
+          name: 'Homing Missiles',
+          description: 'Bullets track enemies',
+          icon: '🎯',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.homingStrength += homingStrength;
+  }
+
+  @override
+  List<String> getStatusChanges() => ['+${homingStrength.toInt()} homing strength'];
+}
+
+/// Chance to freeze enemies on hit
+class FreezeUpgrade extends Upgrade {
+  final double freezeChance;
+
+  FreezeUpgrade({this.freezeChance = 0.15})
+      : super(
+          id: 'freeze',
+          name: 'Frost Rounds',
+          description: '+${(freezeChance * 100).toInt()}% Freeze Chance',
+          icon: '❄️',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.freezeChance += freezeChance;
+  }
+
+  @override
+  List<String> getStatusChanges() => ['+${(freezeChance * 100).toInt()}% freeze chance'];
+}
+
+/// Increase bullet size
+class BulletSizeUpgrade extends Upgrade {
+  final double sizeIncrease;
+
+  BulletSizeUpgrade({this.sizeIncrease = 2.0})
+      : super(
+          id: 'bullet_size',
+          name: 'Larger Projectiles',
+          description: 'Bigger bullets',
+          icon: '⭕',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.bulletSize += sizeIncrease;
+  }
+
+  @override
+  List<String> getStatusChanges() => ['+${sizeIncrease.toInt()} bullet size'];
+}
+
+/// Orbital satellites that shoot
+class OrbitalUpgrade extends Upgrade {
+  final int orbitals;
+
+  OrbitalUpgrade({this.orbitals = 1})
+      : super(
+          id: 'orbital',
+          name: 'Orbital Drone',
+          description: '+$orbitals Orbital Shooter',
+          icon: '🛸',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.orbitalCount += orbitals;
+  }
+
+  @override
+  List<String> getStatusChanges() => ['+$orbitals orbital shooter'];
+}
+
+/// Shield that blocks damage
+class ShieldUpgrade extends Upgrade {
+  final int shieldLayers;
+
+  ShieldUpgrade({this.shieldLayers = 1})
+      : super(
+          id: 'shield',
+          name: 'Energy Shield',
+          description: '+$shieldLayers Shield Layer',
+          icon: '🔵',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.shieldLayers += shieldLayers;
+  }
+
+  @override
+  List<String> getStatusChanges() => ['+$shieldLayers shield layer'];
+}
+
+/// Increase luck (better drops)
+class LuckUpgrade extends Upgrade {
+  final double luckIncrease;
+
+  LuckUpgrade({this.luckIncrease = 0.2})
+      : super(
+          id: 'luck',
+          name: 'Fortune',
+          description: '+${(luckIncrease * 100).toInt()}% Better Drops',
+          icon: '🍀',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.luck += luckIncrease;
+  }
+
+  @override
+  List<String> getStatusChanges() => ['+${(luckIncrease * 100).toInt()}% better loot drops'];
+}
+
+/// Unlock a new weapon
+class WeaponUnlockUpgrade extends Upgrade {
+  final String weaponId;
+
+  WeaponUnlockUpgrade({required this.weaponId})
+      : super(
+          id: 'weapon_unlock_$weaponId',
+          name: 'Unlock ${WeaponUnlockConfig.getDisplayName(weaponId)}',
+          description: WeaponUnlockConfig.getDetailedDescription(weaponId),
+          icon: WeaponUnlockConfig.getIcon(weaponId),
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.weaponManager.unlockWeapon(weaponId);
+    // Automatically switch to the newly unlocked weapon
+    player.weaponManager.switchWeapon(weaponId);
+  }
+
+  @override
+  List<String> getStatusChanges() => ['Unlock and equip new weapon'];
+}
+
+/// Resilient Shields - Shields regenerate over time
+class ResilientShieldsUpgrade extends Upgrade {
+  ResilientShieldsUpgrade()
+      : super(
+          id: 'resilient_shields',
+          name: 'Resilient Shields',
+          description: 'Shields regenerate every 15s',
+          icon: '🛡️',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.shieldRegenInterval = 15.0;
+    player.shieldLayers++; // Also add one shield layer
+  }
+
+  @override
+  UpgradeRarity get rarity => UpgradeRarity.common;
+
+  @override
+  List<String> getStatusChanges() => [
+    '+1 shield layer',
+    'Shields regenerate every 15s'
+  ];
+}
+
+/// Focused Fire - More damage, fewer projectiles
+class FocusedFireUpgrade extends Upgrade {
+  FocusedFireUpgrade()
+      : super(
+          id: 'focused_fire',
+          name: 'Focused Fire',
+          description: '+15% damage, -1 projectile',
+          icon: '🎯',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.damageMultiplier += 0.15;
+    player.projectileCount = max(1, player.projectileCount - 1);
+  }
+
+  @override
+  bool isValidFor(PlayerShip player) {
+    // Only show this upgrade if player has more than 1 projectile
+    return player.projectileCount > 1;
+  }
+
+  @override
+  UpgradeRarity get rarity => UpgradeRarity.common;
+
+  @override
+  List<String> getStatusChanges() => [
+    '+15% damage multiplier',
+    '-1 projectile count'
+  ];
+}
+
+/// Rapid Reload - Faster cooldown
+class RapidReloadUpgrade extends Upgrade {
+  RapidReloadUpgrade()
+      : super(
+          id: 'rapid_reload',
+          name: 'Rapid Reload',
+          description: '10% cooldown reduction',
+          icon: '⏱️',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.cooldownReduction += 0.1;
+    player.shootInterval = max(0.1, player.shootInterval * 0.9);
+  }
+
+  @override
+  UpgradeRarity get rarity => UpgradeRarity.common;
+
+  @override
+  List<String> getStatusChanges() => [
+    '+10% cooldown reduction',
+    'Reduced fire interval'
+  ];
+}
+
+/// Berserker Rage - Massive damage when low HP
+class BerserkerRageUpgrade extends Upgrade {
+  BerserkerRageUpgrade()
+      : super(
+          id: 'berserker_rage',
+          name: 'Berserker Rage',
+          description: '+50% damage when below 30% HP',
+          icon: '😡',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.berserkMultiplier += 0.5;
+  }
+
+  @override
+  UpgradeRarity get rarity => UpgradeRarity.rare;
+
+  @override
+  List<String> getStatusChanges() => ['+50% damage when below 30% HP'];
+}
+
+/// Thorns Armor - Reflect damage
+class ThornsArmorUpgrade extends Upgrade {
+  ThornsArmorUpgrade()
+      : super(
+          id: 'thorns_armor',
+          name: 'Thorns Armor',
+          description: 'Reflect 20% damage taken',
+          icon: '🌵',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.thornsPercent += 0.2;
+  }
+
+  @override
+  UpgradeRarity get rarity => UpgradeRarity.rare;
+
+  @override
+  List<String> getStatusChanges() => ['Reflect 20% of damage taken'];
+}
+
+/// Chain Lightning - Bullets chain to nearby enemies
+class ChainLightningUpgrade extends Upgrade {
+  ChainLightningUpgrade()
+      : super(
+          id: 'chain_lightning',
+          name: 'Chain Lightning',
+          description: 'Bullets chain to 2 nearby enemies',
+          icon: '⚡',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.chainCount += 2;
+  }
+
+  @override
+  UpgradeRarity get rarity => UpgradeRarity.rare;
+
+  @override
+  List<String> getStatusChanges() => ['+2 chain targets'];
+}
+
+/// Bleeding Edge - Enemies bleed over time
+class BleedingEdgeUpgrade extends Upgrade {
+  BleedingEdgeUpgrade()
+      : super(
+          id: 'bleeding_edge',
+          name: 'Bleeding Edge',
+          description: 'Enemies bleed for 5 DPS for 3s',
+          icon: '🩸',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.bleedDamage += 5.0;
+  }
+
+  @override
+  UpgradeRarity get rarity => UpgradeRarity.rare;
+
+  @override
+  List<String> getStatusChanges() => ['Enemies bleed 5 DPS for 3s'];
+}
+
+/// Fortune's Favor - Chance to fire double shot
+class FortunesFavorUpgrade extends Upgrade {
+  FortunesFavorUpgrade()
+      : super(
+          id: 'fortunes_favor',
+          name: "Fortune's Favor",
+          description: '15% chance to double shot',
+          icon: '🍀',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.hasDoubleShot = true;
+    player.doubleShotChance += 0.15;
+  }
+
+  @override
+  UpgradeRarity get rarity => UpgradeRarity.rare;
+
+  @override
+  List<String> getStatusChanges() => [
+    'Enable double shot mechanic',
+    '+15% chance to double shot'
+  ];
+}
+
+/// Vampiric Aura - Heal from nearby kills
+class VampiricAuraUpgrade extends Upgrade {
+  VampiricAuraUpgrade()
+      : super(
+          id: 'vampiric_aura',
+          name: 'Vampiric Aura',
+          description: 'Heal from kills within 200 radius',
+          icon: '🦇',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.lifesteal += 0.2;
+    player.magnetRadius += 100; // Also increase magnet radius
+  }
+
+  @override
+  UpgradeRarity get rarity => UpgradeRarity.epic;
+
+  @override
+  List<String> getStatusChanges() => [
+    '+20% lifesteal',
+    '+100 magnet radius'
+  ];
+}
+
+/// Time Dilation - Slow time periodically
+class TimeDilationUpgrade extends Upgrade {
+  TimeDilationUpgrade()
+      : super(
+          id: 'time_dilation',
+          name: 'Time Dilation',
+          description: 'Slow enemy speed by 30%',
+          icon: '⏰',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    // Apply a permanent slow effect to enemies
+    // This is tracked via a global time scale multiplier
+    player.globalTimeScale = (player.globalTimeScale ?? 1.0) * 0.7;
+    print('[TimeDilation] Applied time dilation - scale: ${player.globalTimeScale}');
+  }
+
+  @override
+  UpgradeRarity get rarity => UpgradeRarity.epic;
+
+  @override
+  List<String> getStatusChanges() => ['Slow enemy speed by 30%'];
+}
+
+/// Bullet Storm - Massive projectile count and fire rate
+class BulletStormUpgrade extends Upgrade {
+  BulletStormUpgrade()
+      : super(
+          id: 'bullet_storm',
+          name: 'Bullet Storm',
+          description: '+3 projectiles, +30% fire rate',
+          icon: '🌪️',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.projectileCount += 3;
+    player.shootInterval = max(0.1, player.shootInterval * 0.7);
+  }
+
+  @override
+  UpgradeRarity get rarity => UpgradeRarity.epic;
+
+  @override
+  List<String> getStatusChanges() => [
+    '+3 projectiles',
+    '+30% fire rate'
+  ];
+}
+
+/// Phoenix Rebirth - Resurrect on death
+class PhoenixRebirthUpgrade extends Upgrade {
+  PhoenixRebirthUpgrade()
+      : super(
+          id: 'phoenix_rebirth',
+          name: 'Phoenix Rebirth',
+          description: '25% chance to resurrect on death (once)',
+          icon: '🔥',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.resurrectionChance = 0.25;
+  }
+
+  @override
+  UpgradeRarity get rarity => UpgradeRarity.epic;
+
+  @override
+  List<String> getStatusChanges() => ['25% chance to resurrect on death (once)'];
+}
+
+/// Omega Cannon - Massive projectiles with huge AOE
+class OmegaCannonUpgrade extends Upgrade {
+  OmegaCannonUpgrade()
+      : super(
+          id: 'omega_cannon',
+          name: 'Omega Cannon',
+          description: 'Massive projectiles with huge AOE',
+          icon: '💀',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.bulletSize += 10.0;
+    player.explosionRadius += 100;
+    player.damage += 50;
+  }
+
+  @override
+  UpgradeRarity get rarity => UpgradeRarity.legendary;
+
+  @override
+  List<String> getStatusChanges() => [
+    '+10 bullet size',
+    '+100 explosion radius',
+    '+50 damage'
+  ];
+}
+
+/// Infinity Orbitals - Many orbital shooters
+class InfinityOrbitalsUpgrade extends Upgrade {
+  InfinityOrbitalsUpgrade()
+      : super(
+          id: 'infinity_orbitals',
+          name: 'Infinity Orbitals',
+          description: '+5 orbital shooters',
+          icon: '🌌',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.orbitalCount += 5;
+  }
+
+  @override
+  UpgradeRarity get rarity => UpgradeRarity.legendary;
+
+  @override
+  List<String> getStatusChanges() => ['+5 orbital shooters'];
+}
+
+/// Perfect Harmony - Boost all stats
+class PerfectHarmonyUpgrade extends Upgrade {
+  PerfectHarmonyUpgrade()
+      : super(
+          id: 'perfect_harmony',
+          name: 'Perfect Harmony',
+          description: '+10% to ALL stats',
+          icon: '✨',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.damage *= 1.1;
+    player.maxHealth *= 1.1;
+    player.health = min(player.health * 1.1, player.maxHealth);
+    player.moveSpeed *= 1.1;
+    player.bulletSpeed *= 1.1;
+    player.critChance = min(1.0, player.critChance * 1.1);
+    player.critDamage *= 1.1;
+    player.healthRegen *= 1.1;
+  }
+
+  @override
+  UpgradeRarity get rarity => UpgradeRarity.legendary;
+
+  @override
+  List<String> getStatusChanges() => [
+    '+10% damage',
+    '+10% max health',
+    '+10% move speed',
+    '+10% bullet speed',
+    '+10% crit chance',
+    '+10% crit damage',
+    '+10% health regen'
+  ];
+}
+
+/// Glass Cannon - High risk, high reward
+class GlassCannonUpgrade extends Upgrade {
+  GlassCannonUpgrade()
+      : super(
+          id: 'glass_cannon',
+          name: 'Glass Cannon',
+          description: '+100% damage, -50% max HP',
+          icon: '💔',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.damageMultiplier += 1.0;
+    player.damage *= 2.0;
+    player.maxHealth *= 0.5;
+    player.health = min(player.health, player.maxHealth);
+  }
+
+  @override
+  UpgradeRarity get rarity => UpgradeRarity.legendary;
+
+  @override
+  List<String> getStatusChanges() => [
+    '+100% damage multiplier',
+    '+100% base damage',
+    '-50% max health'
+  ];
+}
+
+/// Immovable Object - Tank build
+class ImmovableObjectUpgrade extends Upgrade {
+  ImmovableObjectUpgrade()
+      : super(
+          id: 'immovable_object',
+          name: 'Immovable Object',
+          description: '+200% HP, +50% armor, -30% speed',
+          icon: '🗿',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.maxHealth *= 3.0;
+    player.health *= 3.0;
+    player.damageReduction += 0.5;
+    player.moveSpeed *= 0.7;
+  }
+
+  @override
+  UpgradeRarity get rarity => UpgradeRarity.legendary;
+
+  @override
+  List<String> getStatusChanges() => [
+    '+200% max health',
+    '+200% current health',
+    '+50% damage reduction',
+    '-30% move speed'
+  ];
+}
+
+/// Critical Cascade - Crits chain to other enemies
+class CriticalCascadeUpgrade extends Upgrade {
+  CriticalCascadeUpgrade()
+      : super(
+          id: 'critical_cascade',
+          name: 'Critical Cascade',
+          description: 'Crits chain to 3 enemies at 50% damage',
+          icon: '💫',
+        );
+
+  @override
+  void apply(PlayerShip player) {
+    player.critChance += 0.1;
+    player.chainCount += 3;
+  }
+
+  @override
+  UpgradeRarity get rarity => UpgradeRarity.legendary;
+
+  @override
+  List<String> getStatusChanges() => [
+    '+10% crit chance',
+    '+3 chain targets',
+    'Crits chain at 50% damage'
+  ];
 }
 
 /// Factory class to create all available upgrades
 class UpgradeFactory {
   static List<Upgrade> getAllUpgrades() {
     return [
+      // Basic upgrades (Common)
       DamageUpgrade(),
       FireRateUpgrade(),
       RangeUpgrade(),
@@ -176,6 +1032,93 @@ class UpgradeFactory {
       MoveSpeedUpgrade(),
       MaxHealthUpgrade(),
       MagnetUpgrade(),
+
+      // Advanced upgrades (Common/Rare)
+      HealthRegenUpgrade(),
+      PierceUpgrade(),
+      CritChanceUpgrade(),
+      CritDamageUpgrade(),
+      LifestealUpgrade(),
+      XPBoostUpgrade(),
+      ArmorUpgrade(),
+      DodgeUpgrade(),
+
+      // Special upgrades (Common/Rare)
+      ExplosiveShotsUpgrade(),
+      HomingUpgrade(),
+      FreezeUpgrade(),
+      BulletSizeUpgrade(),
+      OrbitalUpgrade(),
+      ShieldUpgrade(),
+      LuckUpgrade(),
+
+      // New Common Tier
+      ResilientShieldsUpgrade(),
+      FocusedFireUpgrade(),
+      RapidReloadUpgrade(),
+
+      // New Rare Tier
+      BerserkerRageUpgrade(),
+      ThornsArmorUpgrade(),
+      ChainLightningUpgrade(),
+      BleedingEdgeUpgrade(),
+      FortunesFavorUpgrade(),
+
+      // New Epic Tier
+      VampiricAuraUpgrade(),
+      TimeDilationUpgrade(),
+      BulletStormUpgrade(),
+      PhoenixRebirthUpgrade(),
+
+      // New Legendary Tier
+      OmegaCannonUpgrade(),
+      InfinityOrbitalsUpgrade(),
+      PerfectHarmonyUpgrade(),
+      GlassCannonUpgrade(),
+      ImmovableObjectUpgrade(),
+      CriticalCascadeUpgrade(),
     ];
+  }
+
+  /// Get upgrades filtered by rarity with weighted random selection
+  static List<Upgrade> getRandomUpgradesByRarity(int count) {
+    final random = Random();
+    final selected = <Upgrade>[];
+    final allUpgrades = getAllUpgrades();
+
+    for (int i = 0; i < count; i++) {
+      // Weighted rarity selection
+      // 60% common, 25% rare, 12% epic, 3% legendary
+      final rarityRoll = random.nextDouble();
+      UpgradeRarity targetRarity;
+
+      if (rarityRoll < 0.60) {
+        targetRarity = UpgradeRarity.common;
+      } else if (rarityRoll < 0.85) {
+        targetRarity = UpgradeRarity.rare;
+      } else if (rarityRoll < 0.97) {
+        targetRarity = UpgradeRarity.epic;
+      } else {
+        targetRarity = UpgradeRarity.legendary;
+      }
+
+      // Get upgrades of target rarity
+      final availableUpgrades = allUpgrades
+          .where((u) => u.rarity == targetRarity && !selected.contains(u))
+          .toList();
+
+      if (availableUpgrades.isNotEmpty) {
+        final upgrade = availableUpgrades[random.nextInt(availableUpgrades.length)];
+        selected.add(upgrade);
+      } else {
+        // Fallback to any available upgrade if target rarity is exhausted
+        final anyAvailable = allUpgrades.where((u) => !selected.contains(u)).toList();
+        if (anyAvailable.isNotEmpty) {
+          selected.add(anyAvailable[random.nextInt(anyAvailable.length)]);
+        }
+      }
+    }
+
+    return selected;
   }
 }

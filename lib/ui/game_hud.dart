@@ -9,6 +9,8 @@ class GameHUD extends PositionComponent with HasGameRef<SpaceShooterGame> {
   late TextPaint waveText;
   late TextPaint statsText;
 
+  late TextPaint weaponText;
+
   @override
   Future<void> onLoad() async {
     await super.onLoad();
@@ -39,6 +41,14 @@ class GameHUD extends PositionComponent with HasGameRef<SpaceShooterGame> {
 
     statsText = TextPaint(
       style: TextStyle(color: Color(0xFFCCCCCC), fontSize: 16),
+    );
+
+    weaponText = TextPaint(
+      style: TextStyle(
+        color: Color(0xFF00FF00),
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
     );
   }
 
@@ -135,6 +145,18 @@ class GameHUD extends PositionComponent with HasGameRef<SpaceShooterGame> {
       'Kills: ${statsManager.enemiesKilled}',
       Vector2(size.x - 20, 45),
       anchor: Anchor.topRight,
+    );
+
+    // Current weapon (bottom center)
+    final player = gameRef.player;
+    final weaponId = player.weaponManager.getCurrentWeaponId();
+    final weaponName = player.weaponManager.getCurrentWeaponName();
+    final weaponIcon = gameRef.statsManager.gameRef.player.weaponManager.weaponInstances[weaponId]?.id ?? '🔫';
+    weaponText.render(
+      canvas,
+      weaponName,
+      Vector2(size.x / 2, size.y - 30),
+      anchor: Anchor.center,
     );
   }
 }

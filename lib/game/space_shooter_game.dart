@@ -15,7 +15,23 @@ import '../managers/loot_manager.dart';
 import '../managers/level_manager.dart';
 import '../managers/stats_manager.dart';
 import '../managers/star_manager.dart';
+import '../managers/combo_manager.dart';
 import '../ui/touch_joystick.dart';
+
+// Import all enemies for factory registration
+import '../components/enemies/triangle_enemy.dart';
+import '../components/enemies/square_enemy.dart';
+import '../components/enemies/pentagon_enemy.dart';
+import '../components/enemies/scout_enemy.dart';
+import '../components/enemies/tank_enemy.dart';
+import '../components/enemies/ranger_enemy.dart';
+import '../components/enemies/kamikaze_enemy.dart';
+
+// Import all weapons for factory registration
+import '../weapons/pulse_cannon.dart';
+import '../weapons/plasma_spreader.dart';
+import '../weapons/railgun.dart';
+import '../weapons/missile_launcher.dart';
 
 class SpaceShooterGame extends FlameGame
     with HasCollisionDetection, KeyboardEvents {
@@ -25,10 +41,15 @@ class SpaceShooterGame extends FlameGame
   late LevelManager levelManager;
   late StatsManager statsManager;
   late StarManager starManager;
+  late ComboManager comboManager;
   TouchJoystick? joystick;
 
   bool isGameOver = false;
   bool isPaused = false; // Used for upgrades and game over
+  bool hasLoaded = false; // Track if game has completed initialization
+
+  // Entity scale factor based on screen size (smaller on mobile)
+  double entityScale = 1.0;
 
   // Callbacks for Flutter UI
   VoidCallback? onShowUpgrade;
@@ -43,7 +64,31 @@ class SpaceShooterGame extends FlameGame
   Future<void> onLoad() async {
     await super.onLoad();
 
+    // Register all factories on first load
+    _registerFactories();
+
     await initializeGame();
+  }
+
+  /// Register all enemy and weapon factories
+  /// This is called once when the game is loaded
+  void _registerFactories() {
+    // Register all enemies
+    TriangleEnemy.init();
+    SquareEnemy.init();
+    PentagonEnemy.init();
+    ScoutEnemy.init();
+    TankEnemy.init();
+    RangerEnemy.init();
+    KamikazeEnemy.init();
+
+    // Register all weapons
+    PulseCannon.init();
+    PlasmaSpreader.init();
+    Railgun.init();
+    MissileLauncher.init();
+
+    print('[SpaceShooterGame] All factories registered successfully');
   }
 
   @override
@@ -56,11 +101,26 @@ class SpaceShooterGame extends FlameGame
     }
   }
 
+  @override
+  void onGameResize(Vector2 size) {
+    super.onGameResize(size);
+
+    // Update camera viewport when game is resized to keep player centered
+    camera.viewfinder.visibleGameSize = size;
+    camera.viewport.position = size / 2;
+  }
+
   Future<void> initializeGame() async {
     isGameOver = false;
 
-    // Initialize player in the center of the world
-    player = PlayerShip(position: Vector2.zero());
+    // Calculate entity scale based on screen size
+    // Smaller screens (mobile) get smaller entities
+    final screenWidth = size.x;
+    entityScale = (screenWidth / 800.0).clamp(0.6, 1.0);
+    print('[SpaceShooterGame] Entity scale set to: $entityScale (screen width: $screenWidth)');
+
+    // Initialize player in the center of the world with scaled size
+    player = PlayerShip(position: Vector2.zero(), scale: entityScale);
     world.add(player);
 
     // Set up camera to follow player smoothly
@@ -87,6 +147,9 @@ class SpaceShooterGame extends FlameGame
     levelManager = LevelManager(game: this);
     world.add(levelManager);
 
+    comboManager = ComboManager();
+    world.add(comboManager);
+
     enemyManager = EnemyManager(game: this, player: player);
     world.add(enemyManager);
 
@@ -98,6 +161,9 @@ class SpaceShooterGame extends FlameGame
 
     // Start spawning enemies
     enemyManager.startSpawning();
+
+    // Mark game as loaded
+    hasLoaded = true;
   }
 
   bool _isMobile() {

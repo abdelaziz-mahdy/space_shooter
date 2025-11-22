@@ -2,7 +2,8 @@ import 'package:flame/components.dart';
 import 'package:flutter/rendering.dart';
 import 'dart:ui';
 import 'player_ship.dart';
-import 'enemy_ship.dart';
+import 'enemies/base_enemy.dart';
+import 'enemies/triangle_enemy.dart';
 import '../utils/visual_center_mixin.dart';
 import '../game/space_shooter_game.dart';
 
@@ -14,7 +15,7 @@ class DebugOverlay extends Component with HasGameRef<SpaceShooterGame> {
     final player = gameRef.player;
     _drawComponentDebug(canvas, player, 'Player');
 
-    final enemies = gameRef.world.children.whereType<EnemyShip>();
+    final enemies = gameRef.world.children.whereType<BaseEnemy>();
     for (final enemy in enemies) {
       _drawComponentDebug(canvas, enemy, 'Enemy');
 
@@ -48,7 +49,7 @@ class DebugOverlay extends Component with HasGameRef<SpaceShooterGame> {
     );
 
     // Draw rotated bounding box to show correct orientation
-    if (component is PlayerShip || component is EnemyShip) {
+    if (component is PlayerShip || component is BaseEnemy) {
       final h = component.size.y;
       final w = component.size.x;
       final top = -h / 2;
@@ -69,8 +70,7 @@ class DebugOverlay extends Component with HasGameRef<SpaceShooterGame> {
       );
 
       // Draw the correct triangle outline (magenta) for triangular shapes
-      if ((component is PlayerShip) ||
-          (component is EnemyShip && component.shape == EnemyShape.triangle)) {
+      if ((component is PlayerShip) || (component is TriangleEnemy)) {
         final trianglePath = Path()
           ..moveTo(0, top)
           ..lineTo(w / 2, bottom)

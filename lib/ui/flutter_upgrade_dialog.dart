@@ -2,23 +2,35 @@ import 'package:flutter/material.dart';
 import '../game/space_shooter_game.dart';
 import '../upgrades/upgrade.dart';
 
-class FlutterUpgradeDialog extends StatelessWidget {
+class FlutterUpgradeDialog extends StatefulWidget {
   final SpaceShooterGame game;
 
   const FlutterUpgradeDialog({super.key, required this.game});
 
+  @override
+  State<FlutterUpgradeDialog> createState() => _FlutterUpgradeDialogState();
+}
+
+class _FlutterUpgradeDialogState extends State<FlutterUpgradeDialog> {
+  late List<Upgrade> upgrades;
+
+  @override
+  void initState() {
+    super.initState();
+    // Generate upgrades once when dialog is created
+    upgrades = widget.game.levelManager.getRandomUpgrades(3);
+  }
+
   void _selectUpgrade(Upgrade upgrade) {
-    upgrade.apply(game.player);
-    game.resumeFromUpgrade();
-    if (game.onHideUpgrade != null) {
-      game.onHideUpgrade!();
+    upgrade.apply(widget.game.player);
+    widget.game.resumeFromUpgrade();
+    if (widget.game.onHideUpgrade != null) {
+      widget.game.onHideUpgrade!();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final upgrades = game.levelManager.getRandomUpgrades(3);
-
     return Container(
       color: const Color(0xCC000000),
       child: Center(

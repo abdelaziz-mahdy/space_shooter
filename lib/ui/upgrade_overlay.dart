@@ -29,13 +29,28 @@ class UpgradeOverlay extends PositionComponent
 
     print('[UpgradeOverlay] Size set to: $size');
 
-    // Create upgrade cards
-    final cardWidth = 200.0;
-    final cardHeight = 250.0;
-    final spacing = 30.0;
-    final totalWidth =
+    // Create upgrade cards with responsive sizing
+    // Increased card dimensions to accommodate more text
+    final scaleFactor = (size.x / 800.0).clamp(0.5, 1.5);
+    var cardWidth = (280.0 * scaleFactor).clamp(200.0, 400.0);
+    var cardHeight = (380.0 * scaleFactor).clamp(280.0, 500.0);
+    final spacing = (30.0 * scaleFactor).clamp(15.0, 50.0);
+
+    // Calculate total width and adjust if it exceeds screen width
+    var totalWidth =
         (cardWidth * availableUpgrades.length) +
         (spacing * (availableUpgrades.length - 1));
+
+    // If cards don't fit, reduce card size
+    if (totalWidth > size.x * 0.95) {
+      final availableWidth = size.x * 0.95;
+      cardWidth = (availableWidth - (spacing * (availableUpgrades.length - 1))) / availableUpgrades.length;
+      cardHeight = cardWidth * 1.25; // Maintain aspect ratio
+      totalWidth = availableWidth;
+
+      print('[UpgradeOverlay] Adjusted card size to fit screen: $cardWidth x $cardHeight');
+    }
+
     final startX = (size.x - totalWidth) / 2;
 
     print('[UpgradeOverlay] Creating ${availableUpgrades.length} cards');
@@ -173,11 +188,13 @@ class UpgradeCard extends PositionComponent with TapCallbacks {
     }
 
     // Responsive sizing based on card size
-    final scaleFactor = (size.x / 200.0).clamp(0.7, 1.5);
+    final scaleFactor = (size.x / 280.0).clamp(0.7, 1.5);
     final iconFontSize = (64 * scaleFactor).clamp(40.0, 80.0);
-    final nameFontSize = (22 * scaleFactor).clamp(16.0, 28.0);
-    final descFontSize = (16 * scaleFactor).clamp(12.0, 20.0);
+    final nameFontSize = (20 * scaleFactor).clamp(14.0, 26.0);
+    final descFontSize = (14 * scaleFactor).clamp(11.0, 18.0);
+    final statusFontSize = (13 * scaleFactor).clamp(10.0, 16.0);
     final borderWidth = (3 * scaleFactor).clamp(2.0, 5.0);
+    final padding = (16 * scaleFactor).clamp(10.0, 24.0);
 
     // Card background
     final cardPaint = Paint()
@@ -193,12 +210,12 @@ class UpgradeCard extends PositionComponent with TapCallbacks {
     final rect = Rect.fromLTWH(0, 0, size.x, size.y);
 
     canvas.drawRRect(
-      RRect.fromRectAndRadius(rect, Radius.circular(10 * scaleFactor.clamp(0.8, 1.2))),
+      RRect.fromRectAndRadius(rect, Radius.circular(12 * scaleFactor.clamp(0.8, 1.2))),
       cardPaint,
     );
 
     canvas.drawRRect(
-      RRect.fromRectAndRadius(rect, Radius.circular(10 * scaleFactor.clamp(0.8, 1.2))),
+      RRect.fromRectAndRadius(rect, Radius.circular(12 * scaleFactor.clamp(0.8, 1.2))),
       borderPaint,
     );
 
@@ -208,11 +225,11 @@ class UpgradeCard extends PositionComponent with TapCallbacks {
     iconStyle.render(
       canvas,
       upgrade.icon,
-      Vector2(size.x / 2, size.y * 0.3),
+      Vector2(size.x / 2, padding + iconFontSize / 2),
       anchor: Anchor.center,
     );
 
-    // Name - centered horizontally, middle of card
+    // Name - centered horizontally, below icon
     final nameStyle = TextPaint(
       style: TextStyle(
         color: Color(0xFFFFFFFF),
@@ -221,23 +238,81 @@ class UpgradeCard extends PositionComponent with TapCallbacks {
       ),
     );
 
+    final nameY = padding + iconFontSize + padding / 2;
     nameStyle.render(
       canvas,
       upgrade.name,
-      Vector2(size.x / 2, size.y * 0.55),
+      Vector2(size.x / 2, nameY),
       anchor: Anchor.center,
     );
 
-    // Description - centered horizontally, lower portion of card
+    // Description - centered horizontally, below name
     final descStyle = TextPaint(
-      style: TextStyle(color: Color(0xFFCCCCCC), fontSize: descFontSize),
+      style: TextStyle(
+        color: Color(0xFFAAAAAA),
+        fontSize: descFontSize,
+        fontStyle: FontStyle.italic,
+      ),
     );
 
+    final descY = nameY + nameFontSize + padding / 3;
     descStyle.render(
       canvas,
       upgrade.description,
-      Vector2(size.x / 2, size.y * 0.75),
+      Vector2(size.x / 2, descY),
       anchor: Anchor.center,
     );
+
+    // Divider line
+    final dividerY = descY + descFontSize + padding / 2;
+    final dividerPaint = Paint()
+      ..color = const Color(0xFF555555)
+      ..strokeWidth = 1.0;
+
+    canvas.drawLine(
+      Offset(padding, dividerY),
+      Offset(size.x - padding, dividerY),
+      dividerPaint,
+    );
+
+    // Status changes - left-aligned bullet points
+    final statusStyle = TextPaint(
+      style: TextStyle(
+        color: Color(0xFF00FF88),
+        fontSize: statusFontSize,
+        fontWeight: FontWeight.w500,
+      ),
+    );
+
+    final statusChanges = upgrade.getStatusChanges();
+    var currentY = dividerY + padding / 2;
+
+    for (final change in statusChanges) {
+      // Draw bullet point
+      final bulletStyle = TextPaint(
+        style: TextStyle(
+          color: Color(0xFF00FFFF),
+          fontSize: statusFontSize,
+          fontWeight: FontWeight.bold,
+        ),
+      );
+
+      bulletStyle.render(
+        canvas,
+        '•',
+        Vector2(padding + 5, currentY),
+        anchor: Anchor.centerLeft,
+      );
+
+      // Draw status text
+      statusStyle.render(
+        canvas,
+        change,
+        Vector2(padding + 20, currentY),
+        anchor: Anchor.centerLeft,
+      );
+
+      currentY += statusFontSize + 6;
+    }
   }
 }

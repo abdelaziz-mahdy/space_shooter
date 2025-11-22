@@ -48,200 +48,225 @@ class _MainMenuState extends State<MainMenu> {
           ),
         ),
         child: SafeArea(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Title
-                const Text(
-                  'SPACE SHOOTER',
-                  style: TextStyle(
-                    fontSize: 72,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        color: Color(0xFF00FFFF),
-                        blurRadius: 20,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  '⚡ Survive • Upgrade • Dominate ⚡',
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Color(0xFF00FFFF),
-                    letterSpacing: 2,
-                  ),
-                ),
-                const SizedBox(height: 60),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // Calculate responsive scale based on screen height
+              final scale = (constraints.maxHeight / 800).clamp(0.5, 1.2);
+              final titleSize = 72.0 * scale;
+              final subtitleSize = 20.0 * scale;
+              final buttonTextSize = 32.0 * scale;
+              final maxLeaderboardWidth = constraints.maxWidth * 0.9;
+              final leaderboardWidth = (600.0 * scale).clamp(200.0, maxLeaderboardWidth.clamp(200.0, double.infinity));
 
-                // Play Button
-                ElevatedButton(
-                  onPressed: _startGame,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF00FFFF),
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 80,
-                      vertical: 20,
-                    ),
-                    textStyle: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  child: const Text('PLAY'),
-                ),
-                const SizedBox(height: 80),
-
-                // Leaderboard Section
-                Container(
-                  width: 600,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: const Color(0xFF00FFFF),
-                      width: 2,
-                    ),
-                  ),
+              return Center(
+                child: SingleChildScrollView(
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
-                        '🏆 LEADERBOARD 🏆',
+                      // Title
+                      Text(
+                        'SPACE SHOOTER',
                         style: TextStyle(
-                          fontSize: 28,
+                          fontSize: titleSize,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF00FFFF),
+                          color: Colors.white,
+                          shadows: const [
+                            Shadow(
+                              color: Color(0xFF00FFFF),
+                              blurRadius: 20,
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20 * scale),
+                      Text(
+                        '⚡ Survive • Upgrade • Dominate ⚡',
+                        style: TextStyle(
+                          fontSize: subtitleSize,
+                          color: const Color(0xFF00FFFF),
+                          letterSpacing: 2 * scale,
+                        ),
+                      ),
+                      SizedBox(height: 60 * scale),
 
-                      // Best Score
-                      if (_bestScore != null) ...[
-                        Container(
-                          padding: const EdgeInsets.all(15),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFD700).withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: const Color(0xFFFFD700),
-                              width: 2,
-                            ),
+                      // Play Button
+                      ElevatedButton(
+                        onPressed: _startGame,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF00FFFF),
+                          foregroundColor: Colors.black,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 80 * scale,
+                            vertical: 20 * scale,
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          textStyle: TextStyle(
+                            fontSize: buttonTextSize,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30 * scale),
+                          ),
+                        ),
+                        child: const Text('PLAY'),
+                      ),
+                      SizedBox(height: 40 * scale),
+
+                      // Leaderboard Section
+                      Container(
+                        width: leaderboardWidth,
+                        constraints: BoxConstraints(
+                          maxHeight: constraints.maxHeight * 0.5,
+                        ),
+                        padding: EdgeInsets.all(20 * scale),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(20 * scale),
+                          border: Border.all(
+                            color: const Color(0xFF00FFFF),
+                            width: 2 * scale,
+                          ),
+                        ),
+                        child: SingleChildScrollView(
+                          child: Column(
                             children: [
-                              const Text(
-                                '👑 BEST SCORE',
+                              Text(
+                                '🏆 LEADERBOARD 🏆',
                                 style: TextStyle(
-                                  fontSize: 20,
+                                  fontSize: 28 * scale,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFFFFD700),
+                                  color: const Color(0xFF00FFFF),
                                 ),
                               ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    'Score: ${_bestScore!.score}',
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
+                              SizedBox(height: 20 * scale),
+
+                              // Best Score
+                              if (_bestScore != null) ...[
+                                Container(
+                                  padding: EdgeInsets.all(15 * scale),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFD700).withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(10 * scale),
+                                    border: Border.all(
+                                      color: const Color(0xFFFFD700),
+                                      width: 2 * scale,
                                     ),
                                   ),
-                                  Text(
-                                    'Wave ${_bestScore!.wave} • ${_bestScore!.formattedTime}',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      color: Color(0xFFCCCCCC),
-                                    ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          '👑 BEST SCORE',
+                                          style: TextStyle(
+                                            fontSize: 20 * scale,
+                                            fontWeight: FontWeight.bold,
+                                            color: const Color(0xFFFFD700),
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      Flexible(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              'Score: ${_bestScore!.score}',
+                                            style: TextStyle(
+                                              fontSize: 18 * scale,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                            Text(
+                                              'Wave ${_bestScore!.wave} • ${_bestScore!.formattedTime}',
+                                              style: TextStyle(
+                                                fontSize: 14 * scale,
+                                                color: const Color(0xFFCCCCCC),
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
+                                ),
+                                SizedBox(height: 20 * scale),
+                              ],
+
+                              // Recent Scores
+                              Text(
+                                'RECENT GAMES',
+                                style: TextStyle(
+                                  fontSize: 20 * scale,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
+                              SizedBox(height: 10 * scale),
+
+                              if (_recentScores.isEmpty)
+                                Padding(
+                                  padding: EdgeInsets.all(20 * scale),
+                                  child: Text(
+                                    'No games played yet',
+                                    style: TextStyle(
+                                      fontSize: 16 * scale,
+                                      color: const Color(0xFF888888),
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                )
+                              else
+                                ...List.generate(_recentScores.length, (index) {
+                                  final score = _recentScores[index];
+                                  return Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 5 * scale),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          '#${index + 1}',
+                                          style: TextStyle(
+                                            fontSize: 16 * scale,
+                                            color: const Color(0xFF00FFFF),
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Score: ${score.score}',
+                                          style: TextStyle(
+                                            fontSize: 16 * scale,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Wave ${score.wave}',
+                                          style: TextStyle(
+                                            fontSize: 16 * scale,
+                                            color: const Color(0xFFCCCCCC),
+                                          ),
+                                        ),
+                                        Text(
+                                          score.formattedTime,
+                                          style: TextStyle(
+                                            fontSize: 16 * scale,
+                                            color: const Color(0xFFCCCCCC),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 20),
-                      ],
-
-                      // Recent Scores
-                      const Text(
-                        'RECENT GAMES',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
                       ),
-                      const SizedBox(height: 10),
-
-                      if (_recentScores.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.all(20),
-                          child: Text(
-                            'No games played yet',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Color(0xFF888888),
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        )
-                      else
-                        ...List.generate(_recentScores.length, (index) {
-                          final score = _recentScores[index];
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 5),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  '#${index + 1}',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    color: Color(0xFF00FFFF),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  'Score: ${score.score}',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                Text(
-                                  'Wave ${score.wave}',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    color: Color(0xFFCCCCCC),
-                                  ),
-                                ),
-                                Text(
-                                  score.formattedTime,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    color: Color(0xFFCCCCCC),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
                     ],
                   ),
                 ),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),

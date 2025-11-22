@@ -2,9 +2,11 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:flame/components.dart';
 import '../game/space_shooter_game.dart';
-import '../components/enemy_ship.dart';
 import '../components/boss_ship.dart';
 import '../components/player_ship.dart';
+import '../components/enemies/base_enemy.dart';
+import '../factories/enemy_factory.dart';
+import '../config/enemy_spawn_config.dart';
 
 class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
   final PlayerShip player;
@@ -37,9 +39,10 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
   void startNextWave() {
     isWaveActive = true;
     enemiesSpawnedInWave = 0;
+    spawnTimer = 0; // Reset spawn timer to start spawning immediately
 
-    // Every 10th wave is a boss wave
-    isBossWave = currentWave % 10 == 0;
+    // Every 5th wave is a boss wave
+    isBossWave = currentWave % 5 == 0;
 
     if (isBossWave) {
       enemiesToSpawnInWave = 1; // Only spawn boss
@@ -79,22 +82,30 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
         spawnTimer = 0;
       }
 
-      // Check if wave is complete (all enemies killed)
-      final enemyCount = gameRef.world.children.whereType<EnemyShip>().length;
+      // Check if wave is complete (all enemies killed OR timer expired)
+      final enemyCount = gameRef.world.children.whereType<BaseEnemy>().length;
       final bossCount = gameRef.world.children.whereType<BossShip>().length;
+      final timerExpired = gameRef.statsManager.waveTime <= 0;
+      final allEnemiesKilled = (enemyCount == 0 && bossCount == 0);
 
+      // Wave completes when: all enemies spawned AND (all killed OR timer expired)
       if (enemiesSpawnedInWave >= enemiesToSpawnInWave &&
-          enemyCount == 0 &&
-          bossCount == 0) {
-        // Wave complete
+          (allEnemiesKilled || timerExpired)) {
+        // Wave complete - either all enemies killed or time ran out
         isWaveActive = false;
         waveTimer = 0;
         currentWave++;
+
+        if (timerExpired) {
+          print('[EnemyManager] Wave ${currentWave - 1} completed - TIME EXPIRED');
+        } else {
+          print('[EnemyManager] Wave ${currentWave - 1} completed - ALL ENEMIES DEFEATED');
+        }
       }
     } else {
       // Delay between waves
       waveTimer += dt;
-      if (waveTimer >= waveDelay) {
+      if (waveTimer >= waveDelay && !isWaveActive) {
         startNextWave();
       }
     }
@@ -112,16 +123,15 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
     final boss = BossShip(
       position: spawnPos,
       player: player,
+      wave: currentWave, // Boss scales with wave
       color: const Color(0xFFFF0000),
-      health: 300 + (currentWave * 50), // Boss gets stronger each time
-      speed: 30,
-      lootValue: 25,
     );
 
     gameRef.world.add(boss);
   }
 
-  void spawnEnemy() {
+
+  Vector2 getRandomSpawnPosition() {
     // Random spawn position around player in world coordinates
     final side = random.nextInt(4);
     Vector2 spawnPos;
@@ -158,48 +168,20 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
         spawnPos = playerPos.clone();
     }
 
-    // Random enemy type
-    final shapes = EnemyShape.values;
-    final shape = shapes[random.nextInt(shapes.length)];
+    return spawnPos;
+  }
 
-    // Different colors for different shapes
-    Color color;
-    double health;
-    int lootValue;
-    double speed;
+  void spawnEnemy() {
+    final spawnPos = getRandomSpawnPosition();
 
-    switch (shape) {
-      case EnemyShape.triangle:
-        color = const Color(0xFFFF0000);
-        health = 20 + (currentWave * 2);
-        lootValue = 1;
-        speed = 60 + (currentWave * 2);
-        break;
-      case EnemyShape.square:
-        color = const Color(0xFFFF8800);
-        health = 40 + (currentWave * 3);
-        lootValue = 2;
-        speed = 40 + (currentWave * 1.5);
-        break;
-      case EnemyShape.pentagon:
-        color = const Color(0xFFFF00FF);
-        health = 60 + (currentWave * 4);
-        lootValue = 3;
-        speed = 30 + currentWave.toDouble();
-        break;
-    }
+    // Get spawn weights for current wave from config
+    final weights = EnemySpawnConfig.getWeightsForWave(currentWave);
 
-    final enemy = EnemyShip(
-      position: spawnPos,
-      player: player,
-      shape: shape,
-      color: color,
-      health: health,
-      lootValue: lootValue,
-      speed: speed,
-    );
+    // Create enemy using factory with weighted random selection and entity scale
+    final enemy = EnemyFactory.createWeightedRandom(player, currentWave, spawnPos, weights, scale: gameRef.entityScale);
 
     gameRef.world.add(enemy);
+    print('[EnemyManager] Spawned ${enemy.runtimeType} at wave $currentWave with scale ${gameRef.entityScale}');
   }
 
   int getCurrentWave() => currentWave;

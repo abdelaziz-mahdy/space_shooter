@@ -4,39 +4,37 @@ import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import 'package:flutter/material.dart';
 import '../game/space_shooter_game.dart';
-import 'base_rendered_component.dart';
-import 'loot.dart';
+import 'enemies/base_enemy.dart';
 import 'player_ship.dart';
 
-class BossShip extends BaseRenderedComponent
-    with HasGameRef<SpaceShooterGame>, CollisionCallbacks {
-  final PlayerShip player;
-  final Color color;
-  double health;
-  final double maxHealth;
-  final double speed;
-  final int lootValue;
+class BossShip extends BaseEnemy {
+  final bool isBoss = true; // Flag to identify boss enemies
 
   BossShip({
     required Vector2 position,
-    required this.player,
-    this.color = const Color(0xFFFF0000),
-    this.health = 500,
-    this.speed = 30,
-    this.lootValue = 20,
-  }) : maxHealth = health,
-       super(position: position, size: Vector2(80, 80));
+    required PlayerShip player,
+    required int wave,
+    Color color = const Color(0xFFFF0000),
+  }) : super(
+          position: position,
+          player: player,
+          wave: wave,
+          health: 300 + (wave * 50), // Boss scales with wave
+          speed: 37.5, // Increased from 30 (25% increase)
+          lootValue: 25,
+          color: color,
+          size: Vector2(80, 80),
+          contactDamage: 30.0,
+        );
 
   @override
-  Future<void> onLoad() async {
-    await super.onLoad();
-    anchor = Anchor.center;
-
-    // Hexagon shape for boss (from top-left coordinate system)
+  Future<void> addHitbox() async {
+    // Hexagon shape for boss
     final sides = 6;
     final points = <Vector2>[];
     final centerX = size.x / 2;
     final centerY = size.y / 2;
+
     for (int i = 0; i < sides; i++) {
       final angle = (i * 2 * pi / sides) - pi / 2;
       points.add(Vector2(
@@ -48,53 +46,13 @@ class BossShip extends BaseRenderedComponent
   }
 
   @override
-  void update(double dt) {
-    super.update(dt);
-
-    // Don't update if game is paused
-    if (gameRef.isPaused) return;
-
+  void updateMovement(double dt) {
     // Move towards player's current position
     final direction = (player.position - position).normalized();
-    position += direction * speed * dt;
+    position += direction * getEffectiveSpeed() * dt;
 
     // Rotate to face movement direction
     angle = atan2(direction.y, direction.x) + pi / 2;
-  }
-
-  void takeDamage(double damage) {
-    health -= damage;
-    if (health <= 0) {
-      die();
-    }
-  }
-
-  void die() {
-    // Drop lots of loot
-    for (int i = 0; i < lootValue; i++) {
-      final loot = Loot(
-        position: position.clone() + Vector2.random() * 50 - Vector2.all(25),
-        xpValue: 5,
-      );
-      gameRef.world.add(loot);
-    }
-
-    // Increment kill count
-    gameRef.statsManager.incrementKills();
-
-    removeFromParent();
-  }
-
-  @override
-  void onCollisionStart(
-    Set<Vector2> intersectionPoints,
-    PositionComponent other,
-  ) {
-    super.onCollisionStart(intersectionPoints, other);
-
-    if (other is PlayerShip) {
-      other.takeDamage(30);
-    }
   }
 
   @override

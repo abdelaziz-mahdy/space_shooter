@@ -7,9 +7,11 @@ import 'package:flutter/rendering.dart';
 import '../utils/position_util.dart';
 import '../utils/visual_center_mixin.dart';
 import 'base_rendered_component.dart';
-import 'enemy_ship.dart';
-import 'bullet.dart';
+import 'enemies/base_enemy.dart';
+import 'damage_number.dart';
 import '../game/space_shooter_game.dart';
+import '../weapons/weapon_manager.dart';
+import 'orbital_drone.dart';
 
 class PlayerShip extends BaseRenderedComponent
     with HasGameRef<SpaceShooterGame>, CollisionCallbacks, HasVisualCenter {
@@ -17,11 +19,14 @@ class PlayerShip extends BaseRenderedComponent
   double shootTimer = 0;
   double shootInterval = baseShootInterval;
 
-  EnemyShip? targetEnemy;
+  // Weapon system
+  late WeaponManager weaponManager;
+
+  PositionComponent? targetEnemy;
   double targetRange = 300;
 
   // Movement
-  double moveSpeed = 250;
+  double moveSpeed = 162.5; // Reduced from 250 (35% reduction)
   Vector2 velocity = Vector2.zero();
   final Set<LogicalKeyboardKey> _pressedKeys = {};
 
@@ -29,7 +34,7 @@ class PlayerShip extends BaseRenderedComponent
   Vector2? touchStartPosition;
   Vector2? currentTouchPosition;
 
-  // Upgradeable stats
+  // Upgradeable stats - Basic
   double damage = 10;
   double bulletSpeed = 400;
   int projectileCount = 1;
@@ -37,13 +42,69 @@ class PlayerShip extends BaseRenderedComponent
   double health = 100;
   double magnetRadius = 100; // Default attraction radius
 
-  PlayerShip({required Vector2 position})
-    : super(position: position, size: Vector2(30, 30));
+  // Upgradeable stats - Advanced
+  double healthRegen = 0; // HP per second
+  int bulletPierce = 0; // Number of enemies a bullet can hit
+  double critChance = 0; // Chance for critical hit (0.0 - 1.0)
+  double critDamage = 2.0; // Critical hit multiplier (default 2x)
+  double lifesteal = 0; // Percentage of damage healed (0.0 - 1.0)
+  double xpMultiplier = 1.0; // XP gain multiplier
+  double damageReduction = 0; // Damage reduction percentage (0.0 - 1.0)
+  double dodgeChance = 0; // Chance to dodge attacks (0.0 - 1.0)
+
+  // Upgradeable stats - Special
+  double explosionRadius = 0; // Explosion radius on bullet hit
+  double homingStrength = 0; // Homing bullet strength
+  double freezeChance = 0; // Chance to freeze enemy (0.0 - 1.0)
+  double bulletSize = 5.0; // Bullet size multiplier
+  int orbitalCount = 0; // Number of orbital shooters
+  int shieldLayers = 0; // Energy shield layers
+  double luck = 0; // Better loot drops (0.0 - 1.0+)
+
+  // Scaling stats
+  double damageMultiplier = 1.0;
+  double attackSizeMultiplier = 1.0;
+  double cooldownReduction = 0;
+
+  // Time/Wave mechanics
+  double berserkThreshold = 0.3;
+  double berserkMultiplier = 0;
+  double killStreakBonus = 0;
+  int killStreakCount = 0;
+  double? globalTimeScale; // Time scale multiplier (affects enemy speed)
+
+  // Defensive mechanics
+  double thornsPercent = 0;
+  double lastStandShield = 0;
+  bool hasResurrected = false;
+
+  // Offensive mechanics
+  double chainLightningChance = 0;
+  int chainCount = 0;
+  double bleedDamage = 0;
+  bool hasDoubleShot = false;
+  double doubleShotChance = 0;
+
+  // Utility
+  double resurrectionChance = 0;
+  double shieldRegenTimer = 0;
+  double shieldRegenInterval = 15.0; // Regenerate shield every 15 seconds
+
+  // Orbital drones list
+  final List<OrbitalDrone> _orbitals = [];
+  int _lastOrbitalCount = 0;
+
+  PlayerShip({required Vector2 position, double scale = 1.0})
+    : super(position: position, size: Vector2(30, 30) * scale);
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
     anchor = Anchor.center;
+
+    // Initialize weapon manager
+    weaponManager = WeaponManager();
+    add(weaponManager);
 
     // Triangle hitbox matching the rendered triangle (from top-left coordinate system)
     final h = size.y;
@@ -93,6 +154,9 @@ class PlayerShip extends BaseRenderedComponent
     // Don't update if game is paused
     if (gameRef.isPaused) return;
 
+    // Update orbital drones when count changes
+    _updateOrbitals();
+
     // Handle keyboard movement
     velocity = Vector2.zero();
 
@@ -131,6 +195,18 @@ class PlayerShip extends BaseRenderedComponent
       // No bounds clamping - infinite world with camera following player
     }
 
+    // Health regeneration
+    if (healthRegen > 0) {
+      health = min(health + healthRegen * dt, maxHealth);
+    }
+
+    // Shield regeneration timer
+    shieldRegenTimer += dt;
+    if (shieldRegenTimer >= shieldRegenInterval && shieldRegenInterval > 0) {
+      shieldLayers++;
+      shieldRegenTimer = 0;
+    }
+
     // Find nearest enemy
     findNearestEnemy();
 
@@ -155,11 +231,13 @@ class PlayerShip extends BaseRenderedComponent
   }
 
   void findNearestEnemy() {
-    EnemyShip? nearest;
+    PositionComponent? nearest;
     double nearestDistance = double.infinity;
 
-    final enemies = gameRef.world.children.whereType<EnemyShip>();
-    for (final enemy in enemies) {
+    // Get all enemies (BaseEnemy includes BossShip and all enemy types)
+    final allEnemies = gameRef.world.children.whereType<BaseEnemy>();
+
+    for (final enemy in allEnemies) {
       // Use PositionUtil for consistent distance calculation
       final distance = PositionUtil.getDistance(this, enemy);
       if (distance < nearestDistance && distance <= targetRange) {
@@ -177,47 +255,60 @@ class PlayerShip extends BaseRenderedComponent
     // Use PositionUtil for consistent direction calculation
     final direction = PositionUtil.getDirectionTo(this, targetEnemy!);
 
-    // Spawn bullet from the triangle's tip (accounting for rotation)
-    // Tip is at (0, -h/2) in local coordinates
-    final tipLocalOffset = Vector2(0, -size.y / 2);
-    final cosA = cos(angle);
-    final sinA = sin(angle);
-    final rotatedTipX = tipLocalOffset.x * cosA - tipLocalOffset.y * sinA;
-    final rotatedTipY = tipLocalOffset.x * sinA + tipLocalOffset.y * cosA;
-    final bulletSpawnPosition = position + Vector2(rotatedTipX, rotatedTipY);
-
-    if (projectileCount == 1) {
-      final bullet = Bullet(
-        position: bulletSpawnPosition,
-        direction: direction,
-        damage: damage,
-        speed: bulletSpeed,
-      );
-      gameRef.world.add(bullet);
-    } else {
-      // Multiple projectiles in a spread pattern
-      final angleSpread = 0.2;
-      final baseAngle = atan2(direction.y, direction.x);
-
-      for (int i = 0; i < projectileCount; i++) {
-        final offset = (i - (projectileCount - 1) / 2) * angleSpread;
-        final bulletAngle = baseAngle + offset;
-        final bulletDirection = Vector2(cos(bulletAngle), sin(bulletAngle));
-
-        final bullet = Bullet(
-          position: bulletSpawnPosition.clone(),
-          direction: bulletDirection,
-          damage: damage,
-          speed: bulletSpeed,
-        );
-        gameRef.world.add(bullet);
-      }
-    }
+    // Use weapon manager to fire current weapon
+    weaponManager.fireCurrentWeapon(this, direction, targetEnemy);
   }
 
   void takeDamage(double damage) {
-    health -= damage;
+    // Check for dodge
+    if (dodgeChance > 0 && Random().nextDouble() < dodgeChance) {
+      // Show "DODGE!" text
+      final dodgeText = DamageNumber(
+        position: position.clone(),
+        damage: 0,
+        isPlayerDamage: false,
+      );
+      gameRef.world.add(dodgeText);
+      return; // Dodged the attack
+    }
+
+    // Shield blocks damage
+    if (shieldLayers > 0) {
+      shieldLayers--;
+      // Show "BLOCKED!" text
+      final blockedText = DamageNumber(
+        position: position.clone(),
+        damage: 0,
+        isPlayerDamage: false,
+      );
+      gameRef.world.add(blockedText);
+      return; // Shield absorbed hit
+    }
+
+    // Apply damage reduction
+    final actualDamage = damage * (1.0 - damageReduction);
+
+    // Spawn damage number showing player damage
+    final damageNumber = DamageNumber(
+      position: position.clone(),
+      damage: actualDamage,
+      isPlayerDamage: true,
+    );
+    gameRef.world.add(damageNumber);
+
+    // Thorns - reflect damage back to attacker (if applicable)
+    // Note: This is a placeholder - actual implementation would need enemy reference
+
+    health -= actualDamage;
+
     if (health <= 0) {
+      // Check for resurrection
+      if (!hasResurrected && resurrectionChance > 0 && Random().nextDouble() < resurrectionChance) {
+        health = maxHealth * 0.25; // Resurrect with 25% health
+        hasResurrected = true;
+        return;
+      }
+
       health = 0;
       gameRef.gameOver();
     }
@@ -225,6 +316,29 @@ class PlayerShip extends BaseRenderedComponent
 
   @override
   void renderShape(Canvas canvas) {
+    // Draw shield layers first (behind ship)
+    if (shieldLayers > 0) {
+      final center = Offset(size.x / 2, size.y / 2);
+
+      for (int i = 0; i < shieldLayers; i++) {
+        final shieldRadius = (size.x / 2) + 8 + (i * 6);
+        final shieldPaint = Paint()
+          ..color = const Color(0xFF00FFFF).withOpacity(0.3)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3.0;
+
+        canvas.drawCircle(center, shieldRadius, shieldPaint);
+
+        // Add glow effect
+        final glowPaint = Paint()
+          ..color = const Color(0xFF00FFFF).withOpacity(0.1)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 6.0;
+
+        canvas.drawCircle(center, shieldRadius, glowPaint);
+      }
+    }
+
     // Draw from top-left (0,0) - anchor will handle centering
     // Triangle pointing up with centroid offset
     final h = size.y;
@@ -279,6 +393,31 @@ class PlayerShip extends BaseRenderedComponent
       ),
       healthPaint,
     );
+  }
+
+  /// Update orbital drones when count changes
+  void _updateOrbitals() {
+    if (orbitalCount == _lastOrbitalCount) return;
+
+    // Remove all existing orbitals
+    for (final orbital in _orbitals) {
+      orbital.removeFromParent();
+    }
+    _orbitals.clear();
+
+    // Add new orbitals
+    for (int i = 0; i < orbitalCount; i++) {
+      final orbital = OrbitalDrone(
+        player: this,
+        index: i,
+        totalOrbitals: orbitalCount,
+      );
+      gameRef.world.add(orbital);
+      _orbitals.add(orbital);
+    }
+
+    _lastOrbitalCount = orbitalCount;
+    print('[PlayerShip] Updated orbitals: $orbitalCount drones');
   }
 
 }

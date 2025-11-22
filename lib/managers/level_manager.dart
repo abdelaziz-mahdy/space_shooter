@@ -2,28 +2,14 @@ import 'dart:math';
 import 'package:flame/components.dart';
 import '../game/space_shooter_game.dart';
 import '../upgrades/upgrade.dart';
+import '../config/weapon_unlock_config.dart';
 
 class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
   int currentLevel = 1;
   int currentXP = 0;
   int xpToNextLevel = 10;
-  bool _hasShownInitialUpgrade = false;
 
   LevelManager({required SpaceShooterGame game});
-
-  @override
-  void update(double dt) {
-    super.update(dt);
-
-    // Show upgrade overlay on first frame for testing
-    if (!_hasShownInitialUpgrade && isMounted) {
-      _hasShownInitialUpgrade = true;
-      // Delay slightly to ensure game is fully loaded
-      Future.delayed(Duration(milliseconds: 500), () {
-        showUpgradeSelection();
-      });
-    }
-  }
 
   void addXP(int amount) {
     currentXP += amount;
@@ -51,18 +37,73 @@ class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
   }
 
   List<Upgrade> getRandomUpgrades(int count) {
-    final allUpgrades = UpgradeFactory.getAllUpgrades();
-
     final random = Random();
-    final selected = <Upgrade>[];
-    final available = List<Upgrade>.from(allUpgrades);
+    final player = gameRef.player;
 
-    for (int i = 0; i < count && available.isNotEmpty; i++) {
-      final index = random.nextInt(available.length);
-      selected.add(available.removeAt(index));
+    // Check if this level should offer weapon unlocks
+    final weaponUpgrades = _getWeaponUpgradesForLevel();
+
+    // Get regular random upgrades and filter by validity
+    final regularUpgrades = UpgradeFactory.getRandomUpgradesByRarity(count * 2) // Get more to account for filtering
+        .where((upgrade) => upgrade.isValidFor(player))
+        .toList();
+
+    if (weaponUpgrades.isNotEmpty) {
+      // Mix weapon upgrades with regular upgrades
+      final allUpgrades = [...weaponUpgrades, ...regularUpgrades];
+
+      // Shuffle and take the requested count
+      allUpgrades.shuffle(random);
+      return allUpgrades.take(count).toList();
     }
 
-    return selected;
+    // No weapon upgrades this level, just return regular upgrades (filtered and limited to count)
+    return regularUpgrades.take(count).toList();
+  }
+
+  List<Upgrade> _getWeaponUpgradesForLevel() {
+    final player = gameRef.player;
+    final unlockedWeapons = player.weaponManager.getUnlockedWeapons();
+
+    // Level 5: Offer choice between Plasma Spreader and Railgun
+    if (currentLevel == 5) {
+      final options = <Upgrade>[];
+
+      if (!unlockedWeapons.contains('plasma_spreader')) {
+        options.add(WeaponUnlockUpgrade(weaponId: 'plasma_spreader'));
+      }
+
+      if (!unlockedWeapons.contains('railgun')) {
+        options.add(WeaponUnlockUpgrade(weaponId: 'railgun'));
+      }
+
+      // If both are already unlocked, return empty (fall through to normal upgrades)
+      return options;
+    }
+
+    // Level 10: Offer the weapon not chosen at level 5
+    if (currentLevel == 10) {
+      final options = <Upgrade>[];
+
+      if (!unlockedWeapons.contains('plasma_spreader')) {
+        options.add(WeaponUnlockUpgrade(weaponId: 'plasma_spreader'));
+      }
+
+      if (!unlockedWeapons.contains('railgun')) {
+        options.add(WeaponUnlockUpgrade(weaponId: 'railgun'));
+      }
+
+      return options;
+    }
+
+    // Level 15: Offer Missile Launcher
+    if (currentLevel == 15) {
+      if (!unlockedWeapons.contains('missile_launcher')) {
+        return [WeaponUnlockUpgrade(weaponId: 'missile_launcher')];
+      }
+    }
+
+    return [];
   }
 
   int getLevel() => currentLevel;
