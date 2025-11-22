@@ -100,8 +100,8 @@ class DamageNumber extends PositionComponent with HasGameRef<SpaceShooterGame> {
     // Format damage text
     String damageText;
     if (damage == 0 && !isPlayerDamage) {
-      // Special case for dodge/block
-      damageText = 'DODGE!';
+      // Special case for block
+      damageText = 'BLOCKED!';
     } else if (isHealing) {
       damageText = '+${damage.toStringAsFixed(0)}';
     } else {

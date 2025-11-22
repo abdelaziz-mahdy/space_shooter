@@ -50,7 +50,6 @@ class PlayerShip extends BaseRenderedComponent
   double lifesteal = 0; // Percentage of damage healed (0.0 - 1.0)
   double xpMultiplier = 1.0; // XP gain multiplier
   double damageReduction = 0; // Damage reduction percentage (0.0 - 1.0)
-  double dodgeChance = 0; // Chance to dodge attacks (0.0 - 1.0)
 
   // Upgradeable stats - Special
   double explosionRadius = 0; // Explosion radius on bullet hit
@@ -58,7 +57,8 @@ class PlayerShip extends BaseRenderedComponent
   double freezeChance = 0; // Chance to freeze enemy (0.0 - 1.0)
   double bulletSize = 5.0; // Bullet size multiplier
   int orbitalCount = 0; // Number of orbital shooters
-  int shieldLayers = 0; // Energy shield layers
+  int shieldLayers = 0; // Energy shield layers (starts at 0)
+  int maxShieldLayers = 1; // Maximum shield layers
   double luck = 0; // Better loot drops (0.0 - 1.0+)
 
   // Scaling stats
@@ -203,7 +203,7 @@ class PlayerShip extends BaseRenderedComponent
     // Shield regeneration timer
     shieldRegenTimer += dt;
     if (shieldRegenTimer >= shieldRegenInterval && shieldRegenInterval > 0) {
-      shieldLayers++;
+      shieldLayers = min(shieldLayers + 1, maxShieldLayers);
       shieldRegenTimer = 0;
     }
 
@@ -260,18 +260,6 @@ class PlayerShip extends BaseRenderedComponent
   }
 
   void takeDamage(double damage) {
-    // Check for dodge
-    if (dodgeChance > 0 && Random().nextDouble() < dodgeChance) {
-      // Show "DODGE!" text
-      final dodgeText = DamageNumber(
-        position: position.clone(),
-        damage: 0,
-        isPlayerDamage: false,
-      );
-      gameRef.world.add(dodgeText);
-      return; // Dodged the attack
-    }
-
     // Shield blocks damage
     if (shieldLayers > 0) {
       shieldLayers--;

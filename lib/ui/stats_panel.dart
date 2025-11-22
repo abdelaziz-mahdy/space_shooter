@@ -92,8 +92,8 @@ class StatsPanel extends StatelessWidget {
                   _buildStat('Max Health', player.maxHealth.toStringAsFixed(0), scale),
                   _buildStat('Health Regen', '+${player.healthRegen.toStringAsFixed(1)}/s', scale),
                   _buildStat('Armor', '${(player.damageReduction * 100).toStringAsFixed(1)}%', scale),
-                  _buildStat('Dodge Chance', '${(player.dodgeChance * 100).toStringAsFixed(1)}%', scale),
-                  _buildStat('Shield Layers', '${player.shieldLayers}', scale),
+                  _buildStat('Shield Layers', '${player.shieldLayers}/${player.maxShieldLayers}', scale),
+                  _buildStat('Max Shield Layers', '${player.maxShieldLayers}', scale),
 
                   SizedBox(height: 12 * scale),
 

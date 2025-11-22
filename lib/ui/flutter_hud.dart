@@ -308,16 +308,16 @@ class _FlutterHUDState extends State<FlutterHUD> with SingleTickerProviderStateM
             ),
             SizedBox(height: 8 * scale),
 
-            // Second row: Dodge and Damage
+            // Second row: Shield and Damage
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Dodge
+                // Shield Layers
                 _buildCompactStat(
-                  Icons.flash_on,
-                  const Color(0xFFFFFF00),
-                  'Dodge',
-                  '${(player.dodgeChance * 100).toStringAsFixed(0)}%',
+                  Icons.shield_outlined,
+                  const Color(0xFF00FFFF),
+                  'Shield',
+                  '${player.shieldLayers}/${player.maxShieldLayers}',
                   scale,
                   fontSize,
                 ),

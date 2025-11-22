@@ -358,25 +358,27 @@ class ArmorUpgrade extends Upgrade {
   List<String> getStatusChanges() => ['+${(damageReduction * 100).toInt()}% damage reduction'];
 }
 
-/// Increase dodge chance
-class DodgeUpgrade extends Upgrade {
-  final double dodgeChance;
+/// Increase maximum shield layers
+class MaxShieldUpgrade extends Upgrade {
+  final int maxShieldIncrease;
 
-  DodgeUpgrade({this.dodgeChance = 0.1})
+  MaxShieldUpgrade({this.maxShieldIncrease = 1})
       : super(
-          id: 'dodge',
-          name: 'Evasion',
-          description: '+${(dodgeChance * 100).toInt()}% Dodge Chance',
-          icon: '💨',
+          id: 'max_shield',
+          name: 'Shield Capacity',
+          description: 'Increases maximum shield layers by +$maxShieldIncrease',
+          icon: '🛡️',
         );
 
   @override
   void apply(PlayerShip player) {
-    player.dodgeChance += dodgeChance;
+    player.maxShieldLayers += maxShieldIncrease;
+    // Clamp current shields to new max
+    player.shieldLayers = min(player.shieldLayers, player.maxShieldLayers);
   }
 
   @override
-  List<String> getStatusChanges() => ['+${(dodgeChance * 100).toInt()}% dodge chance'];
+  List<String> getStatusChanges() => ['+$maxShieldIncrease max shield capacity'];
 }
 
 /// Bullets explode on hit
@@ -498,7 +500,7 @@ class ShieldUpgrade extends Upgrade {
 
   @override
   void apply(PlayerShip player) {
-    player.shieldLayers += shieldLayers;
+    player.shieldLayers = min(player.shieldLayers + shieldLayers, player.maxShieldLayers);
   }
 
   @override
@@ -562,7 +564,7 @@ class ResilientShieldsUpgrade extends Upgrade {
   @override
   void apply(PlayerShip player) {
     player.shieldRegenInterval = 15.0;
-    player.shieldLayers++; // Also add one shield layer
+    player.shieldLayers = min(player.shieldLayers + 1, player.maxShieldLayers); // Also add one shield layer
   }
 
   @override
@@ -1041,7 +1043,7 @@ class UpgradeFactory {
       LifestealUpgrade(),
       XPBoostUpgrade(),
       ArmorUpgrade(),
-      DodgeUpgrade(),
+      MaxShieldUpgrade(),
 
       // Special upgrades (Common/Rare)
       ExplosiveShotsUpgrade(),
