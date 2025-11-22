@@ -58,7 +58,7 @@ class PlayerShip extends BaseRenderedComponent
   double bulletSize = 5.0; // Bullet size multiplier
   int orbitalCount = 0; // Number of orbital shooters
   int shieldLayers = 0; // Energy shield layers (starts at 0)
-  int maxShieldLayers = 1; // Maximum shield layers
+  int maxShieldLayers = 0; // Maximum shield layers (starts at 0, upgrade to increase)
   double luck = 0; // Better loot drops (0.0 - 1.0+)
 
   // Scaling stats
@@ -381,6 +381,89 @@ class PlayerShip extends BaseRenderedComponent
       ),
       healthPaint,
     );
+
+    // Draw XP bar below health bar
+    final xpBarY = healthBarY + healthBarHeight + 2;
+    final xpBarWidth = healthBarWidth;
+    final xpBarHeight = 3.0;
+
+    final xpBgPaint = Paint()..color = const Color(0xFF333333);
+    canvas.drawRect(
+      Rect.fromLTWH(
+        (size.x - xpBarWidth) / 2,
+        xpBarY,
+        xpBarWidth,
+        xpBarHeight,
+      ),
+      xpBgPaint,
+    );
+
+    final xpPercent = gameRef.levelManager.getXPProgress();
+    final xpPaint = Paint()..color = const Color(0xFF00FFFF); // Cyan
+    canvas.drawRect(
+      Rect.fromLTWH(
+        (size.x - xpBarWidth) / 2,
+        xpBarY,
+        xpBarWidth * xpPercent,
+        xpBarHeight,
+      ),
+      xpPaint,
+    );
+
+    // Draw level text above health bar
+    final levelText = 'Lv${gameRef.levelManager.getLevel()}';
+    final levelTextPainter = TextPainter(
+      text: TextSpan(
+        text: levelText,
+        style: const TextStyle(
+          color: Color(0xFFFFFFFF),
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          shadows: [
+            Shadow(
+              color: Color(0xFF000000),
+              offset: Offset(1, 1),
+              blurRadius: 2,
+            ),
+          ],
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    levelTextPainter.layout();
+    levelTextPainter.paint(
+      canvas,
+      Offset((size.x - levelTextPainter.width) / 2, healthBarY - 12),
+    );
+
+    // Draw shield indicator only if player has shield capacity
+    if (maxShieldLayers > 0) {
+      final shieldY = xpBarY + xpBarHeight + 2;
+      final shieldText = '🛡️ $shieldLayers/$maxShieldLayers';
+      final shieldTextPainter = TextPainter(
+        text: TextSpan(
+          text: shieldText,
+          style: const TextStyle(
+            color: Color(0xFF00FFFF),
+            fontSize: 9,
+            fontWeight: FontWeight.bold,
+            shadows: [
+              Shadow(
+                color: Color(0xFF000000),
+                offset: Offset(1, 1),
+                blurRadius: 2,
+              ),
+            ],
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      );
+      shieldTextPainter.layout();
+      shieldTextPainter.paint(
+        canvas,
+        Offset((size.x - shieldTextPainter.width) / 2, shieldY),
+      );
+    }
   }
 
   /// Update orbital drones when count changes
