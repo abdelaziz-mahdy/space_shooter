@@ -108,44 +108,6 @@ class _FlutterHUDState extends State<FlutterHUD> with SingleTickerProviderStateM
                     ),
                   ),
                 ),
-
-                // Bottom center - Current weapon
-                Positioned(
-                  bottom: 20,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16 * scale,
-                        vertical: 8 * scale,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.6),
-                        borderRadius: BorderRadius.circular(8 * scale),
-                        border: Border.all(
-                          color: const Color(0xFF00FFFF).withOpacity(0.5),
-                          width: 1,
-                        ),
-                      ),
-                      child: Text(
-                        player.weaponManager.currentWeapon.name.toUpperCase(),
-                        style: TextStyle(
-                          color: const Color(0xFF00FFFF),
-                          fontSize: textSize,
-                          fontWeight: FontWeight.bold,
-                          shadows: const [
-                            Shadow(
-                              color: Colors.black,
-                              offset: Offset(1, 1),
-                              blurRadius: 2,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
               ],
             ),
           );
