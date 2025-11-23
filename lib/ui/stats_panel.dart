@@ -6,11 +6,13 @@ import '../game/space_shooter_game.dart';
 class StatsPanel extends StatelessWidget {
   final SpaceShooterGame game;
   final bool isVisible;
+  final VoidCallback? onClose;
 
   const StatsPanel({
     super.key,
     required this.game,
     this.isVisible = true,
+    this.onClose,
   });
 
   @override
@@ -21,18 +23,31 @@ class StatsPanel extends StatelessWidget {
 
     final player = game.player;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Calculate responsive scale based on screen width
-        final scale = (constraints.maxWidth / 800).clamp(0.6, 1.2);
-        final panelWidth = (280.0 * scale).clamp(200.0, 350.0);
-        final maxHeight = constraints.maxHeight * 0.8; // Max 80% of screen height
+    return GestureDetector(
+      onTap: () {
+        // Close stats panel when clicking outside
+        if (onClose != null) {
+          onClose!();
+        }
+      },
+      child: Container(
+        color: Colors.transparent, // Makes entire background tappable
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Calculate responsive scale based on screen width
+            final scale = (constraints.maxWidth / 800).clamp(0.6, 1.2);
+            final panelWidth = (280.0 * scale).clamp(200.0, 350.0);
+            final maxHeight = constraints.maxHeight * 0.8; // Max 80% of screen height
 
-        return Align(
-          alignment: Alignment.topRight,
-          child: Padding(
-            padding: EdgeInsets.only(right: 10 * scale, top: 100 * scale),
-            child: Container(
+            return Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: EdgeInsets.only(right: 10 * scale, top: 100 * scale),
+                child: GestureDetector(
+                  onTap: () {
+                    // Stop propagation - clicking inside panel shouldn't close it
+                  },
+                  child: Container(
             width: panelWidth,
             constraints: BoxConstraints(
               maxHeight: maxHeight,
@@ -127,9 +142,12 @@ class StatsPanel extends StatelessWidget {
               ),
             ),
           ),
-          ),
-        );
-      },
+                ),
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 

@@ -208,7 +208,11 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
 
             // Stats Panel (toggleable with TAB key or from settings)
             if (!_showGameOver && !_showUpgradeDialog && !_showSettingsDialog && game.hasLoaded)
-              StatsPanel(game: game, isVisible: _showStatsPanel),
+              StatsPanel(
+                game: game,
+                isVisible: _showStatsPanel,
+                onClose: _toggleStatsPanel,
+              ),
 
             // Settings Dialog
             if (!_showGameOver && !_showUpgradeDialog && _showSettingsDialog && game.hasLoaded)
