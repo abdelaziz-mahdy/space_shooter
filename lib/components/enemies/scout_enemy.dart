@@ -56,11 +56,21 @@ class ScoutEnemy extends BaseEnemy {
     movementTimer += dt;
 
     // Check if should flee (health < 30%)
-    isFleeing = health < maxHealth * 0.3;
+    final shouldFlee = health < maxHealth * 0.3;
+
+    // Check distance from player - if too far (>800 units), stop fleeing and return
+    final distanceFromPlayer = PositionUtil.getDistance(this, player);
+    final tooFar = distanceFromPlayer > 800;
+
+    isFleeing = shouldFlee && !tooFar;
 
     if (isFleeing) {
       // Flee away from player
       final direction = PositionUtil.getDirectionTo(player, this);
+      position += direction * getEffectiveSpeed() * dt;
+    } else if (tooFar) {
+      // Too far from player, move back towards player
+      final direction = PositionUtil.getDirectionTo(this, player);
       position += direction * getEffectiveSpeed() * dt;
     } else {
       // Zigzag movement towards player
