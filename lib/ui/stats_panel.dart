@@ -28,10 +28,11 @@ class StatsPanel extends StatelessWidget {
         final panelWidth = (280.0 * scale).clamp(200.0, 350.0);
         final maxHeight = constraints.maxHeight * 0.8; // Max 80% of screen height
 
-        return Positioned(
-          right: 10 * scale,
-          top: 100 * scale,
-          child: Container(
+        return Align(
+          alignment: Alignment.topRight,
+          child: Padding(
+            padding: EdgeInsets.only(right: 10 * scale, top: 100 * scale),
+            child: Container(
             width: panelWidth,
             constraints: BoxConstraints(
               maxHeight: maxHeight,
@@ -125,6 +126,7 @@ class StatsPanel extends StatelessWidget {
                 ],
               ),
             ),
+          ),
           ),
         );
       },

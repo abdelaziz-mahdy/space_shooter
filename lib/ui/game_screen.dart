@@ -131,7 +131,15 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
   }
 
   void _returnToMainMenu() {
-    Navigator.of(context).pop();
+    // Close settings dialog if open
+    if (_showSettingsDialog) {
+      setState(() {
+        _showSettingsDialog = false;
+      });
+    }
+
+    // Navigate back to main menu, replacing the current route
+    Navigator.of(context).pushReplacementNamed('/');
   }
 
   void _restartGame() {
