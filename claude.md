@@ -2,6 +2,54 @@
 
 ## ⚠️ CRITICAL RULES
 
+### **RESPONSIVE DESIGN - USE PERCENTAGES, NOT CONDITIONALS!**
+
+**Why:** Responsive UIs should scale naturally based on screen size, not use conditional logic to adjust values.
+
+**❌ NEVER DO THIS:**
+```dart
+// BAD: Conditional adjustments and clamping
+final scaleFactor = (size.x / 800.0).clamp(0.7, 1.5);
+var cardWidth = (280.0 * scaleFactor).clamp(200.0, 400.0);
+var spacing = (30.0 * scaleFactor).clamp(15.0, 50.0);
+
+// Then checking if it fits and adjusting...
+if (totalWidth > size.x * 0.95) {
+  cardWidth = (availableWidth - spacing) / count;
+  if (cardWidth < 120) {
+    spacing = 8.0;
+    cardWidth = ...
+  }
+}
+```
+
+**✅ ALWAYS USE PERCENTAGE-BASED SIZING:**
+```dart
+// GOOD: Simple percentage-based responsive sizing
+final availableWidth = size.x * 0.9; // Use 90% of screen width
+final spacing = size.x * 0.02; // 2% of screen width
+
+// Calculate based on number of items
+final totalSpacing = spacing * (items.length - 1);
+final itemWidth = (availableWidth - totalSpacing) / items.length;
+final itemHeight = itemWidth * 1.4; // Maintain aspect ratio
+
+// Text sizes based on container width
+final titleFontSize = size.x * 0.06; // 6% of width
+final bodyFontSize = size.x * 0.03; // 3% of width
+final padding = size.x * 0.05; // 5% of width
+```
+
+**Benefits:**
+1. **Works on all screen sizes** - Automatically scales from mobile to desktop
+2. **No conditionals needed** - Clean, simple code
+3. **Predictable behavior** - Always uses the same percentage
+4. **Maintainable** - One formula instead of many clamp/if statements
+
+**Rule:** Use percentages of parent size for all UI dimensions. Let the math handle responsiveness.
+
+---
+
 ### **AVOID ENUMS AT ALL COSTS!**
 
 **Why:** Enums are rigid, non-extensible, and lead to switch statements scattered throughout the codebase. They violate OOP principles.

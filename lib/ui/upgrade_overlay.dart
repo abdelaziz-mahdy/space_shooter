@@ -29,27 +29,16 @@ class UpgradeOverlay extends PositionComponent
 
     print('[UpgradeOverlay] Size set to: $size');
 
-    // Create upgrade cards with responsive sizing
-    // Increased card dimensions to accommodate more text
-    final scaleFactor = (size.x / 800.0).clamp(0.5, 1.5);
-    var cardWidth = (280.0 * scaleFactor).clamp(200.0, 400.0);
-    var cardHeight = (380.0 * scaleFactor).clamp(280.0, 500.0);
-    final spacing = (30.0 * scaleFactor).clamp(15.0, 50.0);
+    // Responsive sizing: cards take up percentage of screen width
+    final availableWidth = size.x * 0.9; // Use 90% of screen width
+    final spacing = size.x * 0.02; // 2% of screen width for spacing
 
-    // Calculate total width and adjust if it exceeds screen width
-    var totalWidth =
-        (cardWidth * availableUpgrades.length) +
-        (spacing * (availableUpgrades.length - 1));
+    // Calculate card width based on number of cards
+    final totalSpacing = spacing * (availableUpgrades.length - 1);
+    final cardWidth = (availableWidth - totalSpacing) / availableUpgrades.length;
+    final cardHeight = cardWidth * 1.4; // Maintain 1:1.4 aspect ratio
 
-    // If cards don't fit, reduce card size
-    if (totalWidth > size.x * 0.95) {
-      final availableWidth = size.x * 0.95;
-      cardWidth = (availableWidth - (spacing * (availableUpgrades.length - 1))) / availableUpgrades.length;
-      cardHeight = cardWidth * 1.25; // Maintain aspect ratio
-      totalWidth = availableWidth;
-
-      print('[UpgradeOverlay] Adjusted card size to fit screen: $cardWidth x $cardHeight');
-    }
+    final totalWidth = (cardWidth * availableUpgrades.length) + totalSpacing;
 
     final startX = (size.x - totalWidth) / 2;
 
@@ -124,10 +113,11 @@ class UpgradeOverlay extends PositionComponent
     final bgPaint = Paint()..color = const Color(0xCC000000);
     canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y), bgPaint);
 
-    // Responsive sizing based on viewport
-    final scaleFactor = (size.x / 800.0).clamp(0.7, 1.5);
-    final titleFontSize = (48 * scaleFactor).clamp(32.0, 64.0);
-    final subtitleFontSize = (24 * scaleFactor).clamp(16.0, 32.0);
+    // Responsive sizing based on viewport width (percentage-based)
+    final titleFontSize = size.x * 0.06; // 6% of viewport width
+    final subtitleFontSize = size.x * 0.03; // 3% of viewport width
+    final titleY = size.y * 0.12; // 12% from top
+    final subtitleY = size.y * 0.18; // 18% from top
 
     // Title
     final titleStyle = TextPaint(
@@ -141,7 +131,7 @@ class UpgradeOverlay extends PositionComponent
     titleStyle.render(
       canvas,
       'LEVEL UP!',
-      Vector2(size.x / 2, 100 * scaleFactor.clamp(0.8, 1.2)),
+      Vector2(size.x / 2, titleY),
       anchor: Anchor.center,
     );
 
@@ -152,7 +142,7 @@ class UpgradeOverlay extends PositionComponent
     subtitleStyle.render(
       canvas,
       'Choose an upgrade',
-      Vector2(size.x / 2, 160 * scaleFactor.clamp(0.8, 1.2)),
+      Vector2(size.x / 2, subtitleY),
       anchor: Anchor.center,
     );
   }
@@ -187,14 +177,13 @@ class UpgradeCard extends PositionComponent with TapCallbacks {
       _hasRendered = true;
     }
 
-    // Responsive sizing based on card size
-    final scaleFactor = (size.x / 280.0).clamp(0.7, 1.5);
-    final iconFontSize = (64 * scaleFactor).clamp(40.0, 80.0);
-    final nameFontSize = (20 * scaleFactor).clamp(14.0, 26.0);
-    final descFontSize = (14 * scaleFactor).clamp(11.0, 18.0);
-    final statusFontSize = (13 * scaleFactor).clamp(10.0, 16.0);
-    final borderWidth = (3 * scaleFactor).clamp(2.0, 5.0);
-    final padding = (16 * scaleFactor).clamp(10.0, 24.0);
+    // Responsive sizing based on card width (percentage-based)
+    final iconFontSize = size.x * 0.22; // 22% of card width
+    final nameFontSize = size.x * 0.07; // 7% of card width
+    final descFontSize = size.x * 0.05; // 5% of card width
+    final statusFontSize = size.x * 0.045; // 4.5% of card width
+    final borderWidth = size.x * 0.01; // 1% of card width
+    final padding = size.x * 0.06; // 6% of card width
 
     // Card background
     final cardPaint = Paint()
@@ -209,13 +198,15 @@ class UpgradeCard extends PositionComponent with TapCallbacks {
     // Draw from top-left (0,0) - anchor will handle centering
     final rect = Rect.fromLTWH(0, 0, size.x, size.y);
 
+    final borderRadius = size.x * 0.04; // 4% of card width
+
     canvas.drawRRect(
-      RRect.fromRectAndRadius(rect, Radius.circular(12 * scaleFactor.clamp(0.8, 1.2))),
+      RRect.fromRectAndRadius(rect, Radius.circular(borderRadius)),
       cardPaint,
     );
 
     canvas.drawRRect(
-      RRect.fromRectAndRadius(rect, Radius.circular(12 * scaleFactor.clamp(0.8, 1.2))),
+      RRect.fromRectAndRadius(rect, Radius.circular(borderRadius)),
       borderPaint,
     );
 
