@@ -120,12 +120,19 @@ class _FlutterHUDState extends State<FlutterHUD> with SingleTickerProviderStateM
                         ),
                       ),
                       SizedBox(height: 4 * scale),
-                      // Enemy count text
+                      // Enemy count text - show remaining enemies
                       Text(
-                        '$enemiesKilled / $totalEnemies enemies',
+                        enemiesRemaining > 0
+                            ? '$enemiesRemaining ${enemiesRemaining == 1 ? "enemy" : "enemies"} remaining'
+                            : 'Wave Complete!',
                         style: TextStyle(
-                          color: const Color(0xFFCCCCCC),
+                          color: enemiesRemaining > 0
+                              ? const Color(0xFFCCCCCC)
+                              : const Color(0xFF00FF00),
                           fontSize: textSize * 0.8,
+                          fontWeight: enemiesRemaining > 0
+                              ? FontWeight.normal
+                              : FontWeight.bold,
                           shadows: const [
                             Shadow(
                               color: Colors.black,
