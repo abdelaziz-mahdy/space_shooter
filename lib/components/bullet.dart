@@ -149,6 +149,9 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
     if (other is BaseEnemy) {
       final player = gameRef.player;
 
+      // Play hit sound effect
+      gameRef.audioManager.playHit();
+
       // Deal damage to the hit enemy
       other.takeDamage(actualDamage);
 

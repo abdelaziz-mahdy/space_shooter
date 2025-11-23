@@ -7,6 +7,7 @@ import 'flutter_upgrade_dialog.dart';
 import 'flutter_game_over_screen.dart';
 import 'combo_meter.dart';
 import 'stats_panel.dart';
+import 'settings_dialog.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -20,6 +21,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
   bool _showUpgradeDialog = false;
   bool _showGameOver = false;
   bool _showStatsPanel = false;
+  bool _showSettingsDialog = false;
   late AnimationController _uiUpdateController;
 
   @override
@@ -94,6 +96,40 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
     });
   }
 
+  void _toggleSettingsDialog() {
+    setState(() {
+      _showSettingsDialog = !_showSettingsDialog;
+
+      // Pause/resume game when settings dialog is toggled
+      if (_showSettingsDialog) {
+        game.isPaused = true;
+        game.enemyManager.stopSpawning();
+      } else {
+        game.isPaused = false;
+        game.enemyManager.startSpawning();
+      }
+    });
+  }
+
+  void _openStatsFromSettings() {
+    setState(() {
+      _showSettingsDialog = false;
+      _showStatsPanel = true;
+      // Game remains paused
+    });
+  }
+
+  void _toggleAudioMute(bool muted) async {
+    setState(() {
+      game.isAudioMuted = muted;
+    });
+
+    // Toggle the AudioManager mute state
+    if (muted != game.audioManager.isMuted) {
+      await game.audioManager.toggleMute();
+    }
+  }
+
   void _returnToMainMenu() {
     Navigator.of(context).pop();
   }
@@ -126,32 +162,28 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
 
             // HUD overlay (always visible during gameplay)
             if (!_showGameOver)
-              FlutterHUD(game: game),
+              FlutterHUD(
+                game: game,
+                onSettingsPressed: _toggleSettingsDialog,
+              ),
 
             // Combo Meter (shows during gameplay)
             if (!_showGameOver && !_showUpgradeDialog)
               ComboMeter(game: game),
 
-            // Stats Panel (toggleable with TAB key)
-            if (!_showGameOver && !_showUpgradeDialog)
+            // Stats Panel (toggleable with TAB key or from settings)
+            if (!_showGameOver && !_showUpgradeDialog && !_showSettingsDialog)
               StatsPanel(game: game, isVisible: _showStatsPanel),
 
-            // Stats Panel toggle button (bottom right)
-            if (!_showGameOver && !_showUpgradeDialog)
-              Positioned(
-                right: 10,
-                bottom: 10,
-                child: FloatingActionButton(
-                  mini: true,
-                  backgroundColor: _showStatsPanel
-                      ? const Color(0xFF00FFFF)
-                      : Colors.black.withOpacity(0.6),
-                  onPressed: _toggleStatsPanel,
-                  child: Icon(
-                    Icons.analytics,
-                    color: _showStatsPanel ? Colors.black : const Color(0xFF00FFFF),
-                  ),
-                ),
+            // Settings Dialog
+            if (!_showGameOver && !_showUpgradeDialog && _showSettingsDialog)
+              SettingsDialog(
+                game: game,
+                onClose: _toggleSettingsDialog,
+                onBackToMenu: _returnToMainMenu,
+                onViewStats: _openStatsFromSettings,
+                isAudioMuted: game.audioManager.isMuted,
+                onAudioMuteChanged: _toggleAudioMute,
               ),
 
             // Upgrade selection dialog

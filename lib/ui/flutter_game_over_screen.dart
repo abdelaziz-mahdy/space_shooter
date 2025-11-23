@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../game/space_shooter_game.dart';
 import '../services/score_service.dart';
+import '../managers/audio_manager.dart';
 
 class FlutterGameOverScreen extends StatefulWidget {
   final SpaceShooterGame game;
@@ -144,7 +145,10 @@ class _FlutterGameOverScreenState extends State<FlutterGameOverScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                  onPressed: widget.onRestart,
+                  onPressed: () {
+                    AudioManager().playButtonClick();
+                    widget.onRestart();
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF00FFFF),
                     foregroundColor: Colors.black,
@@ -163,7 +167,10 @@ class _FlutterGameOverScreenState extends State<FlutterGameOverScreen> {
                 ),
                 const SizedBox(width: 20),
                 ElevatedButton(
-                  onPressed: widget.onMainMenu,
+                  onPressed: () {
+                    AudioManager().playButtonClick();
+                    widget.onMainMenu();
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF8800),
                     foregroundColor: Colors.black,

@@ -244,20 +244,6 @@ class GameHUD extends PositionComponent with HasGameRef<SpaceShooterGame> {
       anchor: Anchor.centerLeft,
     );
 
-    // Wave timer below wave number
-    statsText = TextPaint(
-      style: TextStyle(
-        color: Color(0xFFCCCCCC),
-        fontSize: 16 * scale,
-      ),
-    );
-    statsText.render(
-      canvas,
-      'Time: ${statsManager.getWaveTimeFormatted()}',
-      Vector2(leftSideX, leftSideY + (30 * scale)),
-      anchor: Anchor.centerLeft,
-    );
-
     // === TOP RIGHT CORNER - Stats ===
     final rightX = size.x - padding;
     var rightY = padding;

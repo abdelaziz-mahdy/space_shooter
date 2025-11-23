@@ -65,6 +65,9 @@ abstract class BasePowerUp extends BaseRenderedComponent
     super.onCollisionStart(intersectionPoints, other);
 
     if (other is PlayerShip) {
+      // Play power-up sound
+      gameRef.audioManager.playPowerUp();
+
       applyEffect(other);
       removeFromParent();
     }

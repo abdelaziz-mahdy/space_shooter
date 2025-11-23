@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'game_screen.dart';
 import '../services/score_service.dart';
+import '../managers/audio_manager.dart';
 
 class MainMenu extends StatefulWidget {
   const MainMenu({super.key});
@@ -29,6 +30,9 @@ class _MainMenuState extends State<MainMenu> {
   }
 
   void _startGame() {
+    // Play button click sound
+    AudioManager().playButtonClick();
+
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) => const GameScreen(),

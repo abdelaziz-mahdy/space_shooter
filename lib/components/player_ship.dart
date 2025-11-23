@@ -257,6 +257,9 @@ class PlayerShip extends BaseRenderedComponent
 
     // Use weapon manager to fire current weapon
     weaponManager.fireCurrentWeapon(this, direction, targetEnemy);
+
+    // Play shoot sound effect
+    gameRef.audioManager.playShoot();
   }
 
   void takeDamage(double damage) {
