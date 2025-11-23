@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   flame: ^1.33.0
+  flame_audio: ^2.1.0
   shared_preferences: ^2.2.2
 
 dev_dependencies:
@@ -19,3 +20,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/audio/music/
+    - assets/audio/sfx/

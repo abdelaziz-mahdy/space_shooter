@@ -16,6 +16,7 @@ import '../managers/level_manager.dart';
 import '../managers/stats_manager.dart';
 import '../managers/star_manager.dart';
 import '../managers/combo_manager.dart';
+import '../managers/audio_manager.dart';
 import '../ui/touch_joystick.dart';
 
 // Import all enemies for factory registration
@@ -26,6 +27,18 @@ import '../components/enemies/scout_enemy.dart';
 import '../components/enemies/tank_enemy.dart';
 import '../components/enemies/ranger_enemy.dart';
 import '../components/enemies/kamikaze_enemy.dart';
+
+// Import all bosses for factory registration
+import '../components/bosses/shielder_boss.dart';
+import '../components/bosses/berserker_boss.dart';
+import '../components/bosses/gunship_boss.dart';
+import '../components/bosses/splitter_boss.dart';
+import '../components/bosses/summoner_boss.dart';
+import '../components/bosses/vortex_boss.dart';
+import '../components/bosses/fortress_boss.dart';
+import '../components/bosses/architect_boss.dart';
+import '../components/bosses/hydra_boss.dart';
+import '../components/bosses/nexus_boss.dart';
 
 // Import all weapons for factory registration
 import '../weapons/pulse_cannon.dart';
@@ -42,11 +55,13 @@ class SpaceShooterGame extends FlameGame
   late StatsManager statsManager;
   late StarManager starManager;
   late ComboManager comboManager;
+  late AudioManager audioManager;
   TouchJoystick? joystick;
 
   bool isGameOver = false;
   bool isPaused = false; // Used for upgrades and game over
   bool hasLoaded = false; // Track if game has completed initialization
+  bool isAudioMuted = false; // Audio mute state
 
   // Entity scale factor based on screen size (smaller on mobile)
   double entityScale = 1.0;
@@ -63,6 +78,10 @@ class SpaceShooterGame extends FlameGame
   @override
   Future<void> onLoad() async {
     await super.onLoad();
+
+    // Initialize audio manager
+    audioManager = AudioManager();
+    await audioManager.initialize();
 
     // Register all factories on first load
     _registerFactories();
@@ -81,6 +100,18 @@ class SpaceShooterGame extends FlameGame
     TankEnemy.init();
     RangerEnemy.init();
     KamikazeEnemy.init();
+
+    // Register all bosses
+    ShielderBoss.init();
+    BerserkerBoss.init();
+    GunshipBoss.init();
+    SplitterBoss.init();
+    SummonerBoss.init();
+    VortexBoss.init();
+    FortressBoss.init();
+    ArchitectBoss.init();
+    HydraBoss.init();
+    NexusBoss.init();
 
     // Register all weapons
     PulseCannon.init();
@@ -162,6 +193,9 @@ class SpaceShooterGame extends FlameGame
     // Start spawning enemies
     enemyManager.startSpawning();
 
+    // Start background music
+    await audioManager.playMusic(boss: false);
+
     // Mark game as loaded
     hasLoaded = true;
   }
@@ -215,6 +249,10 @@ class SpaceShooterGame extends FlameGame
     isPaused = true;
     enemyManager.stopSpawning();
 
+    // Play game over sound and stop music
+    audioManager.playGameOver();
+    audioManager.stopMusic();
+
     // Trigger Flutter UI to show game over screen
     if (onShowGameOver != null) {
       onShowGameOver!();
@@ -224,6 +262,10 @@ class SpaceShooterGame extends FlameGame
   void returnToMainMenu() {
     // This will be called from Flutter layer
     print('[Game] Returning to main menu');
+
+    // Stop music when returning to menu
+    audioManager.stopMusic();
+
     if (onReturnToMenu != null) {
       onReturnToMenu!();
     }

@@ -46,17 +46,21 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
 
     if (isBossWave) {
       enemiesToSpawnInWave = 1; // Only spawn boss
+
+      // Switch to boss music and play boss appearance sound
+      gameRef.audioManager.playMusic(boss: true);
+      gameRef.audioManager.playBossAppear();
     } else {
       enemiesToSpawnInWave =
           10 + (currentWave * 2); // Increase enemies per wave
+
+      // Switch back to normal music
+      gameRef.audioManager.playMusic(boss: false);
     }
 
-    // Progressive wave duration: starts at 10s, adds 5s per wave, caps at 90s
-    final waveDuration = min(10.0 + (currentWave * 5.0), 90.0);
+    gameRef.statsManager.startWave(currentWave, enemiesToSpawnInWave);
 
-    gameRef.statsManager.startWave(currentWave, enemiesToSpawnInWave, waveDuration);
-
-    print('[EnemyManager] Wave $currentWave started - Duration: ${waveDuration}s, Enemies: $enemiesToSpawnInWave');
+    print('[EnemyManager] Wave $currentWave started - Enemies: $enemiesToSpawnInWave');
   }
 
   @override
@@ -82,25 +86,19 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
         spawnTimer = 0;
       }
 
-      // Check if wave is complete (all enemies killed OR timer expired)
+      // Check if wave is complete (all enemies killed)
       final enemyCount = gameRef.world.children.whereType<BaseEnemy>().length;
       final bossCount = gameRef.world.children.whereType<BossShip>().length;
-      final timerExpired = gameRef.statsManager.waveTime <= 0;
       final allEnemiesKilled = (enemyCount == 0 && bossCount == 0);
 
-      // Wave completes when: all enemies spawned AND (all killed OR timer expired)
-      if (enemiesSpawnedInWave >= enemiesToSpawnInWave &&
-          (allEnemiesKilled || timerExpired)) {
-        // Wave complete - either all enemies killed or time ran out
+      // Wave completes when: all enemies spawned AND all killed
+      if (enemiesSpawnedInWave >= enemiesToSpawnInWave && allEnemiesKilled) {
+        // Wave complete - all enemies defeated
         isWaveActive = false;
         waveTimer = 0;
         currentWave++;
 
-        if (timerExpired) {
-          print('[EnemyManager] Wave ${currentWave - 1} completed - TIME EXPIRED');
-        } else {
-          print('[EnemyManager] Wave ${currentWave - 1} completed - ALL ENEMIES DEFEATED');
-        }
+        print('[EnemyManager] Wave ${currentWave - 1} completed - ALL ENEMIES DEFEATED');
       }
     } else {
       // Delay between waves
@@ -120,14 +118,40 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
     final playerPos = player.position;
     final spawnPos = Vector2(playerPos.x, playerPos.y - gameRef.size.y / 2 - 100);
 
-    final boss = BossShip(
-      position: spawnPos,
-      player: player,
-      wave: currentWave, // Boss scales with wave
-      color: const Color(0xFFFF0000),
-    );
+    // Get spawn weights for current wave from config
+    final weights = EnemySpawnConfig.getWeightsForWave(currentWave);
 
+    // Filter to only boss enemies (those with weight > 0 for this wave)
+    final bossWeights = <String, double>{};
+    for (final entry in weights.entries) {
+      if (entry.value > 0 && entry.key.contains('boss')) {
+        bossWeights[entry.key] = entry.value;
+      }
+    }
+
+    // If no boss is registered for this wave, spawn fallback
+    if (bossWeights.isEmpty) {
+      final boss = BossShip(
+        position: spawnPos,
+        player: player,
+        wave: currentWave,
+        color: const Color(0xFFFF0000),
+      );
+      gameRef.world.add(boss);
+      print('[EnemyManager] Spawned fallback BossShip at wave $currentWave');
+      return;
+    }
+
+    // Create boss using factory with weighted random selection
+    final boss = EnemyFactory.createWeightedRandom(
+      player,
+      currentWave,
+      spawnPos,
+      bossWeights,
+      scale: gameRef.entityScale,
+    );
     gameRef.world.add(boss);
+    print('[EnemyManager] Spawned ${boss.runtimeType} at wave $currentWave');
   }
 
 

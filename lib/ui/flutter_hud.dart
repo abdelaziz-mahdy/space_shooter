@@ -3,8 +3,9 @@ import '../game/space_shooter_game.dart';
 
 class FlutterHUD extends StatefulWidget {
   final SpaceShooterGame game;
+  final VoidCallback? onSettingsPressed;
 
-  const FlutterHUD({super.key, required this.game});
+  const FlutterHUD({super.key, required this.game, this.onSettingsPressed});
 
   @override
   State<FlutterHUD> createState() => _FlutterHUDState();
@@ -42,12 +43,10 @@ class _FlutterHUDState extends State<FlutterHUD> with SingleTickerProviderStateM
       return const SizedBox.shrink();
     }
 
-    final statsManager = widget.game.statsManager;
     final enemyManager = widget.game.enemyManager;
     final player = widget.game.player;
 
-    return IgnorePointer(
-      child: LayoutBuilder(
+    return LayoutBuilder(
         builder: (context, constraints) {
           // Scale font sizes based on screen width
           final scale = (constraints.maxWidth / 800).clamp(0.7, 1.5);
@@ -61,83 +60,52 @@ class _FlutterHUDState extends State<FlutterHUD> with SingleTickerProviderStateM
                 Positioned(
                   left: 20,
                   top: 20,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        enemyManager.isInBossWave()
-                            ? 'BOSS WAVE ${enemyManager.getCurrentWave()}'
-                            : 'Wave ${enemyManager.getCurrentWave()}',
-                        style: TextStyle(
-                          color: const Color(0xFFFFFF00),
-                          fontSize: titleSize,
-                          fontWeight: FontWeight.bold,
-                          shadows: const [
-                            Shadow(
-                              color: Colors.black,
-                              offset: Offset(2, 2),
-                              blurRadius: 4,
-                            ),
-                          ],
+                  child: Text(
+                    enemyManager.isInBossWave()
+                        ? 'BOSS WAVE ${enemyManager.getCurrentWave()}'
+                        : 'Wave ${enemyManager.getCurrentWave()}',
+                    style: TextStyle(
+                      color: const Color(0xFFFFFF00),
+                      fontSize: titleSize,
+                      fontWeight: FontWeight.bold,
+                      shadows: const [
+                        Shadow(
+                          color: Colors.black,
+                          offset: Offset(2, 2),
+                          blurRadius: 4,
                         ),
-                      ),
-                      SizedBox(height: 8 * scale),
-                      Text(
-                        'Wave Time: ${statsManager.getWaveTimeFormatted()}',
-                        style: TextStyle(
-                          color: const Color(0xFFCCCCCC),
-                          fontSize: textSize,
-                          shadows: const [
-                            Shadow(
-                              color: Colors.black,
-                              offset: Offset(1, 1),
-                              blurRadius: 2,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
 
-                // Top right corner - Stats
+                // Top right corner - Settings button
                 Positioned(
                   right: 20,
                   top: 20,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        'Total Time: ${statsManager.getTimeAliveFormatted()}',
-                        style: TextStyle(
-                          color: const Color(0xFFCCCCCC),
-                          fontSize: textSize,
-                          shadows: const [
-                            Shadow(
-                              color: Colors.black,
-                              offset: Offset(1, 1),
-                              blurRadius: 2,
-                            ),
-                          ],
+                  child: IgnorePointer(
+                    ignoring: false,
+                    child: IconButton(
+                      iconSize: 32 * scale,
+                      padding: EdgeInsets.all(8 * scale),
+                      icon: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.6),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFF00FFFF).withOpacity(0.5),
+                            width: 2,
+                          ),
+                        ),
+                        padding: EdgeInsets.all(8 * scale),
+                        child: Icon(
+                          Icons.settings,
+                          color: const Color(0xFF00FFFF),
+                          size: 24 * scale,
                         ),
                       ),
-                      SizedBox(height: 4 * scale),
-                      Text(
-                        'Kills: ${statsManager.enemiesKilled}',
-                        style: TextStyle(
-                          color: const Color(0xFFCCCCCC),
-                          fontSize: textSize,
-                          shadows: const [
-                            Shadow(
-                              color: Colors.black,
-                              offset: Offset(1, 1),
-                              blurRadius: 2,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                      onPressed: widget.onSettingsPressed,
+                    ),
                   ),
                 ),
 
@@ -182,7 +150,6 @@ class _FlutterHUDState extends State<FlutterHUD> with SingleTickerProviderStateM
             ),
           );
         },
-      ),
-    );
+      );
   }
 }

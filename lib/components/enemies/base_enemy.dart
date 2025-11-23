@@ -21,7 +21,7 @@ abstract class BaseEnemy extends BaseRenderedComponent
   final double speed;
   final int lootValue;
   final Color color;
-  final double contactDamage;
+  double contactDamage;
 
   // Freeze effect
   bool isFrozen = false;
@@ -115,6 +115,9 @@ abstract class BaseEnemy extends BaseRenderedComponent
 
   /// Called when enemy dies - handles loot drops and cleanup
   void die() {
+    // Play explosion sound
+    gameRef.audioManager.playExplosion();
+
     // Call custom death behavior first
     onDeath();
 
