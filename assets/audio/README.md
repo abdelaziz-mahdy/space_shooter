@@ -29,18 +29,32 @@ assets/audio/
 
 ## Adding Audio Files
 
-The audio system is designed to handle missing files gracefully. Currently, placeholder files exist. To add real audio:
+The audio system is designed to handle missing files gracefully. Current files are procedurally generated. To replace with custom audio:
 
-1. Replace the placeholder `.mp3` files with actual audio files
+1. Replace the `.mp3` files with your own audio files
 2. Keep the same filenames
 3. Ensure files are properly licensed for use in your game
 
+### Regenerating Audio Files
+
+To regenerate the procedurally-generated audio files:
+
+```bash
+cd scripts
+pip install -r requirements.txt
+python3 generate_audio.py
+```
+
+See `scripts/README.md` for customization options.
+
 ## Audio Credits
 
-Add attribution for any audio assets here:
+All audio files were procedurally generated using Python:
 
-- Music: [Add credits here]
-- Sound Effects: [Add credits here]
+- **Music**: Generated using synthesized waveforms (sine, square, sawtooth waves)
+- **Sound Effects**: Generated using procedural synthesis with ADSR envelopes
+- **Generator**: `scripts/generate_audio.py` (see scripts/README.md for details)
+- **License**: Public domain / Royalty-free (procedurally generated)
 
 ## Free Audio Resources
 
