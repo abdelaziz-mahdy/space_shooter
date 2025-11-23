@@ -6,7 +6,7 @@ import 'package:flame/game.dart';
 import 'package:flame/events.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import '../components/player_ship.dart';
 import '../components/star_particle.dart';
 import '../components/debug_overlay.dart';
@@ -154,7 +154,7 @@ class SpaceShooterGame extends FlameGame
     world.add(enemyManager);
 
     // Add touch joystick for mobile/touch devices
-    if (_isMobile()) {
+    if (_isMobilePlatform()) {
       joystick = TouchJoystick();
       camera.viewport.add(joystick!);
     }
@@ -166,10 +166,12 @@ class SpaceShooterGame extends FlameGame
     hasLoaded = true;
   }
 
-  bool _isMobile() {
-    // Check if running on mobile platform
-    if (kIsWeb) return false;
-    return Platform.isAndroid || Platform.isIOS;
+  /// Check if running on a mobile platform (runtime detection)
+  /// Works correctly for both native apps and web
+  /// On web, defaultTargetPlatform detects the browser's OS (iOS/Android for mobile browsers)
+  bool _isMobilePlatform() {
+    return defaultTargetPlatform == TargetPlatform.iOS ||
+           defaultTargetPlatform == TargetPlatform.android;
   }
 
   @override

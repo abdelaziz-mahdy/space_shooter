@@ -15,8 +15,12 @@ class TouchJoystick extends PositionComponent
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    // Position at bottom left
-    position = Vector2(100, gameRef.camera.viewport.size.y - 100);
+    // Position in the center horizontally, below the player
+    final viewportSize = gameRef.camera.viewport.size;
+    position = Vector2(
+      viewportSize.x / 2, // Center horizontally
+      viewportSize.y - 150, // Bottom of screen with padding
+    );
   }
 
   @override

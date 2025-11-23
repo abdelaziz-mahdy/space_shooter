@@ -1,6 +1,7 @@
 import 'dart:math';
 import '../components/player_ship.dart';
 import '../config/weapon_unlock_config.dart';
+import 'weapon_upgrade.dart';
 
 /// Upgrade rarity levels
 enum UpgradeRarity {
@@ -444,27 +445,6 @@ class FreezeUpgrade extends Upgrade {
   List<String> getStatusChanges() => ['+${(freezeChance * 100).toInt()}% freeze chance'];
 }
 
-/// Increase bullet size
-class BulletSizeUpgrade extends Upgrade {
-  final double sizeIncrease;
-
-  BulletSizeUpgrade({this.sizeIncrease = 2.0})
-      : super(
-          id: 'bullet_size',
-          name: 'Larger Projectiles',
-          description: 'Bigger bullets',
-          icon: '⭕',
-        );
-
-  @override
-  void apply(PlayerShip player) {
-    player.bulletSize += sizeIncrease;
-  }
-
-  @override
-  List<String> getStatusChanges() => ['+${sizeIncrease.toInt()} bullet size'];
-}
-
 /// Orbital satellites that shoot
 class OrbitalUpgrade extends Upgrade {
   final int orbitals;
@@ -505,27 +485,6 @@ class ShieldUpgrade extends Upgrade {
 
   @override
   List<String> getStatusChanges() => ['+$shieldLayers shield layer'];
-}
-
-/// Increase luck (better drops)
-class LuckUpgrade extends Upgrade {
-  final double luckIncrease;
-
-  LuckUpgrade({this.luckIncrease = 0.2})
-      : super(
-          id: 'luck',
-          name: 'Fortune',
-          description: '+${(luckIncrease * 100).toInt()}% Better Drops',
-          icon: '🍀',
-        );
-
-  @override
-  void apply(PlayerShip player) {
-    player.luck += luckIncrease;
-  }
-
-  @override
-  List<String> getStatusChanges() => ['+${(luckIncrease * 100).toInt()}% better loot drops'];
 }
 
 /// Unlock a new weapon
@@ -848,34 +807,6 @@ class PhoenixRebirthUpgrade extends Upgrade {
   List<String> getStatusChanges() => ['25% chance to resurrect on death (once)'];
 }
 
-/// Omega Cannon - Massive projectiles with huge AOE
-class OmegaCannonUpgrade extends Upgrade {
-  OmegaCannonUpgrade()
-      : super(
-          id: 'omega_cannon',
-          name: 'Omega Cannon',
-          description: 'Massive projectiles with huge AOE',
-          icon: '💀',
-        );
-
-  @override
-  void apply(PlayerShip player) {
-    player.bulletSize += 10.0;
-    player.explosionRadius += 100;
-    player.damage += 50;
-  }
-
-  @override
-  UpgradeRarity get rarity => UpgradeRarity.legendary;
-
-  @override
-  List<String> getStatusChanges() => [
-    '+10 bullet size',
-    '+100 explosion radius',
-    '+50 damage'
-  ];
-}
-
 /// Infinity Orbitals - Many orbital shooters
 class InfinityOrbitalsUpgrade extends Upgrade {
   InfinityOrbitalsUpgrade()
@@ -1025,11 +956,10 @@ class CriticalCascadeUpgrade extends Upgrade {
 class UpgradeFactory {
   static List<Upgrade> getAllUpgrades() {
     return [
-      // Basic upgrades (Common)
+      // Basic upgrades (Common) - Generic stat boosts
       DamageUpgrade(),
       FireRateUpgrade(),
       RangeUpgrade(),
-      MultiShotUpgrade(),
       BulletSpeedUpgrade(),
       MoveSpeedUpgrade(),
       MaxHealthUpgrade(),
@@ -1037,7 +967,6 @@ class UpgradeFactory {
 
       // Advanced upgrades (Common/Rare)
       HealthRegenUpgrade(),
-      PierceUpgrade(),
       CritChanceUpgrade(),
       CritDamageUpgrade(),
       LifestealUpgrade(),
@@ -1045,14 +974,9 @@ class UpgradeFactory {
       ArmorUpgrade(),
       MaxShieldUpgrade(),
 
-      // Special upgrades (Common/Rare)
-      ExplosiveShotsUpgrade(),
-      HomingUpgrade(),
-      FreezeUpgrade(),
-      BulletSizeUpgrade(),
+      // Special upgrades (Common/Rare) - Generic effects
       OrbitalUpgrade(),
       ShieldUpgrade(),
-      LuckUpgrade(),
 
       // New Common Tier
       ResilientShieldsUpgrade(),
@@ -1073,7 +997,6 @@ class UpgradeFactory {
       PhoenixRebirthUpgrade(),
 
       // New Legendary Tier
-      OmegaCannonUpgrade(),
       InfinityOrbitalsUpgrade(),
       PerfectHarmonyUpgrade(),
       GlassCannonUpgrade(),
@@ -1082,11 +1005,42 @@ class UpgradeFactory {
     ];
   }
 
+  /// Get all weapon-specific upgrades
+  static List<WeaponUpgrade> getAllWeaponUpgrades() {
+    return [
+      // Pulse Cannon upgrades
+      PulseCannonDamageUpgrade(),
+      PulseCannonFireRateUpgrade(),
+      PulseCannonMultiShotUpgrade(),
+
+      // Plasma Spreader upgrades
+      PlasmaSpreaderDamageUpgrade(),
+      PlasmaSpreaderWideSpreadUpgrade(),
+      PlasmaSpreaderPierceUpgrade(),
+
+      // Railgun upgrades
+      RailgunDamageUpgrade(),
+      RailgunFireRateUpgrade(),
+      RailgunExplosiveUpgrade(),
+
+      // Missile Launcher upgrades
+      MissileLauncherDamageUpgrade(),
+      MissileLauncherMultiShotUpgrade(),
+      MissileLauncherHomingUpgrade(),
+      MissileLauncherExplosionUpgrade(),
+    ];
+  }
+
   /// Get upgrades filtered by rarity with weighted random selection
-  static List<Upgrade> getRandomUpgradesByRarity(int count) {
+  /// Includes both generic and weapon-specific upgrades
+  static List<Upgrade> getRandomUpgradesByRarity(int count, {PlayerShip? player}) {
     final random = Random();
     final selected = <Upgrade>[];
-    final allUpgrades = getAllUpgrades();
+
+    // Combine generic and weapon-specific upgrades
+    final genericUpgrades = getAllUpgrades();
+    final weaponUpgrades = getAllWeaponUpgrades();
+    final allUpgrades = [...genericUpgrades, ...weaponUpgrades];
 
     for (int i = 0; i < count; i++) {
       // Weighted rarity selection
@@ -1104,9 +1058,12 @@ class UpgradeFactory {
         targetRarity = UpgradeRarity.legendary;
       }
 
-      // Get upgrades of target rarity
+      // Get upgrades of target rarity that are valid for the player
       final availableUpgrades = allUpgrades
-          .where((u) => u.rarity == targetRarity && !selected.contains(u))
+          .where((u) =>
+            u.rarity == targetRarity &&
+            !selected.contains(u) &&
+            (player == null || u.isValidFor(player)))
           .toList();
 
       if (availableUpgrades.isNotEmpty) {
@@ -1114,7 +1071,11 @@ class UpgradeFactory {
         selected.add(upgrade);
       } else {
         // Fallback to any available upgrade if target rarity is exhausted
-        final anyAvailable = allUpgrades.where((u) => !selected.contains(u)).toList();
+        final anyAvailable = allUpgrades
+            .where((u) =>
+              !selected.contains(u) &&
+              (player == null || u.isValidFor(player)))
+            .toList();
         if (anyAvailable.isNotEmpty) {
           selected.add(anyAvailable[random.nextInt(anyAvailable.length)]);
         }

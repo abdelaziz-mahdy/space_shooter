@@ -43,10 +43,8 @@ class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
     // Check if this level should offer weapon unlocks
     final weaponUpgrades = _getWeaponUpgradesForLevel();
 
-    // Get regular random upgrades and filter by validity
-    final regularUpgrades = UpgradeFactory.getRandomUpgradesByRarity(count * 2) // Get more to account for filtering
-        .where((upgrade) => upgrade.isValidFor(player))
-        .toList();
+    // Get regular random upgrades (already filtered by player validity)
+    final regularUpgrades = UpgradeFactory.getRandomUpgradesByRarity(count * 2, player: player);
 
     if (weaponUpgrades.isNotEmpty) {
       // Mix weapon upgrades with regular upgrades
