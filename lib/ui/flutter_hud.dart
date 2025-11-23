@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../game/space_shooter_game.dart';
+import '../components/enemies/base_enemy.dart';
 
 class FlutterHUD extends StatefulWidget {
   final SpaceShooterGame game;
@@ -49,33 +50,88 @@ class _FlutterHUDState extends State<FlutterHUD> with SingleTickerProviderStateM
     return LayoutBuilder(
         builder: (context, constraints) {
           // Scale font sizes based on screen width
-          final scale = (constraints.maxWidth / 800).clamp(0.7, 1.5);
+          // Desktop: max 1.0, Mobile: max 1.3
+          final isMobile = constraints.maxWidth < 800;
+          final scale = (constraints.maxWidth / 800).clamp(0.7, isMobile ? 1.3 : 1.0);
           final titleSize = 24.0 * scale;
           final textSize = 16.0 * scale;
+
+          // Calculate wave progress
+          final enemiesKilled = enemyManager.enemiesSpawnedInWave -
+              widget.game.world.children.whereType<BaseEnemy>().length;
+          final totalEnemies = enemyManager.enemiesToSpawnInWave;
+          final progress = totalEnemies > 0 ? enemiesKilled / totalEnemies : 0.0;
 
           return SafeArea(
             child: Stack(
               children: [
-                // Top left - Wave info
+                // Top left - Wave info with progress bar
                 Positioned(
                   left: 20,
                   top: 20,
-                  child: Text(
-                    enemyManager.isInBossWave()
-                        ? 'BOSS WAVE ${enemyManager.getCurrentWave()}'
-                        : 'Wave ${enemyManager.getCurrentWave()}',
-                    style: TextStyle(
-                      color: const Color(0xFFFFFF00),
-                      fontSize: titleSize,
-                      fontWeight: FontWeight.bold,
-                      shadows: const [
-                        Shadow(
-                          color: Colors.black,
-                          offset: Offset(2, 2),
-                          blurRadius: 4,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        enemyManager.isInBossWave()
+                            ? 'BOSS WAVE ${enemyManager.getCurrentWave()}'
+                            : 'Wave ${enemyManager.getCurrentWave()}',
+                        style: TextStyle(
+                          color: const Color(0xFFFFFF00),
+                          fontSize: titleSize,
+                          fontWeight: FontWeight.bold,
+                          shadows: const [
+                            Shadow(
+                              color: Colors.black,
+                              offset: Offset(2, 2),
+                              blurRadius: 4,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                      SizedBox(height: 8 * scale),
+                      // Wave progress bar
+                      Container(
+                        width: 200 * scale,
+                        height: 8 * scale,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.6),
+                          borderRadius: BorderRadius.circular(4 * scale),
+                          border: Border.all(
+                            color: const Color(0xFF00FFFF).withOpacity(0.5),
+                            width: 1,
+                          ),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(3 * scale),
+                          child: LinearProgressIndicator(
+                            value: progress.clamp(0.0, 1.0),
+                            backgroundColor: Colors.transparent,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              enemyManager.isInBossWave()
+                                  ? const Color(0xFFFF0000)
+                                  : const Color(0xFF00FFFF),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 4 * scale),
+                      // Enemy count text
+                      Text(
+                        '$enemiesKilled / $totalEnemies enemies',
+                        style: TextStyle(
+                          color: const Color(0xFFCCCCCC),
+                          fontSize: textSize * 0.8,
+                          shadows: const [
+                            Shadow(
+                              color: Colors.black,
+                              offset: Offset(1, 1),
+                              blurRadius: 2,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 

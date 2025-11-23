@@ -29,8 +29,10 @@ class SettingsDialog extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           // Calculate responsive scale based on screen width
-          final scale = (constraints.maxWidth / 800).clamp(0.6, 1.5);
-          final dialogWidth = (400.0 * scale).clamp(280.0, 500.0);
+          // Smaller scale for desktop (max 1.0), mobile can go up to 1.2
+          final isMobile = constraints.maxWidth < 800;
+          final scale = (constraints.maxWidth / 800).clamp(0.6, isMobile ? 1.2 : 1.0);
+          final dialogWidth = (400.0 * scale).clamp(280.0, 450.0);
 
           return Center(
             child: Container(

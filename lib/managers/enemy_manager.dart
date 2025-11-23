@@ -13,7 +13,7 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
   final Random random = Random();
 
   double spawnTimer = 0;
-  double spawnInterval = 2.0;
+  double spawnInterval = 1.5; // Faster initial spawn rate (was 2.0)
   bool isSpawning = false;
 
   // Wave system
@@ -22,7 +22,7 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
   int enemiesToSpawnInWave = 10;
   bool isWaveActive = false;
   bool isBossWave = false;
-  double waveDelay = 3.0;
+  double waveDelay = 2.0; // Faster wave transitions (was 3.0)
   double waveTimer = 0;
 
   // Boss pool for waves 55+ (excludes Nexus which only appears at wave 50)
@@ -65,8 +65,9 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
       // gameRef.audioManager.playMusic(boss: true);
       gameRef.audioManager.playBossAppear();
     } else {
-      enemiesToSpawnInWave =
-          10 + (currentWave * 2); // Increase enemies per wave
+      // Reduced enemy count for faster pacing: 5 + (wave * 1)
+      // Wave 1: 6 enemies, Wave 2: 7 enemies, Wave 10: 15 enemies
+      enemiesToSpawnInWave = 5 + currentWave;
 
       // Switch back to normal music (DISABLED)
       // gameRef.audioManager.playMusic(boss: false);
@@ -142,8 +143,8 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
     }
 
     // Gradually increase spawn rate (faster spawns as waves progress)
-    // Start at 1.0s and decrease to 0.2s minimum
-    spawnInterval = max(0.2, 1.0 - (currentWave * 0.03));
+    // Start at 0.8s and decrease to 0.3s minimum for better pacing
+    spawnInterval = max(0.3, 0.8 - (currentWave * 0.02));
   }
 
   void spawnBoss() {

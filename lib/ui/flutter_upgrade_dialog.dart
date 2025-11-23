@@ -33,32 +33,43 @@ class _FlutterUpgradeDialogState extends State<FlutterUpgradeDialog> {
   Widget build(BuildContext context) {
     return Container(
       color: const Color(0xCC000000),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'LEVEL UP!',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 48,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Choose an upgrade',
-              style: TextStyle(
-                color: Color(0xFFCCCCCC),
-                fontSize: 24,
-              ),
-            ),
-            const SizedBox(height: 40),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Scale text sizes based on screen width
+          final isMobile = constraints.maxWidth < 800;
+          final titleSize = isMobile ? 48.0 : 40.0;
+          final subtitleSize = isMobile ? 24.0 : 20.0;
+
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'LEVEL UP!',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: titleSize,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Choose an upgrade',
+                  style: TextStyle(
+                    color: const Color(0xFFCCCCCC),
+                    fontSize: subtitleSize,
+                  ),
+                ),
+                const SizedBox(height: 40),
             LayoutBuilder(
               builder: (context, constraints) {
-                // Responsive sizing: use 90% of available width
-                final availableWidth = constraints.maxWidth * 0.9;
-                final spacing = constraints.maxWidth * 0.02;
+                // Responsive sizing with maximum width for desktop
+                // On desktop, limit to 60% of screen or 900px max
+                // On mobile, use 90% of screen
+                final isMobile = constraints.maxWidth < 800;
+                final maxDialogWidth = isMobile ? constraints.maxWidth * 0.9 : 900.0;
+                final availableWidth = (constraints.maxWidth * (isMobile ? 0.9 : 0.6)).clamp(300.0, maxDialogWidth);
+                final spacing = availableWidth * 0.03;
                 final totalSpacing = spacing * (upgrades.length - 1);
                 final cardWidth = (availableWidth - totalSpacing) / upgrades.length;
                 final cardHeight = cardWidth * 1.25;
@@ -79,8 +90,10 @@ class _FlutterUpgradeDialogState extends State<FlutterUpgradeDialog> {
                 );
               },
             ),
-          ],
-        ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
