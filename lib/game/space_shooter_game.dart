@@ -193,8 +193,8 @@ class SpaceShooterGame extends FlameGame
     // Start spawning enemies
     enemyManager.startSpawning();
 
-    // Start background music
-    await audioManager.playMusic(boss: false);
+    // Start background music (DISABLED - only sound effects enabled)
+    // await audioManager.playMusic(boss: false);
 
     // Mark game as loaded
     hasLoaded = true;

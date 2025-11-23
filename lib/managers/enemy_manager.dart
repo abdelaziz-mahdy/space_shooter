@@ -61,15 +61,15 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
       // We spawn all bosses at once, so count as 1 spawn event
       enemiesToSpawnInWave = 1;
 
-      // Switch to boss music and play boss appearance sound
-      gameRef.audioManager.playMusic(boss: true);
+      // Switch to boss music and play boss appearance sound (MUSIC DISABLED)
+      // gameRef.audioManager.playMusic(boss: true);
       gameRef.audioManager.playBossAppear();
     } else {
       enemiesToSpawnInWave =
           10 + (currentWave * 2); // Increase enemies per wave
 
-      // Switch back to normal music
-      gameRef.audioManager.playMusic(boss: false);
+      // Switch back to normal music (DISABLED)
+      // gameRef.audioManager.playMusic(boss: false);
     }
 
     gameRef.statsManager.startWave(currentWave, enemiesToSpawnInWave);

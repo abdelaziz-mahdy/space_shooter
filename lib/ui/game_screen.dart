@@ -29,14 +29,14 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
     super.initState();
     game = SpaceShooterGame();
 
-    // Create a ticker to rebuild UI for boss health bar and combo meter
+    // Create a ticker to rebuild UI for boss health bar, combo meter, and loading state
     _uiUpdateController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
     )..repeat();
 
     _uiUpdateController.addListener(() {
-      if (mounted && !_showGameOver) {
+      if (mounted) {
         setState(() {});
       }
     });
@@ -168,23 +168,50 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
             // The Flame game
             GameWidget(game: game),
 
+            // Loading indicator (shows until game is loaded)
+            if (!game.hasLoaded)
+              Container(
+                color: Colors.black,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00FFFF)),
+                        strokeWidth: 4,
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'LOADING...',
+                        style: TextStyle(
+                          color: const Color(0xFF00FFFF),
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
             // HUD overlay (always visible during gameplay)
-            if (!_showGameOver)
+            if (!_showGameOver && game.hasLoaded)
               FlutterHUD(
                 game: game,
                 onSettingsPressed: _toggleSettingsDialog,
               ),
 
             // Combo Meter (shows during gameplay)
-            if (!_showGameOver && !_showUpgradeDialog)
+            if (!_showGameOver && !_showUpgradeDialog && game.hasLoaded)
               ComboMeter(game: game),
 
             // Stats Panel (toggleable with TAB key or from settings)
-            if (!_showGameOver && !_showUpgradeDialog && !_showSettingsDialog)
+            if (!_showGameOver && !_showUpgradeDialog && !_showSettingsDialog && game.hasLoaded)
               StatsPanel(game: game, isVisible: _showStatsPanel),
 
             // Settings Dialog
-            if (!_showGameOver && !_showUpgradeDialog && _showSettingsDialog)
+            if (!_showGameOver && !_showUpgradeDialog && _showSettingsDialog && game.hasLoaded)
               SettingsDialog(
                 game: game,
                 onClose: _toggleSettingsDialog,
@@ -195,11 +222,11 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
               ),
 
             // Upgrade selection dialog
-            if (_showUpgradeDialog)
+            if (_showUpgradeDialog && game.hasLoaded)
               FlutterUpgradeDialog(game: game),
 
             // Game over screen
-            if (_showGameOver)
+            if (_showGameOver && game.hasLoaded)
               FlutterGameOverScreen(
                 game: game,
                 onRestart: _restartGame,
