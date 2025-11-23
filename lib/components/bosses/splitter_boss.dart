@@ -328,8 +328,9 @@ class SplitterBoss extends BaseEnemy {
   }
 
   static double getSpawnWeight(int wave) {
-    // Boss spawns at wave 10 and every 10 waves after
-    if (wave == 10 || (wave > 10 && (wave - 10) % 10 == 0)) {
+    // Boss spawns at wave 10 only (for unique boss rotation)
+    // After wave 50, available in boss pool for multi-boss waves
+    if (wave == 10) {
       return 100.0; // High weight to ensure boss spawns
     }
     return 0.0;

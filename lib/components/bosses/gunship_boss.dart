@@ -393,8 +393,9 @@ class GunshipBoss extends BaseEnemy {
   }
 
   static double getSpawnWeight(int wave) {
-    // Boss spawns at wave 15 and every 10 waves after
-    if (wave == 15 || (wave > 15 && (wave - 15) % 10 == 0)) {
+    // Boss spawns at wave 15 only (for unique boss rotation)
+    // After wave 50, available in boss pool for multi-boss waves
+    if (wave == 15) {
       return 100.0; // High weight to ensure boss spawns
     }
     return 0.0;

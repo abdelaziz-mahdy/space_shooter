@@ -446,7 +446,8 @@ class SummonerBoss extends BaseEnemy {
   }
 
   static double getSpawnWeight(int wave) {
-    // Boss spawns at wave 20
+    // Boss spawns at wave 20 only (for unique boss rotation)
+    // After wave 50, available in boss pool for multi-boss waves
     if (wave == 20) return 1.0;
     return 0.0;
   }

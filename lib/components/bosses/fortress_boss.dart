@@ -271,7 +271,8 @@ class FortressBoss extends BaseEnemy {
   }
 
   static double getSpawnWeight(int wave) {
-    // Boss spawns at wave 30
+    // Boss spawns at wave 30 only (for unique boss rotation)
+    // After wave 50, available in boss pool for multi-boss waves
     if (wave == 30) return 100.0;
     return 0.0;
   }

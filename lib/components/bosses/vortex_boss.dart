@@ -471,7 +471,8 @@ class VortexBoss extends BaseEnemy {
   }
 
   static double getSpawnWeight(int wave) {
-    // Boss spawns at wave 25
+    // Boss spawns at wave 25 only (for unique boss rotation)
+    // After wave 50, available in boss pool for multi-boss waves
     if (wave == 25) {
       return 100.0; // High weight to ensure boss spawns
     }

@@ -296,7 +296,8 @@ class HydraBoss extends BaseEnemy {
   }
 
   static double getSpawnWeight(int wave) {
-    // Boss spawns at wave 45
+    // Boss spawns at wave 45 only (for unique boss rotation)
+    // After wave 50, available in boss pool for multi-boss waves
     if (wave == 45) return 100.0;
     return 0.0;
   }

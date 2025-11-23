@@ -390,8 +390,9 @@ class ShielderBoss extends BaseEnemy {
   }
 
   static double getSpawnWeight(int wave) {
-    // Boss spawns at wave 5 and every 5 waves after
-    if (wave == 5 || (wave > 5 && wave % 5 == 0)) {
+    // Boss spawns at wave 5 only (for unique boss rotation)
+    // After wave 50, available in boss pool for multi-boss waves
+    if (wave == 5) {
       return 1.0; // Boss wave
     }
     return 0.0;

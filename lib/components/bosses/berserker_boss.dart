@@ -382,7 +382,8 @@ class BerserkerBoss extends BaseEnemy {
   }
 
   static double getSpawnWeight(int wave) {
-    // Boss wave - only spawns on wave 35
+    // Boss spawns at wave 35 only (for unique boss rotation)
+    // After wave 50, available in boss pool for multi-boss waves
     if (wave == 35) return 1.0;
     return 0.0;
   }

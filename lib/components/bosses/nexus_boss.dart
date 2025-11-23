@@ -532,8 +532,9 @@ class NexusBoss extends BaseEnemy {
   }
 
   static double getSpawnWeight(int wave) {
-    // Boss spawns at wave 50 and every 10 waves after
-    if (wave >= 50 && (wave - 50) % 10 == 0) {
+    // Boss spawns at wave 50 only (final unique boss)
+    // Not included in boss pool for waves 55+
+    if (wave == 50) {
       return 100.0;
     }
     return 0.0;
