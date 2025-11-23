@@ -17,6 +17,7 @@ class ScoutEnemy extends BaseEnemy {
   static const String ID = 'scout';
   double movementTimer = 0;
   bool isFleeing = false;
+  bool isReturning = false;
 
   ScoutEnemy({
     required Vector2 position,
@@ -58,18 +59,33 @@ class ScoutEnemy extends BaseEnemy {
     // Check if should flee (health < 30%)
     final shouldFlee = health < maxHealth * 0.3;
 
-    // Check distance from player - if too far (>800 units), stop fleeing and return
+    // Check distance from player
     final distanceFromPlayer = PositionUtil.getDistance(this, player);
     final tooFar = distanceFromPlayer > 800;
+    final closeEnough = distanceFromPlayer < 400; // Within combat range again
 
-    isFleeing = shouldFlee && !tooFar;
+    // State management
+    if (tooFar) {
+      // Too far, must return
+      isFleeing = false;
+      isReturning = true;
+    } else if (isReturning && closeEnough) {
+      // Returned to combat range, resume normal behavior
+      isReturning = false;
+    } else if (shouldFlee && !isReturning) {
+      // Can flee if not currently returning
+      isFleeing = true;
+    } else if (!shouldFlee) {
+      // Health recovered above 30%, stop fleeing
+      isFleeing = false;
+    }
 
     if (isFleeing) {
       // Flee away from player
       final direction = PositionUtil.getDirectionTo(player, this);
       position += direction * getEffectiveSpeed() * dt;
-    } else if (tooFar) {
-      // Too far from player, move back towards player
+    } else if (isReturning) {
+      // Returning to player, move straight towards them
       final direction = PositionUtil.getDirectionTo(this, player);
       position += direction * getEffectiveSpeed() * dt;
     } else {
