@@ -56,15 +56,14 @@ class _FlutterHUDState extends State<FlutterHUD> with SingleTickerProviderStateM
           final titleSize = 24.0 * scale;
           final textSize = 16.0 * scale;
 
-          // Calculate wave progress
-          final currentEnemyCount = widget.game.world.children.whereType<BaseEnemy>().length;
+          // Calculate wave progress based on kills only
           final totalEnemies = enemyManager.enemiesToSpawnInWave;
-          final spawnedEnemies = enemyManager.enemiesSpawnedInWave;
 
-          // Calculate enemies remaining (what's left to kill)
-          final enemiesRemaining = currentEnemyCount.clamp(0, totalEnemies);
-          final enemiesKilled = (totalEnemies - enemiesRemaining).clamp(0, totalEnemies);
-          final progress = totalEnemies > 0 ? enemiesKilled / totalEnemies : 0.0;
+          // Track kills via stats manager
+          final enemiesKilled = widget.game.statsManager.getEnemiesKilledThisWave();
+
+          // Progress fills up as you kill enemies (0% -> 100%)
+          final progress = totalEnemies > 0 ? (enemiesKilled / totalEnemies).clamp(0.0, 1.0) : 0.0;
 
           return SafeArea(
             child: Stack(
@@ -112,27 +111,28 @@ class _FlutterHUDState extends State<FlutterHUD> with SingleTickerProviderStateM
                             value: progress.clamp(0.0, 1.0),
                             backgroundColor: Colors.transparent,
                             valueColor: AlwaysStoppedAnimation<Color>(
+                              // Cyan/Red for progress - fills as you kill
                               enemyManager.isInBossWave()
-                                  ? const Color(0xFFFF0000)
-                                  : const Color(0xFF00FFFF),
+                                  ? const Color(0xFFFF0000) // Red for boss
+                                  : const Color(0xFF00FFFF), // Cyan for normal
                             ),
                           ),
                         ),
                       ),
                       SizedBox(height: 4 * scale),
-                      // Enemy count text - show remaining enemies
+                      // Enemy count text - show kills
                       Text(
-                        enemiesRemaining > 0
-                            ? '$enemiesRemaining ${enemiesRemaining == 1 ? "enemy" : "enemies"} remaining'
-                            : 'Wave Complete!',
+                        enemiesKilled >= totalEnemies
+                            ? 'Wave Complete!'
+                            : '$enemiesKilled / $totalEnemies killed',
                         style: TextStyle(
-                          color: enemiesRemaining > 0
-                              ? const Color(0xFFCCCCCC)
-                              : const Color(0xFF00FF00),
+                          color: enemiesKilled >= totalEnemies
+                              ? const Color(0xFF00FF00)
+                              : const Color(0xFFCCCCCC),
                           fontSize: textSize * 0.8,
-                          fontWeight: enemiesRemaining > 0
-                              ? FontWeight.normal
-                              : FontWeight.bold,
+                          fontWeight: enemiesKilled >= totalEnemies
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                           shadows: const [
                             Shadow(
                               color: Colors.black,

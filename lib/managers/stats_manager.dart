@@ -26,6 +26,10 @@ class StatsManager extends Component with HasGameRef<SpaceShooterGame> {
     return enemiesKilledInWave >= enemiesInWave;
   }
 
+  int getEnemiesKilledThisWave() {
+    return enemiesKilledInWave;
+  }
+
   @override
   void update(double dt) {
     super.update(dt);
