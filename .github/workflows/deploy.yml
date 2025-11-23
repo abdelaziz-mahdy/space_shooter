@@ -34,8 +34,8 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Build web app
-        run: flutter build web --release --base-href "/space_shooter/"
+      - name: Build web app with wasm
+        run: flutter build web --release --wasm --base-href "/space_shooter/"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
