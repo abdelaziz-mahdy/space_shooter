@@ -54,17 +54,30 @@ class _FlutterUpgradeDialogState extends State<FlutterUpgradeDialog> {
               ),
             ),
             const SizedBox(height: 40),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: upgrades.map((upgrade) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  child: UpgradeCardWidget(
-                    upgrade: upgrade,
-                    onSelected: () => _selectUpgrade(upgrade),
-                  ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                // Responsive sizing: use 90% of available width
+                final availableWidth = constraints.maxWidth * 0.9;
+                final spacing = constraints.maxWidth * 0.02;
+                final totalSpacing = spacing * (upgrades.length - 1);
+                final cardWidth = (availableWidth - totalSpacing) / upgrades.length;
+                final cardHeight = cardWidth * 1.25;
+
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: upgrades.map((upgrade) {
+                    return Padding(
+                      padding: EdgeInsets.symmetric(horizontal: spacing / 2),
+                      child: UpgradeCardWidget(
+                        upgrade: upgrade,
+                        onSelected: () => _selectUpgrade(upgrade),
+                        width: cardWidth,
+                        height: cardHeight,
+                      ),
+                    );
+                  }).toList(),
                 );
-              }).toList(),
+              },
             ),
           ],
         ),
@@ -76,11 +89,15 @@ class _FlutterUpgradeDialogState extends State<FlutterUpgradeDialog> {
 class UpgradeCardWidget extends StatefulWidget {
   final Upgrade upgrade;
   final VoidCallback onSelected;
+  final double width;
+  final double height;
 
   const UpgradeCardWidget({
     super.key,
     required this.upgrade,
     required this.onSelected,
+    required this.width,
+    required this.height,
   });
 
   @override
@@ -92,49 +109,64 @@ class _UpgradeCardWidgetState extends State<UpgradeCardWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // Responsive font sizes based on card width
+    final iconSize = widget.width * 0.32;
+    final nameSize = widget.width * 0.11;
+    final descSize = widget.width * 0.08;
+    final borderWidth = widget.width * 0.015;
+    final padding = widget.width * 0.08;
+    final spacing = widget.height * 0.04;
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
         onTap: widget.onSelected,
         child: Container(
-          width: 200,
-          height: 250,
+          width: widget.width,
+          height: widget.height,
           decoration: BoxDecoration(
             color: _isHovered ? const Color(0xFF333333) : const Color(0xFF222222),
             border: Border.all(
               color: const Color(0xFF00FFFF),
-              width: 3,
+              width: borderWidth,
             ),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(widget.width * 0.05),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 widget.upgrade.icon,
-                style: const TextStyle(fontSize: 64),
+                style: TextStyle(fontSize: iconSize),
               ),
-              const SizedBox(height: 20),
-              Text(
-                widget.upgrade.name,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
+              SizedBox(height: spacing),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: EdgeInsets.symmetric(horizontal: padding),
                 child: Text(
-                  widget.upgrade.description,
-                  style: const TextStyle(
-                    color: Color(0xFFCCCCCC),
-                    fontSize: 16,
+                  widget.upgrade.name,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: nameSize,
+                    fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              SizedBox(height: spacing * 0.6),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: padding),
+                child: Text(
+                  widget.upgrade.description,
+                  style: TextStyle(
+                    color: const Color(0xFFCCCCCC),
+                    fontSize: descSize,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],

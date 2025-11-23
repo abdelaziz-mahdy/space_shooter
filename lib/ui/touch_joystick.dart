@@ -6,49 +6,60 @@ import '../game/space_shooter_game.dart';
 
 class TouchJoystick extends PositionComponent
     with HasGameRef<SpaceShooterGame>, DragCallbacks {
-  Vector2? touchStartPosition;
+  Vector2? touchStartPosition; // World position where touch started
   Vector2? currentTouchOffset;
-  final double maxOffset = 50.0;
+  final double maxOffset = 80.0; // Maximum drag distance
+  bool isDragging = false;
 
-  TouchJoystick() : super(size: Vector2.all(150), anchor: Anchor.center);
+  TouchJoystick() : super(anchor: Anchor.topLeft);
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    // Position in the center horizontally, below the player
-    final viewportSize = gameRef.camera.viewport.size;
-    position = Vector2(
-      viewportSize.x / 2, // Center horizontally
-      viewportSize.y - 150, // Bottom of screen with padding
-    );
+    // Cover entire viewport to capture touches anywhere
+    size = gameRef.camera.viewport.size.clone();
+    position = Vector2.zero();
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    // Keep size synced with viewport
+    size = gameRef.camera.viewport.size.clone();
   }
 
   @override
   void onDragStart(DragStartEvent event) {
-    touchStartPosition = event.localPosition;
+    super.onDragStart(event);
+    // Store the world position where touch started
+    touchStartPosition = event.localPosition.clone();
     currentTouchOffset = Vector2.zero();
-    gameRef.player.handleTouchStart(position);
+    isDragging = true;
+    gameRef.player.handleTouchStart(touchStartPosition!);
   }
 
   @override
   void onDragUpdate(DragUpdateEvent event) {
-    if (touchStartPosition != null) {
+    if (touchStartPosition != null && isDragging) {
+      // Calculate offset from start position
       var offset = event.localEndPosition - touchStartPosition!;
 
-      // Clamp offset
+      // Clamp offset to max radius
       if (offset.length > maxOffset) {
         offset = offset.normalized() * maxOffset;
       }
 
       currentTouchOffset = offset;
-      gameRef.player.handleTouchMove(position + offset);
+      gameRef.player.handleTouchMove(touchStartPosition! + offset);
     }
   }
 
   @override
   void onDragEnd(DragEndEvent event) {
+    super.onDragEnd(event);
     touchStartPosition = null;
     currentTouchOffset = null;
+    isDragging = false;
     gameRef.player.handleTouchEnd();
   }
 
@@ -56,27 +67,30 @@ class TouchJoystick extends PositionComponent
   void render(Canvas canvas) {
     super.render(canvas);
 
-    // Draw outer circle
-    final outerPaint = Paint()
-      ..color = const Color(0x66FFFFFF)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
+    // Only render joystick when actively dragging
+    if (isDragging && touchStartPosition != null) {
+      // Draw outer circle at touch start position
+      final outerPaint = Paint()
+        ..color = const Color(0x44FFFFFF)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3;
 
-    canvas.drawCircle(Offset.zero, maxOffset, outerPaint);
+      canvas.drawCircle(touchStartPosition!.toOffset(), maxOffset, outerPaint);
 
-    // Draw inner stick
-    if (currentTouchOffset != null) {
+      // Draw inner stick/thumb
+      final thumbPosition = touchStartPosition! + (currentTouchOffset ?? Vector2.zero());
       final innerPaint = Paint()
-        ..color = const Color(0xAAFFFFFF)
+        ..color = const Color(0x88FFFFFF)
         ..style = PaintingStyle.fill;
 
-      canvas.drawCircle(currentTouchOffset!.toOffset(), 20, innerPaint);
-    } else {
-      final innerPaint = Paint()
+      canvas.drawCircle(thumbPosition.toOffset(), 25, innerPaint);
+
+      // Draw center dot
+      final centerPaint = Paint()
         ..color = const Color(0x66FFFFFF)
         ..style = PaintingStyle.fill;
 
-      canvas.drawCircle(Offset.zero, 20, innerPaint);
+      canvas.drawCircle(touchStartPosition!.toOffset(), 8, centerPaint);
     }
   }
 }
