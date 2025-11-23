@@ -57,9 +57,13 @@ class _FlutterHUDState extends State<FlutterHUD> with SingleTickerProviderStateM
           final textSize = 16.0 * scale;
 
           // Calculate wave progress
-          final enemiesKilled = enemyManager.enemiesSpawnedInWave -
-              widget.game.world.children.whereType<BaseEnemy>().length;
+          final currentEnemyCount = widget.game.world.children.whereType<BaseEnemy>().length;
           final totalEnemies = enemyManager.enemiesToSpawnInWave;
+          final spawnedEnemies = enemyManager.enemiesSpawnedInWave;
+
+          // Calculate enemies remaining (what's left to kill)
+          final enemiesRemaining = currentEnemyCount.clamp(0, totalEnemies);
+          final enemiesKilled = (totalEnemies - enemiesRemaining).clamp(0, totalEnemies);
           final progress = totalEnemies > 0 ? enemiesKilled / totalEnemies : 0.0;
 
           return SafeArea(
