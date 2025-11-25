@@ -12,12 +12,12 @@ import '../player_ship.dart';
 /// - Diamond shape, cyan color, size 15x15
 /// - Health: 10 + (wave * 1), Speed: 120 + (wave * 3)
 /// - Zigzag movement pattern using sine wave
-/// - Flees when health < 30%
+/// - Flees when health < 30%, commits to kamikaze attack when too far
 class ScoutEnemy extends BaseEnemy {
   static const String ID = 'scout';
   double movementTimer = 0;
   bool isFleeing = false;
-  bool isReturning = false;
+  bool isCommittedToAttack = false; // Once fled too far, commit to kamikaze attack
 
   ScoutEnemy({
     required Vector2 position,
@@ -56,27 +56,36 @@ class ScoutEnemy extends BaseEnemy {
   void updateMovement(double dt) {
     movementTimer += dt;
 
+    // Check distance from player
+    final distanceFromPlayer = PositionUtil.getDistance(this, player);
+
+    // Max distance to flee before committing to kamikaze attack
+    const maxFleeDistance = 600.0;
+
+    // Once committed to attack, never flee again - kamikaze mode
+    if (isCommittedToAttack) {
+      // Aggressive straight-line attack towards player with speed boost
+      final direction = PositionUtil.getDirectionTo(this, player);
+      position += direction * getEffectiveSpeed() * 1.3 * dt;
+      angle = atan2(direction.y, direction.x) + pi / 4;
+      return;
+    }
+
+    // Check if fleeing scout has gone too far - commit to kamikaze attack
+    if (isFleeing && distanceFromPlayer > maxFleeDistance) {
+      isFleeing = false;
+      isCommittedToAttack = true;
+      return;
+    }
+
     // Check if should flee (health < 30%)
     final shouldFlee = health < maxHealth * 0.3;
 
-    // Check distance from player
-    final distanceFromPlayer = PositionUtil.getDistance(this, player);
-    final tooFar = distanceFromPlayer > 800;
-    final closeEnough = distanceFromPlayer < 400; // Within combat range again
-
-    // State management
-    if (tooFar) {
-      // Too far, must return
-      isFleeing = false;
-      isReturning = true;
-    } else if (isReturning && closeEnough) {
-      // Returned to combat range, resume normal behavior
-      isReturning = false;
-    } else if (shouldFlee && !isReturning) {
-      // Can flee if not currently returning
+    if (shouldFlee && !isFleeing) {
+      // Start fleeing
       isFleeing = true;
-    } else if (!shouldFlee) {
-      // Health recovered above 30%, stop fleeing
+    } else if (!shouldFlee && isFleeing) {
+      // Health recovered, stop fleeing
       isFleeing = false;
     }
 
@@ -84,27 +93,17 @@ class ScoutEnemy extends BaseEnemy {
       // Flee away from player
       final direction = PositionUtil.getDirectionTo(player, this);
       position += direction * getEffectiveSpeed() * dt;
-    } else if (isReturning) {
-      // Returning to player, move straight towards them
-      final direction = PositionUtil.getDirectionTo(this, player);
-      position += direction * getEffectiveSpeed() * dt;
+      angle = atan2(direction.y, direction.x) + pi / 4;
     } else {
-      // Zigzag movement towards player
+      // Normal zigzag movement towards player
       final baseDirection = PositionUtil.getDirectionTo(this, player);
-
-      // Add sine wave for zigzag effect
       final perpendicular = Vector2(-baseDirection.y, baseDirection.x);
-      final zigzagOffset = sin(movementTimer * 5) * 0.5; // Adjust frequency and amplitude
+      final zigzagOffset = sin(movementTimer * 5) * 0.5;
 
       final movement = baseDirection + (perpendicular * zigzagOffset);
       position += movement.normalized() * getEffectiveSpeed() * dt;
+      angle = atan2(baseDirection.y, baseDirection.x) + pi / 4;
     }
-
-    // Rotate to face movement direction
-    final direction = isFleeing
-        ? PositionUtil.getDirectionTo(player, this)
-        : PositionUtil.getDirectionTo(this, player);
-    angle = atan2(direction.y, direction.x) + pi / 4; // +45° for diamond orientation
   }
 
   @override
@@ -137,10 +136,23 @@ class ScoutEnemy extends BaseEnemy {
     renderFreezeEffect(canvas);
     renderHealthBar(canvas);
 
-    // Draw flee indicator if fleeing
-    if (isFleeing) {
+    // Draw state indicator
+    if (isCommittedToAttack) {
+      // Red pulsing circle when committed to attack (kamikaze mode)
+      final attackPaint = Paint()
+        ..color = const Color(0xFFFF0000).withValues(alpha: 0.7)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.5;
+
+      canvas.drawCircle(
+        Offset(size.x / 2, size.y / 2),
+        size.x / 2 + 3,
+        attackPaint,
+      );
+    } else if (isFleeing) {
+      // Yellow circle when fleeing
       final warningPaint = Paint()
-        ..color = const Color(0xFFFFFF00).withOpacity(0.5)
+        ..color = const Color(0xFFFFFF00).withValues(alpha: 0.5)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2;
 
