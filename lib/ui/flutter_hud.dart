@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../game/space_shooter_game.dart';
-import '../components/enemies/base_enemy.dart';
 
 class FlutterHUD extends StatefulWidget {
   final SpaceShooterGame game;
@@ -45,7 +44,7 @@ class _FlutterHUDState extends State<FlutterHUD> with SingleTickerProviderStateM
     }
 
     final enemyManager = widget.game.enemyManager;
-    final player = widget.game.player;
+    final statsManager = widget.game.statsManager;
 
     return LayoutBuilder(
         builder: (context, constraints) {
@@ -56,11 +55,9 @@ class _FlutterHUDState extends State<FlutterHUD> with SingleTickerProviderStateM
           final titleSize = 24.0 * scale;
           final textSize = 16.0 * scale;
 
-          // Calculate wave progress based on kills only
-          final totalEnemies = enemyManager.enemiesToSpawnInWave;
-
-          // Track kills via stats manager
-          final enemiesKilled = widget.game.statsManager.getEnemiesKilledThisWave();
+          // Get wave data from stats manager (single source of truth)
+          final totalEnemies = statsManager.enemiesInWave;
+          final enemiesKilled = statsManager.getEnemiesKilledThisWave();
 
           // Progress fills up as you kill enemies (0% -> 100%)
           final progress = totalEnemies > 0 ? (enemiesKilled / totalEnemies).clamp(0.0, 1.0) : 0.0;

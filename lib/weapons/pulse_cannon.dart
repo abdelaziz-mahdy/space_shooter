@@ -49,7 +49,11 @@ class PulseCannon extends Weapon {
       game.world.add(bullet);
     } else {
       // Multiple projectiles in a spread pattern
-      final angleSpread = 0.2;
+      // Use tighter spread that scales with projectile count
+      // 2 projectiles: 0.08 rad (~4.5°) between them
+      // 3 projectiles: 0.08 rad between each
+      // More projectiles = wider total spread but same density
+      final angleSpread = 0.08; // Tighter spread for accuracy
       final baseAngle = atan2(targetDirection.y, targetDirection.x);
 
       for (int i = 0; i < player.projectileCount; i++) {

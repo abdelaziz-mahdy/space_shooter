@@ -40,8 +40,8 @@ class MissileLauncher extends Weapon {
         // Single missile - fire straight
         missileDirection = targetDirection.normalized();
       } else {
-        // Multiple missiles - slight spread
-        final angleSpread = 0.15;
+        // Multiple missiles - tighter spread since missiles are homing
+        final angleSpread = 0.1; // ~5.7° between missiles
         final baseAngle = atan2(targetDirection.y, targetDirection.x);
         final offset = (i - (player.projectileCount - 1) / 2) * angleSpread;
         final missileAngle = baseAngle + offset;
