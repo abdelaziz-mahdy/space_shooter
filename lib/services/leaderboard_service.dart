@@ -42,14 +42,16 @@ class LeaderboardEntry {
   factory LeaderboardEntry.fromJson(Map<String, dynamic> json) {
     return LeaderboardEntry(
       id: json['id'] as int?,
-      playerName: json['player_name'] as String,
+      playerName: (json['playerName'] ?? json['player_name']) as String,
       score: json['score'] as int,
       wave: json['wave'] as int,
       kills: json['kills'] as int,
-      timeAlive: (json['time_alive'] as num).toDouble(),
-      upgrades: (json['upgrades'] as List<dynamic>).map((e) => e.toString()).toList(),
-      weaponUsed: json['weapon_used'] as String?,
-      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at'] as String) : null,
+      timeAlive: (json['timeAlive'] ?? json['time_alive'] as num).toDouble(),
+      upgrades: ((json['upgrades'] ?? []) as List<dynamic>).map((e) => e.toString()).toList(),
+      weaponUsed: (json['weaponUsed'] ?? json['weapon_used']) as String?,
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'] as String)
+          : (json['created_at'] != null ? DateTime.parse(json['created_at'] as String) : null),
       rank: json['rank'] as int?,
     );
   }
@@ -122,7 +124,7 @@ class LeaderboardService {
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body) as Map<String, dynamic>;
         if (json['success'] == true) {
-          final data = json['data'] as List<dynamic>;
+          final data = json['entries'] as List<dynamic>;
           final entries = data.map((e) => LeaderboardEntry.fromJson(e as Map<String, dynamic>)).toList();
           return LeaderboardResult(success: true, entries: entries);
         }
@@ -166,7 +168,7 @@ class LeaderboardService {
       if (response.statusCode == 201) {
         final json = jsonDecode(response.body) as Map<String, dynamic>;
         if (json['success'] == true) {
-          final data = json['data'] as Map<String, dynamic>;
+          final data = json['entry'] as Map<String, dynamic>;
           final submittedEntry = LeaderboardEntry.fromJson(data);
 
           // Save player name for next time
