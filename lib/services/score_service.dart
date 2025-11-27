@@ -7,6 +7,8 @@ class GameScore {
   final int kills;
   final double timeAlive;
   final DateTime timestamp;
+  final List<String> upgrades;
+  final String? weaponUsed;
 
   GameScore({
     required this.score,
@@ -14,6 +16,8 @@ class GameScore {
     required this.kills,
     required this.timeAlive,
     required this.timestamp,
+    this.upgrades = const [],
+    this.weaponUsed,
   });
 
   String get formattedTime {
@@ -28,14 +32,20 @@ class GameScore {
         'kills': kills,
         'timeAlive': timeAlive,
         'timestamp': timestamp.toIso8601String(),
+        'upgrades': upgrades,
+        'weaponUsed': weaponUsed,
       };
 
   factory GameScore.fromJson(Map<String, dynamic> json) => GameScore(
         score: json['score'] as int,
         wave: json['wave'] as int,
         kills: json['kills'] as int,
-        timeAlive: json['timeAlive'] as double,
+        timeAlive: (json['timeAlive'] as num).toDouble(),
         timestamp: DateTime.parse(json['timestamp'] as String),
+        upgrades: ((json['upgrades'] ?? []) as List<dynamic>)
+            .map((e) => e.toString())
+            .toList(),
+        weaponUsed: json['weaponUsed'] as String?,
       );
 }
 
