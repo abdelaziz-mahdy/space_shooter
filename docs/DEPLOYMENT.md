@@ -95,40 +95,36 @@ Your API endpoints will be:
 
 ## Database Setup (Neon)
 
-### Step 1: Create a Neon Project
+### Option A: Connect via Vercel Integration (Recommended)
 
-1. Go to [neon.tech](https://neon.tech) and sign up/login
-2. Click "Create Project"
-3. Choose a name (e.g., `space-shooter-db`)
-4. Select a region close to your users
-5. Click "Create Project"
+The easiest way - Vercel automatically sets up the connection strings.
 
-### Step 2: Get Connection String
+1. Go to your Vercel project dashboard
+2. Navigate to **Storage** tab
+3. Click **Connect Database** → **Neon**
+4. Create a new Neon project or connect an existing one
+5. Vercel automatically adds `DATABASE_URL` and other connection variables
 
-1. In your Neon dashboard, go to your project
-2. Click "Connection Details"
-3. Copy the connection string (looks like):
+### Option B: Manual Setup
+
+If you prefer to set up manually:
+
+1. Go to [neon.tech](https://neon.tech) and create a project
+2. Copy the connection string from **Connection Details**:
    ```
    postgres://user:password@ep-xxx.region.aws.neon.tech/neondb?sslmode=require
    ```
-
-### Step 3: Add Environment Variables to Vercel
-
-1. Go to your Vercel project dashboard
-2. Navigate to **Settings → Environment Variables**
-3. Add:
+3. In Vercel → **Settings → Environment Variables**, add:
    - **Name:** `DATABASE_URL`
    - **Value:** Your Neon connection string
    - **Environments:** Production, Preview, Development
-4. Click "Save"
 
-### Step 4: Run Database Migration
+### Run Database Migration
 
-The server includes a built-in migration endpoint that creates the necessary tables.
+After connecting the database, run the migration to create tables.
 
-1. **Redeploy to pick up environment variables:**
+1. **Redeploy** (if you added env vars manually):
    ```bash
-   cd leaderboard-server
    vercel --prod
    ```
 
@@ -144,7 +140,7 @@ The server includes a built-in migration endpoint that creates the necessary tab
 
 This creates the `leaderboard` table and indexes. Safe to call multiple times - it uses `IF NOT EXISTS`.
 
-### Step 5: Test the API
+### Test the API
 
 ```bash
 # Health check
