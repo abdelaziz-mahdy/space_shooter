@@ -88,8 +88,8 @@ https://space-shooter-leaderboard.vercel.app
 ```
 
 Your API endpoints will be:
-- Health check: `https://space-shooter-leaderboard.vercel.app/api/health`
-- Scores: `https://space-shooter-leaderboard.vercel.app/api/scores`
+- Health check: `https://space-shooter-leaderboard.vercel.app/health`
+- Scores: `https://space-shooter-leaderboard.vercel.app/scores`
 
 ---
 
@@ -148,13 +148,13 @@ This creates the `leaderboard` table and indexes. Safe to call multiple times - 
 
 ```bash
 # Health check
-curl https://your-project.vercel.app/api/health
+curl https://your-project.vercel.app/health
 
 # Should return:
 # {"status":"ok","timestamp":"...","service":"space-shooter-leaderboard"}
 
 # Get top scores
-curl https://your-project.vercel.app/api/scores
+curl https://your-project.vercel.app/scores
 
 # Should return:
 # {"success":true,"entries":[],"total":0}
@@ -172,7 +172,7 @@ To enable leaderboard in the deployed game:
 2. Click **New repository secret**
 3. Add:
    - **Name:** `LEADERBOARD_API_URL`
-   - **Value:** `https://your-project.vercel.app/api`
+   - **Value:** `https://your-project.vercel.app`
 
 The GitHub Actions workflow will automatically inject this into the build.
 
@@ -181,7 +181,7 @@ The GitHub Actions workflow will automatically inject this into the build.
 Create a `.env` file in the project root:
 
 ```env
-LEADERBOARD_API_URL=https://your-project.vercel.app/api
+LEADERBOARD_API_URL=https://your-project.vercel.app
 ```
 
 **Important:** Never commit `.env` files! They're already in `.gitignore`.
@@ -192,7 +192,7 @@ LEADERBOARD_API_URL=https://your-project.vercel.app/api
 
 ### "Failed to load leaderboard"
 - Check if `LEADERBOARD_API_URL` is set correctly
-- Verify the API is responding: `curl <your-api-url>/health`
+- Verify the API is responding: `curl https://your-project.vercel.app/health`
 - Check Vercel logs for errors
 
 ### "Database connection failed"
