@@ -147,19 +147,8 @@ app.get('/health', (c) => {
 });
 
 // Migration endpoint - creates tables if they don't exist
-// Call this once after setting up the database
+// Safe to call multiple times - uses IF NOT EXISTS
 app.get('/migrate', async (c) => {
-  const secret = c.req.query('secret');
-  const expectedSecret = process.env.MIGRATION_SECRET;
-
-  // Require a secret to prevent unauthorized access
-  if (!expectedSecret || secret !== expectedSecret) {
-    return c.json({
-      success: false,
-      error: 'Unauthorized - provide ?secret=YOUR_MIGRATION_SECRET',
-    }, 401);
-  }
-
   try {
     // Create leaderboard table if it doesn't exist
     await query(`

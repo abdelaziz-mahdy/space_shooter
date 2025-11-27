@@ -116,17 +116,11 @@ Your API endpoints will be:
 
 1. Go to your Vercel project dashboard
 2. Navigate to **Settings → Environment Variables**
-3. Add these variables:
-
-   | Name | Value | Description |
-   |------|-------|-------------|
-   | `DATABASE_URL` | Your Neon connection string | PostgreSQL connection |
-   | `MIGRATION_SECRET` | A random secret string | Protects the migration endpoint |
-
-   For `MIGRATION_SECRET`, generate a random string (e.g., `openssl rand -hex 32`)
-
-4. Set **Environments** to: Production, Preview, Development
-5. Click "Save"
+3. Add:
+   - **Name:** `DATABASE_URL`
+   - **Value:** Your Neon connection string
+   - **Environments:** Production, Preview, Development
+4. Click "Save"
 
 ### Step 4: Run Database Migration
 
@@ -138,9 +132,9 @@ The server includes a built-in migration endpoint that creates the necessary tab
    vercel --prod
    ```
 
-2. **Run the migration** (replace with your values):
+2. **Run the migration:**
    ```bash
-   curl "https://your-project.vercel.app/migrate?secret=YOUR_MIGRATION_SECRET"
+   curl "https://your-project.vercel.app/migrate"
    ```
 
 3. **Expected response:**
@@ -148,7 +142,7 @@ The server includes a built-in migration endpoint that creates the necessary tab
    {"success":true,"message":"Migration completed successfully"}
    ```
 
-This creates the `leaderboard` table and indexes. You only need to run this once.
+This creates the `leaderboard` table and indexes. Safe to call multiple times - it uses `IF NOT EXISTS`.
 
 ### Step 5: Test the API
 
