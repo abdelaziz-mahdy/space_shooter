@@ -11,6 +11,8 @@ class GameOverOverlay extends PositionComponent
   final String timeAlive;
   final double timeAliveSeconds;
   final int wavesCompleted;
+  final List<String> upgrades;
+  final String? weaponUsed;
   final VoidCallback onRestart;
   final VoidCallback onMainMenu;
   bool _scoreSaved = false;
@@ -20,6 +22,8 @@ class GameOverOverlay extends PositionComponent
     required this.timeAlive,
     required this.timeAliveSeconds,
     required this.wavesCompleted,
+    required this.upgrades,
+    this.weaponUsed,
     required this.onRestart,
     required this.onMainMenu,
   });
@@ -52,6 +56,8 @@ class GameOverOverlay extends PositionComponent
       kills: enemiesKilled,
       timeAlive: timeAliveSeconds,
       timestamp: DateTime.now(),
+      upgrades: upgrades,
+      weaponUsed: weaponUsed,
     );
 
     await scoreService.saveScore(gameScore);

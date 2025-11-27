@@ -60,6 +60,7 @@ class _FlutterGameOverScreenState extends State<FlutterGameOverScreen> {
 
     final statsManager = widget.game.statsManager;
     final enemyManager = widget.game.enemyManager;
+    final player = widget.game.player;
 
     final enemiesKilled = statsManager.enemiesKilled;
     final wavesCompleted = enemyManager.getCurrentWave() - 1;
@@ -74,6 +75,8 @@ class _FlutterGameOverScreenState extends State<FlutterGameOverScreen> {
       kills: enemiesKilled,
       timeAlive: timeAliveSeconds,
       timestamp: DateTime.now(),
+      upgrades: List<String>.from(player.appliedUpgrades),
+      weaponUsed: player.weaponManager.getCurrentWeaponId(),
     );
 
     await scoreService.saveScore(gameScore);
