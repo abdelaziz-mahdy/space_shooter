@@ -96,6 +96,14 @@ For leaderboard functionality, create a `.env` file:
 LEADERBOARD_API_URL=https://your-vercel-deployment.vercel.app/api
 ```
 
+## Deployment
+
+Want to host your own version? See the [Deployment Guide](docs/DEPLOYMENT.md) for:
+- Deploying the game to GitHub Pages
+- Setting up the leaderboard server on Vercel
+- Configuring the Neon PostgreSQL database
+- CI/CD with GitHub Actions
+
 ## Project Structure
 
 ```
