@@ -31,6 +31,10 @@ jobs:
           channel: 'stable'  # Always use latest stable Flutter
           cache: true
 
+      - name: Create .env file
+        run: |
+          echo "LEADERBOARD_API_URL=${{ secrets.LEADERBOARD_API_URL }}" > .env
+
       - name: Get dependencies
         run: flutter pub get
 

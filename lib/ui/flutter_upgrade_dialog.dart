@@ -23,6 +23,8 @@ class _FlutterUpgradeDialogState extends State<FlutterUpgradeDialog> {
 
   void _selectUpgrade(Upgrade upgrade) {
     upgrade.apply(widget.game.player);
+    // Track upgrade for leaderboard
+    widget.game.player.appliedUpgrades.add(upgrade.id);
     widget.game.resumeFromUpgrade();
     if (widget.game.onHideUpgrade != null) {
       widget.game.onHideUpgrade!();
@@ -120,15 +122,45 @@ class UpgradeCardWidget extends StatefulWidget {
 class _UpgradeCardWidgetState extends State<UpgradeCardWidget> {
   bool _isHovered = false;
 
+  Color _getRarityColor(UpgradeRarity rarity) {
+    switch (rarity) {
+      case UpgradeRarity.common:
+        return const Color(0xFF888888); // Gray
+      case UpgradeRarity.rare:
+        return const Color(0xFF00AAFF); // Blue
+      case UpgradeRarity.epic:
+        return const Color(0xFFAA00FF); // Purple
+      case UpgradeRarity.legendary:
+        return const Color(0xFFFFAA00); // Orange/Gold
+    }
+  }
+
+  String _getRarityName(UpgradeRarity rarity) {
+    switch (rarity) {
+      case UpgradeRarity.common:
+        return 'COMMON';
+      case UpgradeRarity.rare:
+        return 'RARE';
+      case UpgradeRarity.epic:
+        return 'EPIC';
+      case UpgradeRarity.legendary:
+        return 'LEGENDARY';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final rarity = widget.upgrade.rarity;
+    final rarityColor = _getRarityColor(rarity);
+
     // Responsive font sizes based on card width
-    final iconSize = widget.width * 0.32;
-    final nameSize = widget.width * 0.11;
-    final descSize = widget.width * 0.08;
-    final borderWidth = widget.width * 0.015;
+    final iconSize = widget.width * 0.28;
+    final nameSize = widget.width * 0.10;
+    final descSize = widget.width * 0.07;
+    final raritySize = widget.width * 0.06;
+    final borderWidth = widget.width * 0.02;
     final padding = widget.width * 0.08;
-    final spacing = widget.height * 0.04;
+    final spacing = widget.height * 0.03;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -139,48 +171,105 @@ class _UpgradeCardWidgetState extends State<UpgradeCardWidget> {
           width: widget.width,
           height: widget.height,
           decoration: BoxDecoration(
-            color: _isHovered ? const Color(0xFF333333) : const Color(0xFF222222),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                _isHovered
+                    ? rarityColor.withValues(alpha: 0.25)
+                    : rarityColor.withValues(alpha: 0.15),
+                _isHovered
+                    ? const Color(0xFF333333)
+                    : const Color(0xFF222222),
+              ],
+            ),
             border: Border.all(
-              color: const Color(0xFF00FFFF),
+              color: rarityColor,
               width: borderWidth,
             ),
             borderRadius: BorderRadius.circular(widget.width * 0.05),
+            boxShadow: rarity != UpgradeRarity.common
+                ? [
+                    BoxShadow(
+                      color: rarityColor.withValues(alpha: 0.4),
+                      blurRadius: 12,
+                      spreadRadius: 1,
+                    ),
+                  ]
+                : null,
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Stack(
             children: [
-              Text(
-                widget.upgrade.icon,
-                style: TextStyle(fontSize: iconSize),
-              ),
-              SizedBox(height: spacing),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: padding),
-                child: Text(
-                  widget.upgrade.name,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: nameSize,
-                    fontWeight: FontWeight.bold,
+              // Rarity badge at top
+              Positioned(
+                top: spacing,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: padding * 0.6,
+                      vertical: spacing * 0.3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: rarityColor.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(widget.width * 0.03),
+                      border: Border.all(
+                        color: rarityColor.withValues(alpha: 0.6),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      _getRarityName(rarity),
+                      style: TextStyle(
+                        color: rarityColor,
+                        fontSize: raritySize,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                      ),
+                    ),
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              SizedBox(height: spacing * 0.6),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: padding),
-                child: Text(
-                  widget.upgrade.description,
-                  style: TextStyle(
-                    color: const Color(0xFFCCCCCC),
-                    fontSize: descSize,
+              // Main content
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(height: spacing * 2),
+                  Text(
+                    widget.upgrade.icon,
+                    style: TextStyle(fontSize: iconSize),
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                  SizedBox(height: spacing),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: padding),
+                    child: Text(
+                      widget.upgrade.name,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: nameSize,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  SizedBox(height: spacing * 0.5),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: padding),
+                    child: Text(
+                      widget.upgrade.description,
+                      style: TextStyle(
+                        color: const Color(0xFFCCCCCC),
+                        fontSize: descSize,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
