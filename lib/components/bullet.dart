@@ -6,7 +6,7 @@ import '../utils/visual_center_mixin.dart';
 import '../utils/position_util.dart';
 import 'base_rendered_component.dart';
 import 'enemies/base_enemy.dart';
-import 'damage_number.dart';
+import 'damage_number.dart'; // Still needed for healing numbers
 import '../game/space_shooter_game.dart';
 
 enum BulletType {
@@ -152,16 +152,8 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
       // Play hit sound effect
       gameRef.audioManager.playHit();
 
-      // Deal damage to the hit enemy
-      other.takeDamage(actualDamage);
-
-      // Spawn damage number at impact location
-      final damageNumber = DamageNumber(
-        position: other.position.clone(),
-        damage: actualDamage,
-        isCrit: isCrit,
-      );
-      gameRef.world.add(damageNumber);
+      // Deal damage to the hit enemy (damage number is shown by base_enemy.takeDamage)
+      other.takeDamage(actualDamage, isCrit: isCrit);
 
       // Apply freeze effect (only BaseEnemy has freeze)
       if (player.freezeChance > 0 && Random().nextDouble() < player.freezeChance) {
@@ -266,17 +258,9 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
   }
 
   /// Generic helper to deal damage to an enemy with visual effects
-  void _damageEnemy(BaseEnemy enemy, double damage, {bool isCrit = false, bool showDamageNumber = true}) {
-    enemy.takeDamage(damage);
-
-    if (showDamageNumber) {
-      final damageNumber = DamageNumber(
-        position: enemy.position.clone(),
-        damage: damage,
-        isCrit: isCrit,
-      );
-      gameRef.world.add(damageNumber);
-    }
+  void _damageEnemy(BaseEnemy enemy, double damage, {bool isCrit = false}) {
+    // Damage number is shown automatically by base_enemy.takeDamage
+    enemy.takeDamage(damage, isCrit: isCrit);
   }
 
   void _createChainLightning(BaseEnemy hitEnemy, int maxChains) {

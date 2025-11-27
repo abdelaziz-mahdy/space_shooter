@@ -64,8 +64,8 @@ class TankEnemy extends BaseEnemy {
   }
 
   @override
-  void takeDamage(double damage) {
-    super.takeDamage(damage);
+  void takeDamage(double damage, {bool isCrit = false, bool showDamageNumber = true}) {
+    super.takeDamage(damage, isCrit: isCrit, showDamageNumber: showDamageNumber);
     // Reset regeneration timer when damaged
     timeSinceLastDamage = 0;
   }

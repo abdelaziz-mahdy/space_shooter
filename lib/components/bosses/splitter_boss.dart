@@ -135,9 +135,9 @@ class SplitterBoss extends BaseEnemy {
   }
 
   @override
-  void takeDamage(double damage) {
+  void takeDamage(double damage, {bool isCrit = false, bool showDamageNumber = true}) {
     final healthBefore = health;
-    super.takeDamage(damage);
+    super.takeDamage(damage, isCrit: isCrit, showDamageNumber: showDamageNumber);
 
     // Check for split thresholds (only for original and medium)
     if (splitLevel == SplitLevel.original) {
@@ -205,21 +205,13 @@ class SplitterBoss extends BaseEnemy {
     // Update zigzag timer
     zigzagTimer += dt;
 
-    // Change zigzag direction randomly every 1-2 seconds
+    // Change zigzag direction randomly every 1-2 seconds (not every frame!)
     if (zigzagTimer >= zigzagDuration) {
       zigzagTimer = 0;
       _updateZigzagDirection();
     }
 
-    // Move in zigzag pattern toward player
-    final toPlayer = PositionUtil.getDirectionTo(this, player);
-
-    // Combine player direction with zigzag offset
-    final perpendicular = Vector2(-toPlayer.y, toPlayer.x); // Perpendicular to player direction
-    final zigzagOffset = perpendicular * (_random.nextDouble() * 2 - 1); // Random left/right
-
-    currentZigzagDirection = (toPlayer + zigzagOffset * 0.5).normalized();
-
+    // Move in current zigzag direction (set by _updateZigzagDirection, not random per-frame)
     // Move faster when below 50% health
     final healthPercent = health / maxHealth;
     final speedMultiplier = healthPercent <= 0.5 ? 1.5 : 1.0;

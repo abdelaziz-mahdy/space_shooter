@@ -135,9 +135,9 @@ class NexusBoss extends BaseEnemy {
   }
 
   @override
-  void takeDamage(double damage) {
+  void takeDamage(double damage, {bool isCrit = false, bool showDamageNumber = true}) {
     final healthBefore = health;
-    super.takeDamage(damage);
+    super.takeDamage(damage, isCrit: isCrit, showDamageNumber: showDamageNumber);
 
     final healthPercent = health / maxHealth;
 

@@ -167,23 +167,19 @@ class ShielderBoss extends BaseEnemy {
   }
 
   void shoot8Way() {
-    // Shoot in 8 directions: cardinal + diagonal
-    final directions = [
-      Vector2(1, 0),    // Right
-      Vector2(1, 1),    // Bottom-right
-      Vector2(0, 1),    // Down
-      Vector2(-1, 1),   // Bottom-left
-      Vector2(-1, 0),   // Left
-      Vector2(-1, -1),  // Top-left
-      Vector2(0, -1),   // Up
-      Vector2(1, -1),   // Top-right
-    ];
+    // Get direction to player
+    final toPlayer = PositionUtil.getDirectionTo(this, player);
+    final baseAngle = atan2(toPlayer.y, toPlayer.x);
 
-    for (final dir in directions) {
-      final normalizedDir = dir.normalized();
+    // Shoot 8 bullets in a spread, centered on player direction
+    // This ensures some bullets always go toward the player
+    for (int i = 0; i < 8; i++) {
+      final spreadAngle = baseAngle + (i * pi / 4); // 45 degrees apart
+      final bulletDirection = Vector2(cos(spreadAngle), sin(spreadAngle));
+
       final bullet = EnemyBullet(
         position: position.clone(),
-        direction: normalizedDir,
+        direction: bulletDirection,
         damage: bulletDamage,
         speed: bulletSpeed,
       );

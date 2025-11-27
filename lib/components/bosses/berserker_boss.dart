@@ -108,9 +108,9 @@ class BerserkerBoss extends BaseEnemy {
   }
 
   @override
-  void takeDamage(double damage) {
+  void takeDamage(double damage, {bool isCrit = false, bool showDamageNumber = true}) {
     final previousHealth = health;
-    super.takeDamage(damage);
+    super.takeDamage(damage, isCrit: isCrit, showDamageNumber: showDamageNumber);
 
     // Check if crossed any rage thresholds
     checkRageThresholds(previousHealth);

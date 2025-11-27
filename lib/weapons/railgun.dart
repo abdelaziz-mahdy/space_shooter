@@ -2,7 +2,6 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:flame/components.dart';
 import '../components/beam_effect.dart';
-import '../components/damage_number.dart';
 import '../components/player_ship.dart';
 import '../components/enemies/base_enemy.dart';
 import '../game/space_shooter_game.dart';
@@ -73,19 +72,11 @@ class Railgun extends Weapon {
     // Check each enemy if it's in the beam's path
     for (final enemy in allEnemies) {
       if (_isEnemyInBeamPath(start, directionNormalized, maxRange, enemy)) {
-        // Apply damage to enemy
-        enemy.takeDamage(actualDamage);
+        // Apply damage to enemy (damage number shown automatically by base_enemy)
+        enemy.takeDamage(actualDamage, isCrit: isCrit);
 
         // Play hit sound
         game.audioManager.playHit();
-
-        // Spawn damage number
-        final damageNumber = DamageNumber(
-          position: enemy.position.clone(),
-          damage: actualDamage,
-          isCrit: isCrit,
-        );
-        game.world.add(damageNumber);
 
         // Apply lifesteal
         if (player.lifesteal > 0) {

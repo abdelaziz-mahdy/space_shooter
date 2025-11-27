@@ -5,6 +5,7 @@ import 'package:flame/collisions.dart';
 import '../../game/space_shooter_game.dart';
 import '../../utils/visual_center_mixin.dart';
 import '../base_rendered_component.dart';
+import '../damage_number.dart';
 import '../loot.dart';
 import '../../factories/power_up_factory.dart';
 import '../player_ship.dart';
@@ -94,9 +95,20 @@ abstract class BaseEnemy extends BaseRenderedComponent
   }
 
   /// Take damage with optional damage modification
-  void takeDamage(double damage) {
+  /// Shows damage number automatically - weapons don't need to handle this
+  void takeDamage(double damage, {bool isCrit = false, bool showDamageNumber = true}) {
     final actualDamage = modifyIncomingDamage(damage);
     health -= actualDamage;
+
+    // Show damage number (centralized - all weapons get this for free)
+    if (showDamageNumber && actualDamage > 0) {
+      final damageNumber = DamageNumber(
+        position: position.clone(),
+        damage: actualDamage,
+        isCrit: isCrit,
+      );
+      gameRef.world.add(damageNumber);
+    }
 
     if (health <= 0) {
       die();
