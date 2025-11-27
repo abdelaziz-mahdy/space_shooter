@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'ui/main_menu.dart';
 import 'ui/game_screen.dart';
+import 'config/env_config.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await EnvConfig.init();
   runApp(const GameApp());
 }
 
