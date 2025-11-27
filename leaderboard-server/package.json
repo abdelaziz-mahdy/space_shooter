@@ -8,7 +8,8 @@
     "lint": "eslint . --ext .ts"
   },
   "dependencies": {
-    "@vercel/postgres": "^0.10.0"
+    "@vercel/postgres": "^0.10.0",
+    "vercel": "^48.11.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
