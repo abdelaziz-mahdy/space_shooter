@@ -112,49 +112,45 @@ Your API endpoints will be:
    postgres://user:password@ep-xxx.region.aws.neon.tech/neondb?sslmode=require
    ```
 
-### Step 3: Create the Database Table
-
-1. In Neon dashboard, click "SQL Editor"
-2. Run this SQL:
-
-```sql
-CREATE TABLE IF NOT EXISTS leaderboard (
-  id SERIAL PRIMARY KEY,
-  player_name VARCHAR(20) NOT NULL,
-  score INTEGER NOT NULL,
-  wave INTEGER NOT NULL,
-  kills INTEGER NOT NULL,
-  time_alive DECIMAL(10,2) NOT NULL,
-  upgrades TEXT[] DEFAULT '{}',
-  weapon_used VARCHAR(50),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Index for faster score queries
-CREATE INDEX idx_leaderboard_score ON leaderboard(score DESC);
-
--- Optional: Index for time-based queries
-CREATE INDEX idx_leaderboard_created ON leaderboard(created_at DESC);
-```
-
-### Step 4: Add Connection String to Vercel
+### Step 3: Add Environment Variables to Vercel
 
 1. Go to your Vercel project dashboard
 2. Navigate to **Settings → Environment Variables**
-3. Add a new variable:
-   - **Name:** `POSTGRES_URL`
-   - **Value:** Your Neon connection string
-   - **Environments:** Production, Preview, Development
-4. Click "Save"
+3. Add these variables:
 
-### Step 5: Redeploy
+   | Name | Value | Description |
+   |------|-------|-------------|
+   | `DATABASE_URL` | Your Neon connection string | PostgreSQL connection |
+   | `MIGRATION_SECRET` | A random secret string | Protects the migration endpoint |
 
-```bash
-cd leaderboard-server
-vercel --prod
-```
+   For `MIGRATION_SECRET`, generate a random string (e.g., `openssl rand -hex 32`)
 
-### Step 6: Test the API
+4. Set **Environments** to: Production, Preview, Development
+5. Click "Save"
+
+### Step 4: Run Database Migration
+
+The server includes a built-in migration endpoint that creates the necessary tables.
+
+1. **Redeploy to pick up environment variables:**
+   ```bash
+   cd leaderboard-server
+   vercel --prod
+   ```
+
+2. **Run the migration** (replace with your values):
+   ```bash
+   curl "https://your-project.vercel.app/migrate?secret=YOUR_MIGRATION_SECRET"
+   ```
+
+3. **Expected response:**
+   ```json
+   {"success":true,"message":"Migration completed successfully"}
+   ```
+
+This creates the `leaderboard` table and indexes. You only need to run this once.
+
+### Step 5: Test the API
 
 ```bash
 # Health check

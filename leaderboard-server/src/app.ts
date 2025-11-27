@@ -146,6 +146,55 @@ app.get('/health', (c) => {
   });
 });
 
+// Migration endpoint - creates tables if they don't exist
+// Call this once after setting up the database
+app.get('/migrate', async (c) => {
+  const secret = c.req.query('secret');
+  const expectedSecret = process.env.MIGRATION_SECRET;
+
+  // Require a secret to prevent unauthorized access
+  if (!expectedSecret || secret !== expectedSecret) {
+    return c.json({
+      success: false,
+      error: 'Unauthorized - provide ?secret=YOUR_MIGRATION_SECRET',
+    }, 401);
+  }
+
+  try {
+    // Create leaderboard table if it doesn't exist
+    await query(`
+      CREATE TABLE IF NOT EXISTS leaderboard (
+        id SERIAL PRIMARY KEY,
+        player_name VARCHAR(20) NOT NULL,
+        score INTEGER NOT NULL,
+        wave INTEGER DEFAULT 0,
+        kills INTEGER DEFAULT 0,
+        time_alive DECIMAL(10,2) DEFAULT 0,
+        upgrades TEXT[] DEFAULT '{}',
+        weapon_used VARCHAR(50),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create index if it doesn't exist
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_leaderboard_score ON leaderboard(score DESC)
+    `);
+
+    return c.json({
+      success: true,
+      message: 'Migration completed successfully',
+    });
+  } catch (error) {
+    console.error('Migration error:', error);
+    return c.json({
+      success: false,
+      error: 'Migration failed',
+      details: error instanceof Error ? error.message : 'Unknown error',
+    }, 500);
+  }
+});
+
 // Get top scores
 app.get('/scores', async (c) => {
   try {
