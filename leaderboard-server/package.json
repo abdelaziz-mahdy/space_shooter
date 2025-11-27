@@ -2,14 +2,12 @@
   "name": "space-shooter-leaderboard",
   "version": "1.0.0",
   "description": "Global leaderboard API for Space Shooter game",
+  "private": true,
   "scripts": {
-    "dev": "vercel dev",
-    "build": "tsc",
-    "lint": "eslint . --ext .ts"
+    "dev": "vercel dev"
   },
   "dependencies": {
-    "@vercel/postgres": "^0.10.0",
-    "vercel": "^48.11.0"
+    "@vercel/postgres": "^0.10.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
