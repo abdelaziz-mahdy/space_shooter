@@ -1,7 +1,34 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/env_config.dart';
+
+/// Get the current platform as a string for leaderboard tracking
+String _getPlatformString() {
+  if (kIsWeb) {
+    // On web, check the underlying platform
+    if (defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.android) {
+      return 'mobile-web';
+    }
+    return 'desktop-web';
+  }
+  switch (defaultTargetPlatform) {
+    case TargetPlatform.iOS:
+      return 'ios';
+    case TargetPlatform.android:
+      return 'android';
+    case TargetPlatform.macOS:
+      return 'macos';
+    case TargetPlatform.windows:
+      return 'windows';
+    case TargetPlatform.linux:
+      return 'linux';
+    default:
+      return 'unknown';
+  }
+}
 
 /// Represents a leaderboard entry
 class LeaderboardEntry {
@@ -13,6 +40,7 @@ class LeaderboardEntry {
   final double timeAlive;
   final List<String> upgrades;
   final String? weaponUsed;
+  final String? platform;
   final DateTime? createdAt;
   final int? rank;
 
@@ -25,6 +53,7 @@ class LeaderboardEntry {
     required this.timeAlive,
     required this.upgrades,
     this.weaponUsed,
+    this.platform,
     this.createdAt,
     this.rank,
   });
@@ -37,6 +66,7 @@ class LeaderboardEntry {
         'timeAlive': timeAlive,
         'upgrades': upgrades,
         'weaponUsed': weaponUsed,
+        'platform': platform ?? _getPlatformString(),
       };
 
   factory LeaderboardEntry.fromJson(Map<String, dynamic> json) {
@@ -49,6 +79,7 @@ class LeaderboardEntry {
       timeAlive: (json['timeAlive'] ?? json['time_alive'] as num).toDouble(),
       upgrades: ((json['upgrades'] ?? []) as List<dynamic>).map((e) => e.toString()).toList(),
       weaponUsed: (json['weaponUsed'] ?? json['weapon_used']) as String?,
+      platform: (json['platform'] ?? json['platform']) as String?,
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)
           : (json['created_at'] != null ? DateTime.parse(json['created_at'] as String) : null),

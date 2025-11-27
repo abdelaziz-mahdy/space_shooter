@@ -161,8 +161,14 @@ app.get('/migrate', async (c) => {
         time_alive DECIMAL(10,2) DEFAULT 0,
         upgrades TEXT[] DEFAULT '{}',
         weapon_used VARCHAR(50),
+        platform VARCHAR(20),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
+    `);
+
+    // Add platform column if it doesn't exist (for existing tables)
+    await query(`
+      ALTER TABLE leaderboard ADD COLUMN IF NOT EXISTS platform VARCHAR(20)
     `);
 
     // Create index if it doesn't exist
@@ -202,6 +208,7 @@ app.get('/scores', async (c) => {
         time_alive,
         upgrades,
         weapon_used,
+        platform,
         created_at
       FROM leaderboard
       ORDER BY score DESC
@@ -224,6 +231,7 @@ app.get('/scores', async (c) => {
       timeAlive: parseFloat(row.time_alive),
       upgrades: row.upgrades || [],
       weaponUsed: row.weapon_used,
+      platform: row.platform,
       createdAt: row.created_at,
       rank: offset + index + 1,
     }));
@@ -248,7 +256,7 @@ app.get('/scores', async (c) => {
 app.post('/scores', async (c) => {
   try {
     const body = await c.req.json();
-    const { playerName, score, wave, kills, timeAlive, upgrades, weaponUsed } = body;
+    const { playerName, score, wave, kills, timeAlive, upgrades, weaponUsed, platform } = body;
 
     // Validate player name
     if (!playerName || typeof playerName !== 'string') {
@@ -311,12 +319,15 @@ app.post('/scores', async (c) => {
     // Sanitize weapon
     const sanitizedWeapon = typeof weaponUsed === 'string' ? weaponUsed.slice(0, 50) : null;
 
+    // Sanitize platform
+    const sanitizedPlatform = typeof platform === 'string' ? platform.slice(0, 20) : null;
+
     // Insert into database
     const result = await query(
-      `INSERT INTO leaderboard (player_name, score, wave, kills, time_alive, upgrades, weapon_used)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO leaderboard (player_name, score, wave, kills, time_alive, upgrades, weapon_used, platform)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING id, created_at`,
-      [trimmedName, score, wave, kills, timeAlive, sanitizedUpgrades, sanitizedWeapon]
+      [trimmedName, score, wave, kills, timeAlive, sanitizedUpgrades, sanitizedWeapon, sanitizedPlatform]
     );
 
     // Get rank of new entry
@@ -334,6 +345,7 @@ app.post('/scores', async (c) => {
       timeAlive,
       upgrades: sanitizedUpgrades,
       weaponUsed: sanitizedWeapon,
+      platform: sanitizedPlatform,
       createdAt: result.rows[0].created_at,
       rank: parseInt(rankResult.rows[0].rank),
     };
