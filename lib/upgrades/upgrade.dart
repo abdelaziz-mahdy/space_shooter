@@ -124,27 +124,6 @@ class MultiShotUpgrade extends Upgrade {
   List<String> getStatusChanges() => ['+$additionalProjectiles projectile'];
 }
 
-/// Increases bullet speed
-class BulletSpeedUpgrade extends Upgrade {
-  final double speedIncrease;
-
-  BulletSpeedUpgrade({this.speedIncrease = 100})
-      : super(
-          id: 'bullet_speed',
-          name: 'Bullet Speed',
-          description: 'Faster bullets',
-          icon: '💨',
-        );
-
-  @override
-  void apply(PlayerShip player) {
-    player.bulletSpeed += speedIncrease;
-  }
-
-  @override
-  List<String> getStatusChanges() => ['+${speedIncrease.toInt()} bullet speed'];
-}
-
 /// Increases movement speed
 class MoveSpeedUpgrade extends Upgrade {
   final double speedIncrease;
@@ -568,32 +547,6 @@ class FocusedFireUpgrade extends Upgrade {
   ];
 }
 
-/// Rapid Reload - Faster cooldown
-class RapidReloadUpgrade extends Upgrade {
-  RapidReloadUpgrade()
-      : super(
-          id: 'rapid_reload',
-          name: 'Rapid Reload',
-          description: '10% cooldown reduction',
-          icon: '⏱️',
-        );
-
-  @override
-  void apply(PlayerShip player) {
-    player.cooldownReduction += 0.1;
-    player.shootInterval = max(0.1, player.shootInterval * 0.9);
-  }
-
-  @override
-  UpgradeRarity get rarity => UpgradeRarity.common;
-
-  @override
-  List<String> getStatusChanges() => [
-    '+10% cooldown reduction',
-    'Reduced fire interval'
-  ];
-}
-
 /// Berserker Rage - Massive damage when low HP
 class BerserkerRageUpgrade extends Upgrade {
   BerserkerRageUpgrade()
@@ -682,32 +635,6 @@ class BleedingEdgeUpgrade extends Upgrade {
   List<String> getStatusChanges() => ['Enemies bleed 5 DPS for 3s'];
 }
 
-/// Fortune's Favor - Chance to fire double shot
-class FortunesFavorUpgrade extends Upgrade {
-  FortunesFavorUpgrade()
-      : super(
-          id: 'fortunes_favor',
-          name: "Fortune's Favor",
-          description: '15% chance to double shot',
-          icon: '🍀',
-        );
-
-  @override
-  void apply(PlayerShip player) {
-    player.hasDoubleShot = true;
-    player.doubleShotChance += 0.15;
-  }
-
-  @override
-  UpgradeRarity get rarity => UpgradeRarity.rare;
-
-  @override
-  List<String> getStatusChanges() => [
-    'Enable double shot mechanic',
-    '+15% chance to double shot'
-  ];
-}
-
 /// Vampiric Aura - Heal from nearby kills
 class VampiricAuraUpgrade extends Upgrade {
   VampiricAuraUpgrade()
@@ -759,20 +686,20 @@ class TimeDilationUpgrade extends Upgrade {
   List<String> getStatusChanges() => ['Slow enemy speed by 30%'];
 }
 
-/// Bullet Storm - Massive projectile count and fire rate
+/// Bullet Storm - More projectiles with slight damage penalty
 class BulletStormUpgrade extends Upgrade {
   BulletStormUpgrade()
       : super(
           id: 'bullet_storm',
           name: 'Bullet Storm',
-          description: '+3 projectiles, +30% fire rate',
+          description: '+2 projectiles, -15% damage per shot',
           icon: '🌪️',
         );
 
   @override
   void apply(PlayerShip player) {
-    player.projectileCount += 3;
-    player.shootInterval = max(0.1, player.shootInterval * 0.7);
+    player.projectileCount += 2;
+    player.damageMultiplier *= 0.85; // 15% damage reduction per bullet
   }
 
   @override
@@ -780,8 +707,8 @@ class BulletStormUpgrade extends Upgrade {
 
   @override
   List<String> getStatusChanges() => [
-    '+3 projectiles',
-    '+30% fire rate'
+    '+2 projectiles',
+    '-15% damage per shot'
   ];
 }
 
@@ -960,10 +887,10 @@ class UpgradeFactory {
       DamageUpgrade(),
       FireRateUpgrade(),
       RangeUpgrade(),
-      BulletSpeedUpgrade(),
       MoveSpeedUpgrade(),
       MaxHealthUpgrade(),
       MagnetUpgrade(),
+      MultiShotUpgrade(),
 
       // Advanced upgrades (Common/Rare)
       HealthRegenUpgrade(),
@@ -973,6 +900,7 @@ class UpgradeFactory {
       XPBoostUpgrade(),
       ArmorUpgrade(),
       MaxShieldUpgrade(),
+      PierceUpgrade(),
 
       // Special upgrades (Common/Rare) - Generic effects
       OrbitalUpgrade(),
@@ -981,14 +909,15 @@ class UpgradeFactory {
       // New Common Tier
       ResilientShieldsUpgrade(),
       FocusedFireUpgrade(),
-      RapidReloadUpgrade(),
 
       // New Rare Tier
       BerserkerRageUpgrade(),
       ThornsArmorUpgrade(),
       ChainLightningUpgrade(),
       BleedingEdgeUpgrade(),
-      FortunesFavorUpgrade(),
+      HomingUpgrade(),
+      FreezeUpgrade(),
+      ExplosiveShotsUpgrade(),
 
       // New Epic Tier
       VampiricAuraUpgrade(),

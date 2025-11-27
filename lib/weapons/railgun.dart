@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:flame/components.dart';
 import '../components/beam_effect.dart';
+import '../components/damage_number.dart';
 import '../components/player_ship.dart';
 import '../components/enemies/base_enemy.dart';
 import '../game/space_shooter_game.dart';
@@ -62,6 +63,10 @@ class Railgun extends Weapon {
     final directionNormalized = direction.normalized();
     final damage = getDamage(player);
 
+    // Calculate crit
+    final isCrit = Random().nextDouble() < player.critChance;
+    final actualDamage = isCrit ? damage * player.critDamage : damage;
+
     // Get all enemies
     final allEnemies = game.world.children.whereType<BaseEnemy>();
 
@@ -69,7 +74,24 @@ class Railgun extends Weapon {
     for (final enemy in allEnemies) {
       if (_isEnemyInBeamPath(start, directionNormalized, maxRange, enemy)) {
         // Apply damage to enemy
-        enemy.takeDamage(damage);
+        enemy.takeDamage(actualDamage);
+
+        // Play hit sound
+        game.audioManager.playHit();
+
+        // Spawn damage number
+        final damageNumber = DamageNumber(
+          position: enemy.position.clone(),
+          damage: actualDamage,
+          isCrit: isCrit,
+        );
+        game.world.add(damageNumber);
+
+        // Apply lifesteal
+        if (player.lifesteal > 0) {
+          final healAmount = actualDamage * player.lifesteal;
+          player.health = min(player.health + healAmount, player.maxHealth);
+        }
       }
     }
   }

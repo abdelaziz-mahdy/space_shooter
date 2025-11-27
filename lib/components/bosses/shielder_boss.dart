@@ -35,8 +35,9 @@ class ShielderBoss extends BaseEnemy {
   // Shield constants
   static const int maxShieldLayers = 3;
   static const double shieldHealthPerLayer = 100;
-  static const double shieldRegenInterval = 10.0;
+  static const double shieldRegenInterval = 8.0; // Time to regen after not being hit
   static const double shieldRotationSpeed = 2.0; // radians per second
+  static const double noHitRequiredForRegen = 5.0; // Must not be hit for 5s before regen starts
 
   // State
   double shootTimer = 0;
@@ -50,6 +51,7 @@ class ShielderBoss extends BaseEnemy {
   double currentShieldHealth = shieldHealthPerLayer;
   double shieldRegenTimer = 0;
   double shieldRotation = 0;
+  double timeSinceLastHit = 0; // Track time since last damage taken
 
   ShielderBoss({
     required Vector2 position,
@@ -104,8 +106,11 @@ class ShielderBoss extends BaseEnemy {
       shieldRotation -= 2 * pi;
     }
 
-    // Update shield regeneration
-    if (shieldLayers < maxShieldLayers) {
+    // Update time since last hit
+    timeSinceLastHit += dt;
+
+    // Update shield regeneration - only if not hit for a while
+    if (shieldLayers < maxShieldLayers && timeSinceLastHit >= noHitRequiredForRegen) {
       shieldRegenTimer += dt;
       if (shieldRegenTimer >= shieldRegenInterval) {
         regenerateShield();
@@ -200,6 +205,10 @@ class ShielderBoss extends BaseEnemy {
 
   @override
   double modifyIncomingDamage(double damage) {
+    // Reset hit timer - player is actively attacking
+    timeSinceLastHit = 0;
+    shieldRegenTimer = 0; // Reset regen progress when hit
+
     if (hasShields) {
       // Shield absorbs damage
       currentShieldHealth -= damage;
@@ -214,7 +223,6 @@ class ShielderBoss extends BaseEnemy {
         } else {
           // All shields gone
           currentShieldHealth = 0;
-          shieldRegenTimer = 0; // Start regen timer
         }
 
         print('[ShielderBoss] Shield layer broken! Remaining: $shieldLayers');

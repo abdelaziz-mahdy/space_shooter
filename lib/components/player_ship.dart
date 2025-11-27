@@ -57,8 +57,8 @@ class PlayerShip extends BaseRenderedComponent
   double freezeChance = 0; // Chance to freeze enemy (0.0 - 1.0)
   double bulletSize = 5.0; // Bullet size multiplier
   int orbitalCount = 0; // Number of orbital shooters
-  int shieldLayers = 0; // Energy shield layers (starts at 0)
-  int maxShieldLayers = 0; // Maximum shield layers (starts at 0, upgrade to increase)
+  int shieldLayers = 1; // Energy shield layers (starts with 1)
+  int maxShieldLayers = 1; // Maximum shield layers (starts at 1, upgrade to increase)
   double luck = 0; // Better loot drops (0.0 - 1.0+)
 
   // Scaling stats

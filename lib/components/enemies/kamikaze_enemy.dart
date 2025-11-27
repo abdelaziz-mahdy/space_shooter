@@ -12,12 +12,12 @@ import '../player_ship.dart';
 /// - Pulsing circle, red with warning pulses, size 18x18
 /// - Health: 25 + (wave * 1.5), Speed: 80 + (wave * 3)
 /// - Speeds up as it gets closer to player
-/// - Explodes on death (80 radius, 30 damage)
+/// - Explodes on death (60 radius, 20 damage)
 /// - Always explodes even if shot down
 class KamikazeEnemy extends BaseEnemy {
   static const String ID = 'kamikaze';
-  static const double explosionRadius = 80;
-  static const double explosionDamage = 30;
+  static const double explosionRadius = 60; // Reduced from 80
+  static const double explosionDamage = 20; // Reduced from 30
   static const double accelerationDistance = 200; // Distance to start accelerating
 
   double pulseTimer = 0;
@@ -32,11 +32,11 @@ class KamikazeEnemy extends BaseEnemy {
           player: player,
           wave: wave,
           health: 25 + (wave * 1.5),
-          speed: 100 + (wave * 3.75), // Increased from 80 + (wave * 3.0) (25% increase)
+          speed: 100 + (wave * 3.75),
           lootValue: 1,
           color: const Color(0xFFFF0000), // Red
           size: Vector2(18, 18) * scale,
-          contactDamage: 25.0, // Higher contact damage
+          contactDamage: 15.0, // Reduced from 25 - total damage now 35 (contact + explosion)
         );
 
   @override
