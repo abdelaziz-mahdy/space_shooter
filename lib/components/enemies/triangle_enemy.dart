@@ -84,8 +84,9 @@ class TriangleEnemy extends BaseEnemy {
     canvas.drawPath(path, paint);
     canvas.drawPath(path, strokePaint);
 
-    // Draw freeze effect if frozen
+    // Draw status effects
     renderFreezeEffect(canvas);
+    renderBleedEffect(canvas);
 
     // Draw health bar
     renderHealthBar(canvas);

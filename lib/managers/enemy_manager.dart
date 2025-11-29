@@ -22,7 +22,7 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
   int enemiesToSpawnInWave = 10;
   bool isWaveActive = false;
   bool isBossWave = false;
-  double waveDelay = 2.0; // Faster wave transitions (was 3.0)
+  double waveDelay = 1.0; // Faster wave transitions (was 2.0)
   double waveTimer = 0;
 
   // Boss pool for waves 55+ (excludes Nexus which only appears at wave 50)

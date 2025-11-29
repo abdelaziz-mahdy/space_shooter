@@ -404,8 +404,9 @@ class SummonerBoss extends BaseEnemy {
       bossPaint,
     );
 
-    // Draw freeze effect if frozen
+    // Draw status effects
     renderFreezeEffect(canvas);
+    renderBleedEffect(canvas);
 
     // Draw health bar
     renderHealthBar(canvas);

@@ -278,8 +278,9 @@ class HydraBoss extends BaseEnemy {
       bossPaint,
     );
 
-    // Draw freeze effect and health bar
+    // Draw status effects and health bar
     renderFreezeEffect(canvas);
+    renderBleedEffect(canvas);
     renderHealthBar(canvas);
   }
 
