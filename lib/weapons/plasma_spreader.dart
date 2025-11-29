@@ -45,8 +45,8 @@ class PlasmaSpreader extends Weapon {
     final baseAngle = atan2(targetDirection.y, targetDirection.x);
 
     for (int i = 0; i < totalProjectiles; i++) {
-      // Center bullet (middle index) goes straight, others spread
-      final offset = (i - (totalProjectiles - 1) / 2) * angleSpread;
+      // First bullet always goes straight, rest spread around it
+      final offset = i == 0 ? 0.0 : ((i - totalProjectiles / 2) * angleSpread);
       final bulletAngle = baseAngle + offset;
       final bulletDirection = Vector2(cos(bulletAngle), sin(bulletAngle));
 

@@ -41,9 +41,8 @@ class ShotgunBlaster extends Weapon {
     final spreadRad = spreadAngle * (pi / 180);
 
     for (int i = 0; i < pelletCount; i++) {
-      // Calculate spread for this pellet - center pellet goes straight
-      final spreadOffset = (i - (pelletCount - 1) / 2) / pelletCount;
-      final angleOffset = spreadOffset * spreadRad;
+      // First pellet always goes straight, rest spread around it
+      final angleOffset = i == 0 ? 0.0 : ((i - pelletCount / 2) / pelletCount * spreadRad);
 
       // Rotate target direction by spread offset
       final cosAngle = cos(angleOffset);
