@@ -21,12 +21,12 @@ YOU REVIEW & MERGE THE FIX
 **Claude automatically does this:**
 1. Reviews your PR within seconds
 2. Posts a comment with findings (🔴 Critical, 🟡 Important, 🔵 Suggestion)
-3. **Immediately creates a fix PR** with all the fixes applied
-4. Links the fix PR back to your original PR
+3. **Commits fixes directly to your PR** (same branch, no extra PRs!)
+4. Stops automatically to avoid infinite loops
 
 **You do this:**
-1. Review Claude's fix PR
-2. Merge it if it looks good!
+1. Review the updated PR with Claude's fixes
+2. Merge when ready!
 
 ## 📊 Real Example
 
@@ -47,25 +47,27 @@ Comment on PR #50:
 ✅ Automated fix PR created: #51
 ```
 
-### Claude Creates PR #51:
+### Claude Updates PR #50 (same PR!):
 ```
-Title: "Auto-fix: Address review issues from PR #50"
+New commit added to PR #50:
+"fix: Apply review suggestions
 
-Changes:
 ✅ Converted MissileType enum to class hierarchy
 ✅ Changed hardcoded damage to configurable properties
 ✅ Updated version to 0.3.1
 ✅ Added changelog entry
 
-Files changed:
+🤖 Auto-applied by Claude Code Review"
+
+Files changed in this commit:
 - lib/components/weapons/missile.dart
 - pubspec.yaml
 - assets/changelog.json
 ```
 
-### You Review PR #51:
+### You Review PR #50:
 - ✅ Looks good? Merge it!
-- ❌ Need changes? Comment with `@claude please adjust X`
+- ❌ Need changes? Push more commits or comment with `@claude please adjust X`
 
 ## 🔧 What Gets Fixed Automatically
 
@@ -136,7 +138,10 @@ For these, Claude will:
 1. Create your PR
 2. Wait ~30 seconds
 3. Check for Claude's review comment
-4. If a fix PR was created, review and merge it!
+4. Check if Claude committed fixes to your PR
+5. Review the changes and merge when ready!
+
+**Note:** Claude only runs once per human commit to avoid infinite loops. If Claude commits fixes, it won't review its own changes.
 
 ### Option 2: Manual Trigger (for existing PRs)
 1. Go to **Actions** → **"Claude Auto-Fix from Review"**
@@ -157,22 +162,24 @@ Before using, make sure:
 
 ## 🐛 Troubleshooting
 
-### "Claude didn't create a fix PR"
+### "Claude didn't commit fixes to my PR"
 **Possible reasons:**
 - No fixable issues found (only suggestions that need manual review)
 - Claude wasn't certain about the fix
 - Error in applying fixes (check workflow logs)
+- The latest commit was made by Claude (prevents infinite loop)
 
 **What to do:**
 - Check the review comment - Claude explains why
 - Review suggestions manually
-- Or comment `@claude-fix` to trigger it manually
+- Push a new commit if you want Claude to review again
 
-### "The fix PR has issues"
+### "Claude's fixes have issues"
 **What to do:**
-- Don't merge it!
-- Comment on the fix PR: `@claude please adjust X and Y`
-- Claude will update the PR
+- Don't merge the PR!
+- Push a new commit with corrections
+- Or revert Claude's commit: `git revert HEAD && git push`
+- Or comment: `@claude please adjust X and Y`
 
 ### "Workflow failed"
 **What to do:**
