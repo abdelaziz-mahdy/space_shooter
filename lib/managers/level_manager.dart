@@ -5,6 +5,10 @@ import '../upgrades/upgrade.dart';
 import '../config/weapon_unlock_config.dart';
 
 class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
+  /// Maximum number of weapon unlocks that can appear in a single upgrade selection
+  /// This ensures players always have stat upgrade options available
+  static const int maxWeaponUpgradesPerSelection = 2;
+
   int currentLevel = 1;
   int currentXP = 0;
   int xpToNextLevel = 10;
@@ -48,10 +52,11 @@ class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
 
     // IMPORTANT: Limit weapon unlocks to max 2 per upgrade selection
     // This prevents being forced to choose only weapons with no stat upgrades
-    final maxWeaponUpgrades = 2;
-    final weaponUpgrades = allWeaponUpgrades.isEmpty
-        ? <Upgrade>[]
-        : (allWeaponUpgrades..shuffle(random)).take(maxWeaponUpgrades).toList();
+    final weaponUpgrades = <Upgrade>[];
+    if (allWeaponUpgrades.isNotEmpty) {
+      allWeaponUpgrades.shuffle(random);
+      weaponUpgrades.addAll(allWeaponUpgrades.take(maxWeaponUpgradesPerSelection));
+    }
 
     // Calculate how many regular upgrades we need
     // If we have 2 weapon upgrades, we need (count - 2) regular upgrades
@@ -65,8 +70,13 @@ class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
 
     // Combine weapon upgrades + regular upgrades, then shuffle
     final allUpgrades = [...weaponUpgrades, ...regularUpgrades];
-    allUpgrades.shuffle(random);
 
+    // Validate we have enough upgrades (edge case protection)
+    if (allUpgrades.length < count) {
+      print('[LevelManager] Warning: Only ${allUpgrades.length} upgrades available, expected $count');
+    }
+
+    allUpgrades.shuffle(random);
     return allUpgrades.take(count).toList();
   }
 
