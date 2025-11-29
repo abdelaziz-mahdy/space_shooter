@@ -466,6 +466,7 @@ class ShieldUpgrade extends Upgrade {
 
   @override
   void apply(PlayerShip player) {
+    player.maxShieldLayers += shieldLayers; // Increase max capacity
     player.shieldLayers = min(player.shieldLayers + shieldLayers, player.maxShieldLayers);
   }
 
