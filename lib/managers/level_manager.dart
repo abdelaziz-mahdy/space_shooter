@@ -5,6 +5,10 @@ import '../upgrades/upgrade.dart';
 import '../config/weapon_unlock_config.dart';
 
 class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
+  /// Maximum number of weapon unlocks that can appear in a single upgrade selection
+  /// This ensures players always have stat upgrade options available
+  static const int maxWeaponUpgradesPerSelection = 2;
+
   int currentLevel = 1;
   int currentXP = 0;
   int xpToNextLevel = 10;
@@ -44,22 +48,39 @@ class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
     final player = gameRef.player;
 
     // Check if this level should offer weapon unlocks
-    final weaponUpgrades = _getWeaponUpgradesForLevel();
+    final allWeaponUpgrades = _getWeaponUpgradesForLevel();
 
-    // Get regular random upgrades (already filtered by player validity)
-    final regularUpgrades = UpgradeFactory.getRandomUpgradesByRarity(count * 2, player: player);
-
-    if (weaponUpgrades.isNotEmpty) {
-      // Mix weapon upgrades with regular upgrades
-      final allUpgrades = [...weaponUpgrades, ...regularUpgrades];
-
-      // Shuffle and take the requested count
-      allUpgrades.shuffle(random);
-      return allUpgrades.take(count).toList();
+    // IMPORTANT: Limit weapon unlocks to max 2 per upgrade selection
+    // This prevents being forced to choose only weapons with no stat upgrades
+    final weaponUpgrades = <Upgrade>[];
+    if (allWeaponUpgrades.isNotEmpty) {
+      allWeaponUpgrades.shuffle(random);
+      weaponUpgrades.addAll(allWeaponUpgrades.take(maxWeaponUpgradesPerSelection));
     }
 
-    // No weapon upgrades this level, just return regular upgrades (filtered and limited to count)
-    return regularUpgrades.take(count).toList();
+    // Calculate how many regular upgrades we need
+    // If we have 2 weapon upgrades, we need (count - 2) regular upgrades
+    final regularUpgradesNeeded = count - weaponUpgrades.length;
+
+    // Get regular random upgrades (already filtered by player validity)
+    // Request extra to ensure variety, but we only need regularUpgradesNeeded
+    final regularUpgrades = UpgradeFactory.getRandomUpgradesByRarity(
+      regularUpgradesNeeded * 2, // Get extra to ensure variety
+      player: player,
+    ).take(regularUpgradesNeeded).toList();
+
+    // Combine weapon upgrades + regular upgrades, then shuffle
+    final allUpgrades = [...weaponUpgrades, ...regularUpgrades];
+
+    // Validate we have enough upgrades (edge case protection)
+    // Only warn if we actually don't have enough upgrades, not if we requested extra for variety
+    if (allUpgrades.length < count) {
+      print('[LevelManager] Warning: Only ${allUpgrades.length} upgrades available, expected $count');
+      print('[LevelManager] Weapon upgrades: ${weaponUpgrades.length}, Regular upgrades: ${regularUpgrades.length}');
+    }
+
+    allUpgrades.shuffle(random);
+    return allUpgrades.take(count).toList();
   }
 
   List<Upgrade> _getWeaponUpgradesForLevel() {

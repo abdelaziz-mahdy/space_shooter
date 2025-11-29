@@ -1,5 +1,20 @@
 [
   {
+    "version": "0.3.3",
+    "title": "Upgrade Balance",
+    "date": "2025-01-29",
+    "sections": [
+      {
+        "title": "Balance",
+        "emoji": "⚖️",
+        "items": [
+          "Upgrade selections now mix weapons and stats (max 2 weapons)",
+          "No longer forced to choose only weapon unlocks"
+        ]
+      }
+    ]
+  },
+  {
     "version": "0.3.2",
     "title": "Major Bug Fixes & Balance",
     "date": "2025-01-28",
