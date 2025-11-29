@@ -62,8 +62,10 @@ class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
     final regularUpgradesNeeded = count - weaponUpgrades.length;
 
     // Get regular random upgrades (already filtered by player validity)
+    // Request 2x the needed amount to give the rarity system more options to choose from
+    // This ensures better variety and distribution across different rarity tiers
     final regularUpgrades = UpgradeFactory.getRandomUpgradesByRarity(
-      regularUpgradesNeeded * 2, // Get extra to ensure variety
+      regularUpgradesNeeded * 2, // 2x multiplier for variety
       player: player,
     ).take(regularUpgradesNeeded).toList();
 

@@ -88,7 +88,7 @@ class PulseCannonMultiShotUpgrade extends WeaponUpgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.rare;
+  UpgradeRarity get rarity => RareRarity();
 
   @override
   List<String> getStatusChanges() => ['+$projectileIncrease projectile (Pulse Cannon)'];
@@ -139,7 +139,7 @@ class PlasmaSpreaderWideSpreadUpgrade extends WeaponUpgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.rare;
+  UpgradeRarity get rarity => RareRarity();
 
   @override
   List<String> getStatusChanges() => ['+$projectileIncrease projectiles (Plasma Spreader)'];
@@ -164,7 +164,7 @@ class PlasmaSpreaderPierceUpgrade extends WeaponUpgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.rare;
+  UpgradeRarity get rarity => RareRarity();
 
   @override
   List<String> getStatusChanges() => ['+$pierceIncrease pierce (Plasma Spreader)'];
@@ -193,7 +193,7 @@ class RailgunDamageUpgrade extends WeaponUpgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.rare;
+  UpgradeRarity get rarity => RareRarity();
 
   @override
   List<String> getStatusChanges() => ['+${damageIncrease.toInt()} damage (Railgun)'];
@@ -218,7 +218,7 @@ class RailgunFireRateUpgrade extends WeaponUpgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.rare;
+  UpgradeRarity get rarity => RareRarity();
 
   @override
   List<String> getStatusChanges() => ['-${(fireRateIncrease * 100).toInt()}% charge time (Railgun)'];
@@ -243,7 +243,7 @@ class RailgunExplosiveUpgrade extends WeaponUpgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.epic;
+  UpgradeRarity get rarity => EpicRarity();
 
   @override
   List<String> getStatusChanges() => ['+${explosionIncrease.toInt()} explosion radius (Railgun)'];
@@ -272,7 +272,7 @@ class MissileLauncherDamageUpgrade extends WeaponUpgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.rare;
+  UpgradeRarity get rarity => RareRarity();
 
   @override
   List<String> getStatusChanges() => ['+${damageIncrease.toInt()} damage (Missile Launcher)'];
@@ -297,7 +297,7 @@ class MissileLauncherMultiShotUpgrade extends WeaponUpgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.epic;
+  UpgradeRarity get rarity => EpicRarity();
 
   @override
   List<String> getStatusChanges() => ['+$projectileIncrease missiles (Missile Launcher)'];
@@ -322,7 +322,7 @@ class MissileLauncherHomingUpgrade extends WeaponUpgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.rare;
+  UpgradeRarity get rarity => RareRarity();
 
   @override
   List<String> getStatusChanges() => ['+${homingIncrease.toInt()} tracking power (Missile Launcher)'];
@@ -347,7 +347,7 @@ class MissileLauncherExplosionUpgrade extends WeaponUpgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.epic;
+  UpgradeRarity get rarity => EpicRarity();
 
   @override
   List<String> getStatusChanges() => ['+${explosionIncrease.toInt()} explosion radius (Missile Launcher)'];

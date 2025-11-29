@@ -1,14 +1,72 @@
 import 'dart:math';
+import 'package:flutter/material.dart';
 import '../components/player_ship.dart';
 import '../config/weapon_unlock_config.dart';
 import 'weapon_upgrade.dart';
 
-/// Upgrade rarity levels
-enum UpgradeRarity {
-  common,
-  rare,
-  epic,
-  legendary,
+/// Abstract base class for upgrade rarity levels
+/// Following OOP principles - each rarity is a class, not an enum value
+abstract class UpgradeRarity {
+  String get name;
+  Color get color;
+  double get dropWeight;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UpgradeRarity &&
+          runtimeType == other.runtimeType;
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+}
+
+/// Common rarity - most frequent drops
+class CommonRarity extends UpgradeRarity {
+  @override
+  String get name => 'Common';
+
+  @override
+  Color get color => const Color(0xFFFFFFFF);
+
+  @override
+  double get dropWeight => 0.60;
+}
+
+/// Rare rarity - less common, better upgrades
+class RareRarity extends UpgradeRarity {
+  @override
+  String get name => 'Rare';
+
+  @override
+  Color get color => const Color(0xFF0099FF);
+
+  @override
+  double get dropWeight => 0.25;
+}
+
+/// Epic rarity - powerful upgrades
+class EpicRarity extends UpgradeRarity {
+  @override
+  String get name => 'Epic';
+
+  @override
+  Color get color => const Color(0xFF9933FF);
+
+  @override
+  double get dropWeight => 0.12;
+}
+
+/// Legendary rarity - most powerful, rarest upgrades
+class LegendaryRarity extends UpgradeRarity {
+  @override
+  String get name => 'Legendary';
+
+  @override
+  Color get color => const Color(0xFFFFAA00);
+
+  @override
+  double get dropWeight => 0.03;
 }
 
 /// Abstract base class for all upgrades
@@ -29,7 +87,7 @@ abstract class Upgrade {
   void apply(PlayerShip player);
 
   /// Get the rarity of this upgrade
-  UpgradeRarity get rarity => UpgradeRarity.common;
+  UpgradeRarity get rarity => CommonRarity();
 
   /// Check if this upgrade is valid/useful for the current player state
   /// Override this to prevent showing upgrades that don't make sense
@@ -121,7 +179,7 @@ class MultiShotUpgrade extends Upgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.rare;
+  UpgradeRarity get rarity => RareRarity();
 
   @override
   List<String> getStatusChanges() => ['+$additionalProjectiles projectiles'];
@@ -514,7 +572,7 @@ class ResilientShieldsUpgrade extends Upgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.common;
+  UpgradeRarity get rarity => CommonRarity();
 
   @override
   List<String> getStatusChanges() => [
@@ -546,7 +604,7 @@ class FocusedFireUpgrade extends Upgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.common;
+  UpgradeRarity get rarity => CommonRarity();
 
   @override
   List<String> getStatusChanges() => [
@@ -577,7 +635,7 @@ class BerserkerRageUpgrade extends Upgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.rare;
+  UpgradeRarity get rarity => RareRarity();
 
   @override
   List<String> getStatusChanges() => ['+50% damage when below 30% HP'];
@@ -600,7 +658,7 @@ class ThornsArmorUpgrade extends Upgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.rare;
+  UpgradeRarity get rarity => RareRarity();
 
   @override
   List<String> getStatusChanges() => ['Reflect 20% of damage taken'];
@@ -622,7 +680,7 @@ class ChainLightningUpgrade extends Upgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.rare;
+  UpgradeRarity get rarity => RareRarity();
 
   @override
   List<String> getStatusChanges() => ['+2 chain targets'];
@@ -644,7 +702,7 @@ class BleedingEdgeUpgrade extends Upgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.rare;
+  UpgradeRarity get rarity => RareRarity();
 
   @override
   List<String> getStatusChanges() => ['Enemies bleed 5 DPS for 3s'];
@@ -667,7 +725,7 @@ class VampiricAuraUpgrade extends Upgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.epic;
+  UpgradeRarity get rarity => EpicRarity();
 
   @override
   List<String> getStatusChanges() => [
@@ -694,7 +752,7 @@ class TimeDilationUpgrade extends Upgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.epic;
+  UpgradeRarity get rarity => EpicRarity();
 
   @override
   List<String> getStatusChanges() => ['Slow enemy speed by 30%'];
@@ -717,7 +775,7 @@ class BulletStormUpgrade extends Upgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.epic;
+  UpgradeRarity get rarity => EpicRarity();
 
   @override
   List<String> getStatusChanges() => [
@@ -742,7 +800,7 @@ class PhoenixRebirthUpgrade extends Upgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.epic;
+  UpgradeRarity get rarity => EpicRarity();
 
   @override
   List<String> getStatusChanges() => ['25% chance to resurrect on death (once)'];
@@ -764,7 +822,7 @@ class InfinityOrbitalsUpgrade extends Upgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.legendary;
+  UpgradeRarity get rarity => LegendaryRarity();
 
   @override
   List<String> getStatusChanges() => ['+5 orbital shooters'];
@@ -793,7 +851,7 @@ class PerfectHarmonyUpgrade extends Upgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.legendary;
+  UpgradeRarity get rarity => LegendaryRarity();
 
   @override
   List<String> getStatusChanges() => [
@@ -826,7 +884,7 @@ class GlassCannonUpgrade extends Upgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.legendary;
+  UpgradeRarity get rarity => LegendaryRarity();
 
   @override
   List<String> getStatusChanges() => [
@@ -855,7 +913,7 @@ class ImmovableObjectUpgrade extends Upgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.legendary;
+  UpgradeRarity get rarity => LegendaryRarity();
 
   @override
   List<String> getStatusChanges() => [
@@ -883,7 +941,7 @@ class CriticalCascadeUpgrade extends Upgrade {
   }
 
   @override
-  UpgradeRarity get rarity => UpgradeRarity.legendary;
+  UpgradeRarity get rarity => LegendaryRarity();
 
   @override
   List<String> getStatusChanges() => [
@@ -992,13 +1050,13 @@ class UpgradeFactory {
       UpgradeRarity targetRarity;
 
       if (rarityRoll < 0.60) {
-        targetRarity = UpgradeRarity.common;
+        targetRarity = CommonRarity();
       } else if (rarityRoll < 0.85) {
-        targetRarity = UpgradeRarity.rare;
+        targetRarity = RareRarity();
       } else if (rarityRoll < 0.97) {
-        targetRarity = UpgradeRarity.epic;
+        targetRarity = EpicRarity();
       } else {
-        targetRarity = UpgradeRarity.legendary;
+        targetRarity = LegendaryRarity();
       }
 
       // Get upgrades of target rarity that are valid for the player
