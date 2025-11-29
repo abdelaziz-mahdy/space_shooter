@@ -442,6 +442,7 @@ class OrbitalUpgrade extends Upgrade {
   @override
   void apply(PlayerShip player) {
     player.orbitalCount += orbitals;
+    player.orbitalCount = player.orbitalCount.clamp(0, 10); // Cap at 10 for performance
   }
 
   @override
