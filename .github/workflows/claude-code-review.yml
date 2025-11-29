@@ -20,38 +20,89 @@ jobs:
 
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      pull-requests: read
+      contents: write
+      pull-requests: write
       issues: read
       id-token: write
+      actions: read
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0  # Need full history to create branches
 
-      - name: Run Claude Code Review
+      - name: Set up Git
+        run: |
+          git config user.name "claude-bot[bot]"
+          git config user.email "claude-bot[bot]@users.noreply.github.com"
+
+      - name: Run Claude Code Review with Auto-Fix
         id: claude-review
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+          additional_permissions: |
+            actions: read
+            contents: write
+            pull-requests: write
+
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
 
-            Please review this pull request and provide feedback on:
-            - Code quality and best practices
-            - Potential bugs or issues
-            - Performance considerations
-            - Security concerns
-            - Test coverage
+            **TASK: Review PR and automatically create a fix PR**
 
-            Use the repository's CLAUDE.md for guidance on style and conventions. Be constructive and helpful in your feedback.
+            Please perform the following steps:
 
-            Use `gh pr comment` with your Bash tool to leave your review as a comment on the PR.
+            1. **REVIEW THE PR:**
+               - Read the PR using `gh pr view` and `gh pr diff`
+               - Check code quality and best practices
+               - Identify potential bugs or issues
+               - Check performance considerations
+               - Look for security concerns
+               - Verify test coverage
+               - Use CLAUDE.md for guidance on style and conventions
+
+            2. **POST REVIEW COMMENT:**
+               - Use `gh pr comment` to leave a detailed review comment
+               - List all issues found with specific file:line references
+               - Be constructive and helpful
+               - Include severity (🔴 Critical, 🟡 Important, 🔵 Suggestion)
+
+            3. **AUTOMATICALLY APPLY FIXES:**
+               If you found ANY issues that can be fixed automatically:
+
+               a. Create a new branch: `fix/auto-fix-pr-${{ github.event.pull_request.number }}`
+               b. Apply ALL the fixes following CLAUDE.md principles:
+                  - Replace enums with classes
+                  - Replace hardcoded values with percentages
+                  - Fix any violations of coding principles
+                  - If changes are client-facing: update pubspec.yaml version AND assets/changelog.json
+               c. Commit changes with descriptive message
+               d. Create a new PR using `gh pr create` with:
+                  - Title: "Auto-fix: Address review issues from PR #${{ github.event.pull_request.number }}"
+                  - Body that includes:
+                    * "🤖 **Automated fixes based on code review**"
+                    * Summary of all changes made
+                    * Reference to original PR: "Fixes issues found in #${{ github.event.pull_request.number }}"
+                    * List of specific fixes with file:line references
+               e. Comment on the ORIGINAL PR with a link to the fix PR
+
+            4. **END YOUR REVIEW COMMENT WITH:**
+               "---
+               ✅ **Automated fix PR created:** #[NEW_PR_NUMBER] (if fixes were applied)
+               OR
+               ✨ **No automated fixes needed** - please review the suggestions above (if only manual fixes)"
+
+            IMPORTANT:
+            - Follow ALL principles in CLAUDE.md
+            - Only create fix PR if there are actual fixable issues
+            - If uncertain about a fix, mention it in review but don't auto-fix it
+            - Always run the fixes, don't just suggest them
 
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options
-          claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
+          claude_args: '--allowed-tools "Bash(gh:*),Bash(git:*)"'
 
