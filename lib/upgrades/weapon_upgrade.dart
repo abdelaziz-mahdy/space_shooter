@@ -287,7 +287,7 @@ class MissileLauncherMultiShotUpgrade extends WeaponUpgrade {
           weaponId: 'missile_launcher',
           id: 'missile_launcher_multi_shot',
           name: 'Missile Barrage',
-          description: 'Missile Launcher: +$projectileIncrease missiles',
+          description: '+$projectileIncrease missiles',
           icon: '🚀',
         );
 
@@ -312,7 +312,7 @@ class MissileLauncherHomingUpgrade extends WeaponUpgrade {
           weaponId: 'missile_launcher',
           id: 'missile_launcher_homing',
           name: 'Advanced Guidance',
-          description: 'Missile Launcher: +${homingIncrease.toInt()} homing strength',
+          description: '+${homingIncrease.toInt()} homing strength',
           icon: '🚀',
         );
 
@@ -337,7 +337,7 @@ class MissileLauncherExplosionUpgrade extends WeaponUpgrade {
           weaponId: 'missile_launcher',
           id: 'missile_launcher_explosion',
           name: 'Cluster Warheads',
-          description: 'Missile Launcher: +${explosionIncrease.toInt()} explosion radius',
+          description: '+${explosionIncrease.toInt()} explosion radius',
           icon: '🚀',
         );
 
