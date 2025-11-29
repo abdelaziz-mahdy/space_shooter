@@ -1,0 +1,38 @@
+[
+  {
+    "version": "0.2.0",
+    "title": "Balance & Bug Fixes",
+    "date": "2025-01-28",
+    "sections": [
+      {
+        "title": "Bug Fixes",
+        "emoji": "🐛",
+        "items": [
+          "Fixed damage reduction/crit caps allowing invincibility",
+          "Fixed explosion visual not matching damage area",
+          "Thorns now actually reflects damage to attackers"
+        ]
+      },
+      {
+        "title": "Balance",
+        "emoji": "⚖️",
+        "items": [
+          "Faster progression: XP scaling reduced 1.5x → 1.2x",
+          "Faster waves: Delay reduced 2.0s → 1.0s",
+          "Railgun buffed: 2.5x → 4.0x damage",
+          "Bomb nerfed: 400px → 350px radius, boss damage 25% → 15%"
+        ]
+      },
+      {
+        "title": "New Caps",
+        "emoji": "🔒",
+        "items": [
+          "Crit chance: 75% max",
+          "Crit damage: 5x max",
+          "Damage reduction: 80% max",
+          "Orbital drones: 10 max (performance)"
+        ]
+      }
+    ]
+  }
+]

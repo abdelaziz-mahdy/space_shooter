@@ -410,3 +410,97 @@ enemy.takeDamage(999999);  // Calls die() → drops XP → removes
 6. **Consistency** - Coordinate systems, pause handling, damage pipeline
 
 **Golden Rule:** If you find yourself copying code or hardcoding values that exist elsewhere in the codebase, there's a better pattern available. Use abstraction and polymorphism.
+
+---
+
+## Release Process & Version Management
+
+### **When Releasing a New Version**
+
+**CRITICAL:** Always update these files together:
+
+1. **`pubspec.yaml`** - Bump the version number
+   ```yaml
+   version: 0.3.0  # Increment appropriately
+   ```
+
+2. **`assets/changelog.json`** - Add new changelog entry at the TOP of the array
+   ```json
+   [
+     {
+       "version": "0.3.0",
+       "title": "Brief Update Title",
+       "date": "2025-02-01",
+       "sections": [
+         {
+           "title": "Section Name",
+           "emoji": "🎯",
+           "items": [
+             "Concise description of change",
+             "Another important change"
+           ]
+         }
+       ]
+     },
+     // ... older versions below
+   ]
+   ```
+
+### **Changelog Best Practices**
+
+**Keep it Mobile-Friendly:**
+- Use **concise descriptions** (max 1-2 lines per item)
+- Focus on **user-visible changes** (not internal refactors)
+- Group related changes into sections
+- Use emojis for visual scanning
+
+**Section Examples:**
+- `🐛 Bug Fixes` - Fixed issues
+- `⚖️ Balance` - Gameplay balance changes
+- `✨ New Features` - New functionality
+- `🎨 UI Improvements` - Visual/UX changes
+- `🔒 New Caps` - New limits/restrictions
+- `⚡ Performance` - Optimization changes
+
+**Example Entry:**
+```json
+{
+  "version": "0.3.0",
+  "title": "Enemy Variety Update",
+  "date": "2025-02-15",
+  "sections": [
+    {
+      "title": "New Content",
+      "emoji": "✨",
+      "items": [
+        "3 new enemy types with unique abilities",
+        "Boss rush mode unlocked at wave 50"
+      ]
+    },
+    {
+      "title": "Balance",
+      "emoji": "⚖️",
+      "items": [
+        "Enemy health scaling increased 30% → 50% per wave",
+        "Shield power-up now gives 2 layers instead of 1"
+      ]
+    }
+  ]
+}
+```
+
+### **Automatic Changelog Display**
+
+The changelog system automatically:
+1. **Detects version changes** via `VersionService`
+2. **Shows on first launch** after update (500ms delay)
+3. **Tracks last seen version** in SharedPreferences
+4. **Only shows new changes** since user's last version
+
+**Files Involved:**
+- `lib/services/version_service.dart` - Version detection
+- `lib/models/changelog.dart` - Data models
+- `lib/ui/changelog_dialog.dart` - Display UI
+- `lib/ui/main_menu.dart` - Integration point
+
+**DON'T FORGET:** Both `pubspec.yaml` version and `changelog.json` must match!

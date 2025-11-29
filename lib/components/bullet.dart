@@ -152,17 +152,9 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
       // Play hit sound effect
       gameRef.audioManager.playHit();
 
-      // Calculate final damage with berserk multiplier
-      var finalDamage = actualDamage;
-
-      // Check for berserk bonus (low health damage boost)
-      final healthPercent = player.health / player.maxHealth;
-      if (healthPercent < 0.3 && player.berserkMultiplier > 1.0) {
-        finalDamage *= player.berserkMultiplier;
-      }
-
       // Deal damage to the hit enemy (damage number is shown by base_enemy.takeDamage)
-      other.takeDamage(finalDamage, isCrit: isCrit);
+      // Note: Berserk multiplier already applied in weapon.getDamage()
+      other.takeDamage(actualDamage, isCrit: isCrit);
 
       // Apply freeze effect (only BaseEnemy has freeze)
       if (player.freezeChance > 0 && Random().nextDouble() < player.freezeChance) {

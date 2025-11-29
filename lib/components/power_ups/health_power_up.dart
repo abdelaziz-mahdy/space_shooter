@@ -25,6 +25,7 @@ class HealthPowerUp extends BasePowerUp {
   @override
   void applyEffect(PlayerShip player) {
     // Scale healing with max HP (25% of max health, minimum 15 HP)
+    // No maximum cap - intentionally scales infinitely with max HP upgrades for late game
     final healAmount = (player.maxHealth * 0.25).clamp(_config.value, double.infinity);
     player.health = (player.health + healAmount).clamp(0, player.maxHealth);
     print('[PowerUp] Health restored: +${healAmount.toInt()} HP');

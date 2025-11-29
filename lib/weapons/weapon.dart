@@ -55,9 +55,8 @@ abstract class Weapon {
   double getDamage(PlayerShip player) {
     var damage = player.damage * damageMultiplier;
 
-    // Check for berserk bonus (low health damage boost)
-    final healthPercent = player.health / player.maxHealth;
-    if (healthPercent < 0.3 && player.berserkMultiplier > 1.0) {
+    // Apply berserk bonus (low health damage boost)
+    if (player.isBerserk) {
       damage *= player.berserkMultiplier;
     }
 

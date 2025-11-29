@@ -211,7 +211,7 @@ abstract class BaseEnemy extends BaseRenderedComponent
 
       // Apply thorns damage reflection
       if (player.thornsPercent > 0) {
-        final thornsDamage = contactDamage * (player.thornsPercent / 100.0);
+        final thornsDamage = contactDamage * player.thornsPercent; // thornsPercent already a fraction (0.0-0.5)
         takeDamage(thornsDamage);
       }
 
