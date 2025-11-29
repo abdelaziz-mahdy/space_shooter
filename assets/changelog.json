@@ -1,5 +1,40 @@
 [
   {
+    "version": "0.3.0",
+    "title": "Weapon System Expansion",
+    "date": "2025-01-28",
+    "sections": [
+      {
+        "title": "New Weapons",
+        "emoji": "🎯",
+        "items": [
+          "Laser Beam (Lv20): Continuous damage beam with rapid fire",
+          "Shotgun Blaster (Lv25): 8-pellet spread for close-range devastation",
+          "Tesla Coil (Lv30): Chain lightning arcing between enemies"
+        ]
+      },
+      {
+        "title": "System Improvements",
+        "emoji": "⚙️",
+        "items": [
+          "Weapon unlocks now config-based (easier to add new weapons)",
+          "7 total weapons (up from 4)",
+          "Weapons unlock at levels: 1, 5, 10, 15, 20, 25, 30",
+          "Better late-game progression and variety"
+        ]
+      },
+      {
+        "title": "Visual Effects",
+        "emoji": "✨",
+        "items": [
+          "New chain lightning effect with energy nodes",
+          "Improved beam rendering for laser weapons",
+          "Enhanced weapon variety and visual feedback"
+        ]
+      }
+    ]
+  },
+  {
     "version": "0.2.0",
     "title": "Balance & Bug Fixes",
     "date": "2025-01-28",

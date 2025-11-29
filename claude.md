@@ -2,6 +2,47 @@
 
 ## ⚠️ CRITICAL RULES
 
+### **ALWAYS UPDATE VERSION & CHANGELOG FOR CLIENT CHANGES!**
+
+**Why:** Players need to see what changed. The game automatically shows changelogs on updates.
+
+**MANDATORY STEPS for ANY client-facing changes:**
+
+1. **Update `pubspec.yaml` version:**
+   ```yaml
+   version: 0.3.0  # Increment: major.minor.patch
+   ```
+
+2. **Add entry to `assets/changelog.json` (at TOP of array):**
+   ```json
+   [
+     {
+       "version": "0.3.0",
+       "title": "Brief Update Title",
+       "date": "2025-MM-DD",
+       "sections": [
+         {
+           "title": "Section Name",
+           "emoji": "🎯",
+           "items": ["Change 1", "Change 2"]
+         }
+       ]
+     },
+     // ... older versions
+   ]
+   ```
+
+**Rule:** Version in `pubspec.yaml` MUST match version in `changelog.json`. Both files must be updated together in the same commit.
+
+**When to increment:**
+- **Patch (0.2.1):** Bug fixes, small tweaks
+- **Minor (0.3.0):** New features, balance changes, new content
+- **Major (1.0.0):** Major releases, breaking changes
+
+See [Release Process](#release-process--version-management) section for detailed guidelines.
+
+---
+
 ### **RESPONSIVE DESIGN - USE PERCENTAGES, NOT CONDITIONALS!**
 
 **Why:** Responsive UIs should scale naturally based on screen size, not use conditional logic to adjust values.
