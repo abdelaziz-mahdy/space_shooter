@@ -10,6 +10,7 @@ class DamageNumber extends PositionComponent with HasGameRef<SpaceShooterGame> {
   final bool isCrit;
   final bool isHealing;
   final bool isPlayerDamage;
+  final bool isThorns;
 
   double lifetime = 0;
   static const double maxLifetime = 0.8;
@@ -22,6 +23,7 @@ class DamageNumber extends PositionComponent with HasGameRef<SpaceShooterGame> {
     this.isCrit = false,
     this.isHealing = false,
     this.isPlayerDamage = false,
+    this.isThorns = false,
   }) : super(position: position, size: Vector2(50, 30)) {
     anchor = Anchor.center;
 
@@ -48,6 +50,7 @@ class DamageNumber extends PositionComponent with HasGameRef<SpaceShooterGame> {
   Color _getColor() {
     if (isHealing) return const Color(0xFF00FF00); // Green
     if (isPlayerDamage) return const Color(0xFFFF0000); // Red
+    if (isThorns) return const Color(0xFFFF00FF); // Magenta for thorns
     if (isCrit) return const Color(0xFFFF8800); // Orange
     return const Color(0xFFFFFFFF); // White
   }
@@ -136,6 +139,31 @@ class DamageNumber extends PositionComponent with HasGameRef<SpaceShooterGame> {
       critText.render(
         canvas,
         'CRIT!',
+        Vector2(size.x / 2, size.y / 2 - 15),
+        anchor: Anchor.center,
+      );
+    }
+
+    // Add "THORNS!" text above thorns damage
+    if (isThorns) {
+      final thornsText = TextPaint(
+        style: TextStyle(
+          color: const Color(0xFFFF00FF).withOpacity(opacity),
+          fontSize: 10.0,
+          fontWeight: FontWeight.bold,
+          shadows: [
+            Shadow(
+              color: Colors.black.withOpacity(0.8 * opacity),
+              offset: const Offset(1, 1),
+              blurRadius: 2,
+            ),
+          ],
+        ),
+      );
+
+      thornsText.render(
+        canvas,
+        'THORNS!',
         Vector2(size.x / 2, size.y / 2 - 15),
         anchor: Anchor.center,
       );
