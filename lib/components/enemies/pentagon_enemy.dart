@@ -88,9 +88,11 @@ class PentagonEnemy extends BaseEnemy {
     canvas.drawPath(path, paint);
     canvas.drawPath(path, strokePaint);
 
-    // Draw health bar
-    // Draw freeze effect if frozen
+    // Draw status effects
     renderFreezeEffect(canvas);
+    renderBleedEffect(canvas);
+
+    // Draw health bar
     renderHealthBar(canvas);
   }
 

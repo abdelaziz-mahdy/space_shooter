@@ -18,8 +18,8 @@ class Railgun extends Weapon {
           id: ID,
           name: 'Railgun',
           description: 'Piercing beam weapon that hits all enemies in line',
-          damageMultiplier: 2.5, // Higher damage
-          fireRateMultiplier: 3.0, // Slower fire rate (3x base = 1.5s instead of 0.5s)
+          damageMultiplier: 4.0, // High damage to compensate for slow fire rate
+          fireRateMultiplier: 2.5, // Slower fire rate but not as extreme
           projectileSpeedMultiplier: 1.0, // Not used for instant beam
         );
 
@@ -39,12 +39,16 @@ class Railgun extends Weapon {
     final maxRange = 1000.0;
     final beamEnd = bulletSpawnPosition + (targetDirection.normalized() * maxRange);
 
+    // Scale beam width based on damage (visual feedback for power)
+    final baseDamage = getDamage(player);
+    final beamWidth = (4.0 + (baseDamage / 20.0)).clamp(4.0, 12.0);
+
     // Create visual beam effect
     final beam = BeamEffect(
       startPosition: bulletSpawnPosition,
       endPosition: beamEnd,
       beamColor: const Color(0xFF00FFFF), // Cyan/white beam
-      beamWidth: 6.0,
+      beamWidth: beamWidth,
     );
     game.world.add(beam);
 
@@ -61,6 +65,8 @@ class Railgun extends Weapon {
   ) {
     final directionNormalized = direction.normalized();
     final damage = getDamage(player);
+    // Beam radius scales with damage
+    final beamHitRadius = (2.0 + (damage / 20.0)).clamp(2.0, 8.0);
 
     // Calculate crit
     final isCrit = Random().nextDouble() < player.critChance;
@@ -71,7 +77,7 @@ class Railgun extends Weapon {
 
     // Check each enemy if it's in the beam's path
     for (final enemy in allEnemies) {
-      if (_isEnemyInBeamPath(start, directionNormalized, maxRange, enemy)) {
+      if (_isEnemyInBeamPath(start, directionNormalized, maxRange, enemy, beamHitRadius)) {
         // Apply damage to enemy (damage number shown automatically by base_enemy)
         enemy.takeDamage(actualDamage, isCrit: isCrit);
 
@@ -92,6 +98,7 @@ class Railgun extends Weapon {
     Vector2 direction,
     double maxRange,
     PositionComponent enemy,
+    double beamRadius,
   ) {
     // Get enemy position
     final enemyPos = enemy.position;
@@ -115,9 +122,8 @@ class Railgun extends Weapon {
 
     // Enemy hitbox radius (approximate)
     final enemyRadius = enemy.size.length / 2;
-    final beamRadius = 3.0; // Half of beam width
 
-    // Check if enemy is close enough to beam
+    // Check if enemy is close enough to beam (beamRadius passed in)
     return distanceToBeam <= (enemyRadius + beamRadius);
   }
 

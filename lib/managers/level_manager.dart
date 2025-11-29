@@ -22,7 +22,7 @@ class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
   void levelUp() {
     currentLevel++;
     currentXP -= xpToNextLevel;
-    xpToNextLevel = (xpToNextLevel * 1.5).round();
+    xpToNextLevel = (xpToNextLevel * 1.2).round(); // Reduced from 1.5x to 1.2x for faster leveling
 
     // Play level up sound
     gameRef.audioManager.playLevelUp();

@@ -63,36 +63,37 @@ class _FlutterUpgradeDialogState extends State<FlutterUpgradeDialog> {
                   ),
                 ),
                 const SizedBox(height: 40),
-                Builder(
-                  builder: (context) {
-                    // Get the full screen width from the outer LayoutBuilder
-                    final screenWidth = constraints.maxWidth;
-                    // Responsive sizing with maximum width for desktop
-                    // On desktop, limit to 60% of screen or 900px max
-                    // On mobile, use 90% of screen
-                    final maxDialogWidth = isMobile ? screenWidth * 0.9 : 900.0;
-                    final availableWidth = (screenWidth * (isMobile ? 0.9 : 0.6)).clamp(300.0, maxDialogWidth);
-                    final spacing = availableWidth * 0.03;
-                    final totalSpacing = spacing * (upgrades.length - 1);
-                    final cardWidth = (availableWidth - totalSpacing) / upgrades.length;
-                    final cardHeight = cardWidth * 1.25;
+                // Use constraints to ensure proper centering
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: isMobile ? constraints.maxWidth * 0.95 : 900.0,
+                  ),
+                  child: Builder(
+                    builder: (context) {
+                      // Calculate card dimensions based on available space
+                      final screenWidth = constraints.maxWidth;
+                      final containerWidth = isMobile ? screenWidth * 0.95 : 900.0;
+                      final spacing = containerWidth * 0.025; // 2.5% spacing
+                      final totalSpacing = spacing * (upgrades.length - 1);
+                      final cardWidth = (containerWidth - totalSpacing) / upgrades.length;
+                      final cardHeight = cardWidth * 1.25;
 
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: upgrades.map((upgrade) {
-                        return Padding(
-                          padding: EdgeInsets.symmetric(horizontal: spacing / 2),
-                          child: UpgradeCardWidget(
-                            upgrade: upgrade,
-                            onSelected: () => _selectUpgrade(upgrade),
-                            width: cardWidth,
-                            height: cardHeight,
-                          ),
-                        );
-                      }).toList(),
-                    );
-                  },
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: upgrades.map((upgrade) {
+                          return Padding(
+                            padding: EdgeInsets.symmetric(horizontal: spacing / 2),
+                            child: UpgradeCardWidget(
+                              upgrade: upgrade,
+                              onSelected: () => _selectUpgrade(upgrade),
+                              width: cardWidth,
+                              height: cardHeight,
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    },
+                  ),
                 ),
               ],
             ),

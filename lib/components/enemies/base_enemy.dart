@@ -29,6 +29,12 @@ abstract class BaseEnemy extends BaseRenderedComponent
   double freezeTimer = 0;
   double freezeSlowMultiplier = 1.0;
 
+  // Bleed effect
+  bool isBleeding = false;
+  double bleedTimer = 0;
+  double bleedDamagePerSecond = 0;
+  static const double bleedDuration = 3.0; // 3 seconds
+
   BaseEnemy({
     required Vector2 position,
     required this.player,
@@ -67,6 +73,14 @@ abstract class BaseEnemy extends BaseRenderedComponent
     freezeSlowMultiplier = 0.3; // Move at 30% speed when frozen
   }
 
+  /// Apply bleed effect to this enemy
+  void applyBleed(double damagePerSecond) {
+    if (damagePerSecond <= 0) return;
+    isBleeding = true;
+    bleedTimer = bleedDuration;
+    bleedDamagePerSecond = damagePerSecond;
+  }
+
   /// Get current effective speed (accounting for freeze and global time scale)
   double getEffectiveSpeed() {
     final globalTimeScale = gameRef.player.globalTimeScale ?? 1.0;
@@ -90,6 +104,25 @@ abstract class BaseEnemy extends BaseRenderedComponent
       }
     }
 
+    // Update bleed effect
+    if (isBleeding) {
+      bleedTimer -= dt;
+      // Apply bleed damage over time (no damage number to avoid spam)
+      final bleedDamage = bleedDamagePerSecond * dt;
+      health -= bleedDamage;
+
+      if (health <= 0) {
+        die();
+        return;
+      }
+
+      if (bleedTimer <= 0) {
+        isBleeding = false;
+        bleedTimer = 0;
+        bleedDamagePerSecond = 0;
+      }
+    }
+
     // Call custom movement logic
     updateMovement(dt);
   }
@@ -108,6 +141,11 @@ abstract class BaseEnemy extends BaseRenderedComponent
         isCrit: isCrit,
       );
       gameRef.world.add(damageNumber);
+    }
+
+    // Apply bleed effect if player has bleed damage
+    if (player.bleedDamage > 0) {
+      applyBleed(player.bleedDamage);
     }
 
     if (health <= 0) {
@@ -222,6 +260,22 @@ abstract class BaseEnemy extends BaseRenderedComponent
     // Draw ice crystal border
     final borderPaint = Paint()
       ..color = const Color(0xFF00FFFF)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.x, size.y),
+      borderPaint,
+    );
+  }
+
+  /// Helper method to render bleed effect
+  void renderBleedEffect(Canvas canvas) {
+    if (!isBleeding) return;
+
+    // Red pulsing border to indicate bleeding
+    final borderPaint = Paint()
+      ..color = const Color(0xFFFF0000).withOpacity(0.7)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
 

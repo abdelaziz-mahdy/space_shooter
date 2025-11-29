@@ -302,8 +302,9 @@ class SplitterBoss extends BaseEnemy {
       ..strokeWidth = 2;
     canvas.drawPath(path, strokePaint);
 
-    // Draw health bar and freeze effect
+    // Draw status effects and health bar
     renderFreezeEffect(canvas);
+    renderBleedEffect(canvas);
     renderHealthBar(canvas);
   }
 
