@@ -7,13 +7,23 @@ import '../config/env_config.dart';
 /// Get the current platform as a string for leaderboard tracking
 String _getPlatformString() {
   if (kIsWeb) {
-    // On web, check the underlying platform
-    if (defaultTargetPlatform == TargetPlatform.iOS ||
-        defaultTargetPlatform == TargetPlatform.android) {
-      return 'mobile-web';
+    // On web, detect the specific platform
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+        return 'ios-web';
+      case TargetPlatform.android:
+        return 'android-web';
+      case TargetPlatform.macOS:
+        return 'macos-web';
+      case TargetPlatform.windows:
+        return 'windows-web';
+      case TargetPlatform.linux:
+        return 'linux-web';
+      default:
+        return 'web';
     }
-    return 'desktop-web';
   }
+  // Native apps
   switch (defaultTargetPlatform) {
     case TargetPlatform.iOS:
       return 'ios';

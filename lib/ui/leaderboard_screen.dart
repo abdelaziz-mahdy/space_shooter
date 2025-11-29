@@ -265,6 +265,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
         timeAlive: entry.timeAlive,
         upgrades: entry.upgrades,
         weaponUsed: entry.weaponUsed,
+        platform: entry.platform,
         rank: rank,
       ),
     );
@@ -550,6 +551,7 @@ class _ScoreDetailsDialog extends StatelessWidget {
   final double timeAlive;
   final List<String> upgrades;
   final String? weaponUsed;
+  final String? platform;
   final int rank;
 
   const _ScoreDetailsDialog({
@@ -560,6 +562,7 @@ class _ScoreDetailsDialog extends StatelessWidget {
     required this.timeAlive,
     required this.upgrades,
     this.weaponUsed,
+    this.platform,
     required this.rank,
   });
 
@@ -676,36 +679,75 @@ class _ScoreDetailsDialog extends StatelessWidget {
               ),
             ),
 
-            // Weapon used
-            if (weaponUsed != null && weaponUsed!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.rocket_launch,
-                        color: Color(0xFF00FFFF),
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Weapon: ${_formatWeaponName(weaponUsed!)}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
+            // Weapon and Platform row
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  // Weapon used
+                  if (weaponUsed != null && weaponUsed!.isNotEmpty)
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.rocket_launch,
+                              color: Color(0xFF00FFFF),
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                _formatWeaponName(weaponUsed!),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                  if (weaponUsed != null && weaponUsed!.isNotEmpty && platform != null)
+                    const SizedBox(width: 8),
+                  // Platform
+                  if (platform != null)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _getPlatformIcon(platform!),
+                            color: const Color(0xFF888888),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            _formatPlatformName(platform!),
+                            style: const TextStyle(
+                              color: Color(0xFF888888),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
               ),
+            ),
 
             const SizedBox(height: 16),
 
@@ -862,5 +904,51 @@ class _ScoreDetailsDialog extends StatelessWidget {
             ? '${word[0].toUpperCase()}${word.substring(1)}'
             : '')
         .join(' ');
+  }
+
+  IconData _getPlatformIcon(String platform) {
+    final lowerPlatform = platform.toLowerCase();
+    if (lowerPlatform.contains('ios')) {
+      return Icons.phone_iphone;
+    } else if (lowerPlatform.contains('android')) {
+      return Icons.phone_android;
+    } else if (lowerPlatform.contains('macos')) {
+      return Icons.laptop_mac;
+    } else if (lowerPlatform.contains('windows')) {
+      return Icons.desktop_windows;
+    } else if (lowerPlatform.contains('linux')) {
+      return Icons.computer;
+    } else if (lowerPlatform.contains('web')) {
+      return Icons.language;
+    }
+    return Icons.devices;
+  }
+
+  String _formatPlatformName(String platform) {
+    final lowerPlatform = platform.toLowerCase();
+    if (lowerPlatform == 'ios') {
+      return 'iOS';
+    } else if (lowerPlatform == 'ios-web') {
+      return 'iOS Web';
+    } else if (lowerPlatform == 'android') {
+      return 'Android';
+    } else if (lowerPlatform == 'android-web') {
+      return 'Android Web';
+    } else if (lowerPlatform == 'macos') {
+      return 'macOS';
+    } else if (lowerPlatform == 'macos-web') {
+      return 'macOS Web';
+    } else if (lowerPlatform == 'windows') {
+      return 'Windows';
+    } else if (lowerPlatform == 'windows-web') {
+      return 'Windows Web';
+    } else if (lowerPlatform == 'linux') {
+      return 'Linux';
+    } else if (lowerPlatform == 'linux-web') {
+      return 'Linux Web';
+    } else if (lowerPlatform == 'web') {
+      return 'Web';
+    }
+    return platform;
   }
 }
