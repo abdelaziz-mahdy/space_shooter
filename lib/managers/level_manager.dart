@@ -44,22 +44,30 @@ class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
     final player = gameRef.player;
 
     // Check if this level should offer weapon unlocks
-    final weaponUpgrades = _getWeaponUpgradesForLevel();
+    final allWeaponUpgrades = _getWeaponUpgradesForLevel();
+
+    // IMPORTANT: Limit weapon unlocks to max 2 per upgrade selection
+    // This prevents being forced to choose only weapons with no stat upgrades
+    final maxWeaponUpgrades = 2;
+    final weaponUpgrades = allWeaponUpgrades.isEmpty
+        ? <Upgrade>[]
+        : (allWeaponUpgrades..shuffle(random)).take(maxWeaponUpgrades).toList();
+
+    // Calculate how many regular upgrades we need
+    // If we have 2 weapon upgrades, we need (count - 2) regular upgrades
+    final regularUpgradesNeeded = count - weaponUpgrades.length;
 
     // Get regular random upgrades (already filtered by player validity)
-    final regularUpgrades = UpgradeFactory.getRandomUpgradesByRarity(count * 2, player: player);
+    final regularUpgrades = UpgradeFactory.getRandomUpgradesByRarity(
+      regularUpgradesNeeded * 2, // Get extra to ensure variety
+      player: player,
+    ).take(regularUpgradesNeeded).toList();
 
-    if (weaponUpgrades.isNotEmpty) {
-      // Mix weapon upgrades with regular upgrades
-      final allUpgrades = [...weaponUpgrades, ...regularUpgrades];
+    // Combine weapon upgrades + regular upgrades, then shuffle
+    final allUpgrades = [...weaponUpgrades, ...regularUpgrades];
+    allUpgrades.shuffle(random);
 
-      // Shuffle and take the requested count
-      allUpgrades.shuffle(random);
-      return allUpgrades.take(count).toList();
-    }
-
-    // No weapon upgrades this level, just return regular upgrades (filtered and limited to count)
-    return regularUpgrades.take(count).toList();
+    return allUpgrades.take(count).toList();
   }
 
   List<Upgrade> _getWeaponUpgradesForLevel() {
