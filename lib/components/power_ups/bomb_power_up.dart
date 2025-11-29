@@ -28,19 +28,24 @@ class BombPowerUp extends BasePowerUp {
   void applyEffect(PlayerShip player) {
     final playerPosition = player.position;
     final bombRange = _config.value;
-    const bombDamage = 999999.0;
 
     // Get all enemies (BaseEnemy includes BossShip and all enemy types)
     final allEnemies = gameRef.world.children.whereType<BaseEnemy>().toList();
 
-    int enemiesDestroyed = 0;
+    int enemiesDamaged = 0;
 
-    // Deal massive damage to all enemies in range
+    // Deal damage to all enemies in range
     for (final enemy in allEnemies) {
       final distance = playerPosition.distanceTo(enemy.position);
       if (distance <= bombRange) {
-        enemy.takeDamage(bombDamage); // This triggers die() which drops XP/loot
-        enemiesDestroyed++;
+        // Check if enemy is a boss (health > 500 is a simple heuristic for boss detection)
+        final isBoss = enemy.maxHealth > 500;
+        final bombDamage = isBoss
+            ? enemy.maxHealth * 0.25  // Bosses: 25% of max health
+            : enemy.maxHealth;         // Normal enemies: one-shot kill
+
+        enemy.takeDamage(bombDamage);
+        enemiesDamaged++;
       }
     }
 
@@ -51,7 +56,7 @@ class BombPowerUp extends BasePowerUp {
     );
     gameRef.world.add(waveEffect);
 
-    print('[PowerUp] Bomb activated: $enemiesDestroyed/${allEnemies.length} enemies destroyed (within ${bombRange.toInt()}px)');
+    print('[PowerUp] Bomb activated: $enemiesDamaged/${allEnemies.length} enemies damaged (within ${bombRange.toInt()}px)');
   }
 
   @override

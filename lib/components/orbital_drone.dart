@@ -17,7 +17,6 @@ class OrbitalDrone extends PositionComponent with HasGameRef<SpaceShooterGame> {
   double orbitRadius = 60.0;
   double rotationSpeed = 2.0; // Radians per second
   double shootTimer = 0;
-  double shootInterval = 1.5; // Seconds between shots
 
   OrbitalDrone({
     required this.player,
@@ -56,8 +55,9 @@ class OrbitalDrone extends PositionComponent with HasGameRef<SpaceShooterGame> {
           sin(angle) * orbitRadius,
         );
 
-    // Shoot at nearby enemies
+    // Shoot at nearby enemies using player's fire rate
     shootTimer += dt;
+    final shootInterval = player.shootInterval; // Use player's fire rate
     if (shootTimer >= shootInterval) {
       shootTimer = 0;
       _shootAtNearestEnemy();
@@ -80,6 +80,8 @@ class OrbitalDrone extends PositionComponent with HasGameRef<SpaceShooterGame> {
     }
 
     // Shoot at nearest enemy if found
+    // Note: Bullet constructor automatically gets crit chance/damage from player
+    // and applies chain lightning/pierce based on player stats in collision handling
     if (nearestEnemy != null) {
       final direction = (nearestEnemy.position - position).normalized();
       final bullet = Bullet(
