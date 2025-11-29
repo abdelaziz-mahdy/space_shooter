@@ -18,19 +18,30 @@
    [
      {
        "version": "0.3.0",
-       "title": "Brief Update Title",
+       "title": "Brief Update Title (3-5 words)",
        "date": "2025-MM-DD",
        "sections": [
          {
            "title": "Section Name",
            "emoji": "🎯",
-           "items": ["Change 1", "Change 2"]
+           "items": [
+             "Brief summary (not full sentences)",
+             "Focus on user impact, not technical details"
+           ]
          }
        ]
      },
      // ... older versions
    ]
    ```
+
+**IMPORTANT - Keep Changelogs Client-Friendly:**
+- ✅ **DO**: "Added live score display in HUD"
+- ✅ **DO**: "Spread weapons now hit center targets"
+- ❌ **DON'T**: "Modified PlasmaSpreader fire() method to ensure i==0 has zero offset"
+- ❌ **DON'T**: "Refactored Bullet class to accept forceCrit parameter"
+- **Why**: Players care about WHAT changed (features/fixes), not HOW (code details)
+- **Guideline**: Write for non-technical players, not developers
 
 **Rule:** Version in `pubspec.yaml` MUST match version in `changelog.json`. Both files must be updated together in the same commit.
 
