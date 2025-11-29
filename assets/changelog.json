@@ -2,7 +2,7 @@
   {
     "version": "0.3.3",
     "title": "Upgrade Selection Improvements",
-    "date": "2025-01-29",
+    "date": "2025-11-29",
     "sections": [
       {
         "title": "Balance",
@@ -11,14 +11,6 @@
           "Limited weapon unlocks to max 2 per upgrade choice",
           "Ensures players always have stat upgrade options",
           "Better build variety and player choice"
-        ]
-      },
-      {
-        "title": "Code Quality",
-        "emoji": "🔧",
-        "items": [
-          "Improved upgrade selection logic",
-          "Better code maintainability"
         ]
       }
     ]
