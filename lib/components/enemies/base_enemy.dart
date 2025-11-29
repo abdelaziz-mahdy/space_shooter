@@ -181,7 +181,7 @@ abstract class BaseEnemy extends BaseRenderedComponent
 
     // Random chance to drop power-up (affected by player luck)
     final random = Random();
-    final dropChance = 0.15 + (player.luck * 0.1); // Base 15% + luck bonus
+    final dropChance = 0.08 + (player.luck * 0.1); // Base 8% + luck bonus
 
     if (random.nextDouble() < dropChance) {
       // Create random power-up using factory

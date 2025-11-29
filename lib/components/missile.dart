@@ -100,7 +100,9 @@ class Missile extends BaseRenderedComponent
     final toTarget = PositionUtil.getDirectionTo(this, targetEnemy!);
 
     // Smoothly turn towards target
-    direction = (direction + (toTarget * homingStrength * dt)).normalized();
+    // Scale by dt and factor for consistent turn rate with bullets
+    final turnRate = homingStrength * dt * 0.01; // Adjusted for missile physics
+    direction = (direction + (toTarget * turnRate)).normalized();
   }
 
   @override
