@@ -52,10 +52,11 @@ class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
 
     // IMPORTANT: Limit weapon unlocks to max 2 per upgrade selection
     // This prevents being forced to choose only weapons with no stat upgrades
-    final weaponUpgrades = allWeaponUpgrades.isEmpty
-        ? <Upgrade>[]
-        : (List<Upgrade>.from(allWeaponUpgrades)..shuffle(random))
-            .take(maxWeaponUpgradesPerSelection).toList();
+    final weaponUpgrades = <Upgrade>[];
+    if (allWeaponUpgrades.isNotEmpty) {
+      allWeaponUpgrades.shuffle(random);
+      weaponUpgrades.addAll(allWeaponUpgrades.take(maxWeaponUpgradesPerSelection));
+    }
 
     // Calculate how many regular upgrades we need
     // If we have 2 weapon upgrades, we need (count - 2) regular upgrades
