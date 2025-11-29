@@ -395,8 +395,8 @@ class HomingUpgrade extends Upgrade {
   HomingUpgrade({this.homingStrength = 50.0})
       : super(
           id: 'homing',
-          name: 'Homing Missiles',
-          description: 'Bullets track enemies',
+          name: 'Smart Bullets',
+          description: 'All bullets track enemies',
           icon: '🎯',
         );
 
