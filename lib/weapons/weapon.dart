@@ -53,7 +53,7 @@ abstract class Weapon {
 
   /// Get the actual damage based on player stats and weapon multiplier
   double getDamage(PlayerShip player) {
-    var damage = player.damage * damageMultiplier;
+    var damage = player.damage * damageMultiplier * player.damageMultiplier;
 
     // Apply berserk bonus (low health damage boost)
     if (player.isBerserk) {
