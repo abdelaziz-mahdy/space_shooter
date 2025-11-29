@@ -45,6 +45,9 @@ import '../weapons/pulse_cannon.dart';
 import '../weapons/plasma_spreader.dart';
 import '../weapons/railgun.dart';
 import '../weapons/missile_launcher.dart';
+import '../weapons/laser_beam.dart';
+import '../weapons/shotgun_blaster.dart';
+import '../weapons/tesla_coil.dart';
 
 class SpaceShooterGame extends FlameGame
     with HasCollisionDetection, KeyboardEvents {
@@ -118,6 +121,9 @@ class SpaceShooterGame extends FlameGame
     PlasmaSpreader.init();
     Railgun.init();
     MissileLauncher.init();
+    LaserBeam.init();
+    ShotgunBlaster.init();
+    TeslaCoil.init();
 
     print('[SpaceShooterGame] All factories registered successfully');
   }

@@ -1,6 +1,6 @@
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:yaml/yaml.dart';
 
 /// Service for managing app version and detecting updates
 class VersionService {
@@ -12,7 +12,7 @@ class VersionService {
 
   VersionService(this._prefs);
 
-  /// Initialize the version service and load current version from pubspec.yaml
+  /// Initialize the version service and load current version from changelog.json
   static Future<VersionService> create() async {
     final prefs = await SharedPreferences.getInstance();
     final service = VersionService(prefs);
@@ -20,14 +20,20 @@ class VersionService {
     return service;
   }
 
-  /// Load current version from pubspec.yaml
+  /// Load current version from changelog.json (first entry is latest version)
   Future<void> _loadCurrentVersion() async {
     try {
-      final pubspecString = await rootBundle.loadString('pubspec.yaml');
-      final pubspec = loadYaml(pubspecString);
-      _currentVersion = pubspec['version'] as String? ?? '0.1.0';
+      final changelogString = await rootBundle.loadString('assets/changelog.json');
+      final changelog = json.decode(changelogString) as List<dynamic>;
+
+      if (changelog.isNotEmpty) {
+        final latestEntry = changelog.first as Map<String, dynamic>;
+        _currentVersion = latestEntry['version'] as String? ?? '0.1.0';
+      } else {
+        _currentVersion = '0.1.0'; // Fallback if changelog is empty
+      }
     } catch (e) {
-      print('[VersionService] Error loading version from pubspec.yaml: $e');
+      print('[VersionService] Error loading version from changelog.json: $e');
       _currentVersion = '0.1.0'; // Fallback version
     }
   }

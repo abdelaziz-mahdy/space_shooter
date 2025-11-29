@@ -1,7 +1,7 @@
 name: space_shooter
 description: "A new Flutter project."
 publish_to: 'none'
-version: 0.2.0
+version: 0.3.0
 
 environment:
   sdk: ^3.10.0
@@ -14,7 +14,6 @@ dependencies:
   shared_preferences: ^2.2.2
   http: ^1.2.0
   flutter_dotenv: ^5.1.0
-  yaml: ^3.1.2
 
 dev_dependencies:
   flutter_test:

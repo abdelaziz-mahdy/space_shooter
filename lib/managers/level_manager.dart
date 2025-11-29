@@ -65,46 +65,24 @@ class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
   List<Upgrade> _getWeaponUpgradesForLevel() {
     final player = gameRef.player;
     final unlockedWeapons = player.weaponManager.getUnlockedWeapons();
+    final options = <Upgrade>[];
 
-    // Level 5: Offer choice between Plasma Spreader and Railgun
-    if (currentLevel == 5) {
-      final options = <Upgrade>[];
+    // Get all registered weapons from the config
+    final allWeaponIds = WeaponUnlockConfig.getAllWeaponIds();
 
-      if (!unlockedWeapons.contains('plasma_spreader')) {
-        options.add(WeaponUnlockUpgrade(weaponId: 'plasma_spreader'));
-      }
+    // Check each weapon to see if it should be unlocked at this level
+    for (final weaponId in allWeaponIds) {
+      final unlockLevel = WeaponUnlockConfig.getUnlockLevel(weaponId);
 
-      if (!unlockedWeapons.contains('railgun')) {
-        options.add(WeaponUnlockUpgrade(weaponId: 'railgun'));
-      }
-
-      // If both are already unlocked, return empty (fall through to normal upgrades)
-      return options;
-    }
-
-    // Level 10: Offer the weapon not chosen at level 5
-    if (currentLevel == 10) {
-      final options = <Upgrade>[];
-
-      if (!unlockedWeapons.contains('plasma_spreader')) {
-        options.add(WeaponUnlockUpgrade(weaponId: 'plasma_spreader'));
-      }
-
-      if (!unlockedWeapons.contains('railgun')) {
-        options.add(WeaponUnlockUpgrade(weaponId: 'railgun'));
-      }
-
-      return options;
-    }
-
-    // Level 15: Offer Missile Launcher
-    if (currentLevel == 15) {
-      if (!unlockedWeapons.contains('missile_launcher')) {
-        return [WeaponUnlockUpgrade(weaponId: 'missile_launcher')];
+      // Offer weapon if:
+      // 1. Player has reached the unlock level
+      // 2. Player doesn't already have it unlocked
+      if (currentLevel >= unlockLevel && !unlockedWeapons.contains(weaponId)) {
+        options.add(WeaponUnlockUpgrade(weaponId: weaponId));
       }
     }
 
-    return [];
+    return options;
   }
 
   int getLevel() => currentLevel;
