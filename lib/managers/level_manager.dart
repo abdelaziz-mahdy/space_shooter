@@ -54,7 +54,8 @@ class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
     // This prevents being forced to choose only weapons with no stat upgrades
     final weaponUpgrades = allWeaponUpgrades.isEmpty
         ? <Upgrade>[]
-        : (allWeaponUpgrades..shuffle(random)).take(maxWeaponUpgradesPerSelection).toList();
+        : (List<Upgrade>.from(allWeaponUpgrades)..shuffle(random))
+            .take(maxWeaponUpgradesPerSelection).toList();
 
     // Calculate how many regular upgrades we need
     // If we have 2 weapon upgrades, we need (count - 2) regular upgrades
