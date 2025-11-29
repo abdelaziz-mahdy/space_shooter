@@ -9,6 +9,10 @@ class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
   int currentXP = 0;
   int xpToNextLevel = 10;
 
+  // Maximum weapon unlocks that can appear in a single upgrade selection
+  // This prevents forcing players to choose only weapons with no stat upgrades
+  static const int maxWeaponUpgradesPerSelection = 2;
+
   LevelManager({required SpaceShooterGame game});
 
   void addXP(int amount) {
@@ -46,12 +50,12 @@ class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
     // Check if this level should offer weapon unlocks
     final allWeaponUpgrades = _getWeaponUpgradesForLevel();
 
-    // IMPORTANT: Limit weapon unlocks to max 2 per upgrade selection
-    // This prevents being forced to choose only weapons with no stat upgrades
-    final maxWeaponUpgrades = 2;
+    // Limit weapon unlocks per upgrade selection (defined by maxWeaponUpgradesPerSelection)
     final weaponUpgrades = allWeaponUpgrades.isEmpty
         ? <Upgrade>[]
-        : (allWeaponUpgrades..shuffle(random)).take(maxWeaponUpgrades).toList();
+        : (allWeaponUpgrades..shuffle(random))
+            .take(maxWeaponUpgradesPerSelection)
+            .toList();
 
     // Calculate how many regular upgrades we need
     // If we have 2 weapon upgrades, we need (count - 2) regular upgrades
