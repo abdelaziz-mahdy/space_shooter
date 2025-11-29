@@ -53,8 +53,9 @@ class MissileLauncher extends Weapon {
         direction: missileDirection.normalized(),
         damage: getDamage(player),
         speed: getProjectileSpeed(player),
-        explosionRadius: 40.0,
+        explosionRadius: 40.0 + player.explosionRadius, // Base + player bonus
         explosionDamage: 0.8, // 80% of direct hit damage in area
+        homingStrength: 150.0 + player.homingStrength, // Base + player bonus
       );
       game.world.add(missile);
     }
