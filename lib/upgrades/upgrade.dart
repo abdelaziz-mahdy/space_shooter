@@ -107,11 +107,11 @@ class RangeUpgrade extends Upgrade {
 class MultiShotUpgrade extends Upgrade {
   final int additionalProjectiles;
 
-  MultiShotUpgrade({this.additionalProjectiles = 1})
+  MultiShotUpgrade({this.additionalProjectiles = 2})
       : super(
           id: 'multi_shot',
           name: 'Multi Shot',
-          description: '+$additionalProjectiles Projectile',
+          description: '+$additionalProjectiles Projectiles',
           icon: '🔫',
         );
 
@@ -121,7 +121,10 @@ class MultiShotUpgrade extends Upgrade {
   }
 
   @override
-  List<String> getStatusChanges() => ['+$additionalProjectiles projectile'];
+  UpgradeRarity get rarity => UpgradeRarity.rare;
+
+  @override
+  List<String> getStatusChanges() => ['+$additionalProjectiles projectiles'];
 }
 
 /// Increases movement speed

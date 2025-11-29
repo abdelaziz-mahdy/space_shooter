@@ -212,7 +212,17 @@ abstract class BaseEnemy extends BaseRenderedComponent
       // Apply thorns damage reflection
       if (player.thornsPercent > 0) {
         final thornsDamage = contactDamage * player.thornsPercent; // thornsPercent already a fraction (0.0-0.5)
-        takeDamage(thornsDamage);
+
+        // Show thorns damage with special visual indicator
+        final thornsDamageNumber = DamageNumber(
+          position: position.clone(),
+          damage: thornsDamage,
+          isThorns: true,
+        );
+        gameRef.world.add(thornsDamageNumber);
+
+        // Apply the damage (without showing duplicate damage number)
+        takeDamage(thornsDamage, showDamageNumber: false);
       }
 
       die(); // Enemy dies on collision with player

@@ -25,12 +25,12 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
   final double homingStrength; // Homing tracking strength
 
   // Critical hit mechanics
-  late final bool isCrit;
-  late final double actualDamage;
+  late bool isCrit;
+  late double actualDamage;
 
   // Visual properties
-  late final Color color;
-  late final Vector2 renderSize;
+  late Color color;
+  late Vector2 renderSize;
 
   double lifetime = 0;
   static const double maxLifetime = 3.0; // 3 seconds before despawn
@@ -46,33 +46,26 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
     this.pierceCount = 0,
     this.homingStrength = 0.0, // Default to no homing
     Vector2? customSize,
-  }) : super(position: position, size: customSize ?? Vector2(8, 8)) {
-    // Calculate critical hit in constructor
-    final player = (findGame() as SpaceShooterGame?)?.player;
-    if (player != null) {
-      isCrit = Random().nextDouble() < player.critChance;
-      actualDamage = isCrit ? baseDamage * player.critDamage : baseDamage;
-
-      // Visual indicator for crits (larger and orange-red)
-      if (isCrit) {
-        color = const Color(0xFFFF4500); // Orange-red for crits
-        renderSize = size * 1.5;
-      } else {
-        color = baseColor;
-        renderSize = size.clone();
-      }
-    } else {
-      isCrit = false;
-      actualDamage = baseDamage;
-      color = baseColor;
-      renderSize = size.clone();
-    }
-  }
+  }) : super(position: position, size: customSize ?? Vector2(8, 8));
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
     anchor = Anchor.center;
+
+    // Calculate critical hit AFTER component is added to tree (gameRef available)
+    final player = gameRef.player;
+    isCrit = Random().nextDouble() < player.critChance;
+    actualDamage = isCrit ? baseDamage * player.critDamage : baseDamage;
+
+    // Visual indicator for crits (larger and orange-red)
+    if (isCrit) {
+      color = const Color(0xFFFF4500); // Orange-red for crits
+      renderSize = size * 1.5;
+    } else {
+      color = baseColor;
+      renderSize = size.clone();
+    }
 
     add(CircleHitbox());
   }
