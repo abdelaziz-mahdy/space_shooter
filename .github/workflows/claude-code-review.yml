@@ -104,6 +104,6 @@ jobs:
 
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options
-          # Auto-approve file operations so Claude can apply fixes without blocking
-          claude_args: '--allowed-tools "Bash(gh:*),Bash(git:*)" --auto-approve-tools Read,Write,Edit,Glob,Grep'
+          # Allow file operations and git/gh commands
+          claude_args: '--allowedTools "Read,Write,Edit,Glob,Grep,Bash(gh:*),Bash(git:*)"'
 
