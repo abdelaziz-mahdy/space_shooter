@@ -12,16 +12,6 @@ on:
 
 jobs:
   claude-review:
-    # Skip if the commit was made by Claude to avoid infinite review loops
-    if: |
-      !contains(github.event.head_commit.message, '🤖 Auto-applied by Claude Code Review')
-
-    # Optional: Additional filters by PR author
-    # if: |
-    #   github.event.pull_request.user.login == 'external-contributor' ||
-    #   github.event.pull_request.user.login == 'new-developer' ||
-    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
-
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -37,12 +27,26 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}  # Checkout the PR branch directly
           fetch-depth: 0  # Need full history
 
+      - name: Check if last commit was by Claude
+        id: check-author
+        run: |
+          LAST_COMMIT_MSG=$(git log -1 --pretty=%B)
+          if echo "$LAST_COMMIT_MSG" | grep -q "🤖 Auto-applied by Claude Code Review"; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "Last commit was by Claude - skipping review to prevent loop"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "Last commit was by human - proceeding with review"
+          fi
+
       - name: Set up Git
+        if: steps.check-author.outputs.skip == 'false'
         run: |
           git config user.name "claude-bot[bot]"
           git config user.email "claude-bot[bot]@users.noreply.github.com"
 
       - name: Run Claude Code Review with Auto-Fix
+        if: steps.check-author.outputs.skip == 'false'
         id: claude-review
         uses: anthropics/claude-code-action@v1
         with:
