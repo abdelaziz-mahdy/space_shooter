@@ -15,6 +15,15 @@
         ]
       },
       {
+        "title": "Performance",
+        "emoji": "⚡",
+        "items": [
+          "XP drops now merge into higher-tier cores",
+          "Reduced XP entity count by up to 96%",
+          "Better performance in late game with many kills"
+        ]
+      },
+      {
         "title": "Balance",
         "emoji": "⚖️",
         "items": [

@@ -163,6 +163,55 @@ abstract class BaseEnemy extends BaseRenderedComponent
     // Subclasses can override for custom death effects
   }
 
+  /// Drop XP in merged cores to reduce entity count
+  /// XP tiers: 1 XP (cyan), 5 XP (green), 10 XP (yellow), 25 XP (orange)
+  void _dropMergedXP(int totalXP) {
+    if (totalXP <= 0) return;
+
+    // Merge into larger cores for better performance
+    // Priority: 25 XP cores > 10 XP cores > 5 XP cores > 1 XP cores
+    int remaining = totalXP;
+
+    // Drop 25 XP cores (orange)
+    while (remaining >= 25) {
+      final loot = Loot(
+        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
+        xpValue: 25,
+      );
+      gameRef.world.add(loot);
+      remaining -= 25;
+    }
+
+    // Drop 10 XP cores (yellow)
+    while (remaining >= 10) {
+      final loot = Loot(
+        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
+        xpValue: 10,
+      );
+      gameRef.world.add(loot);
+      remaining -= 10;
+    }
+
+    // Drop 5 XP cores (green)
+    while (remaining >= 5) {
+      final loot = Loot(
+        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
+        xpValue: 5,
+      );
+      gameRef.world.add(loot);
+      remaining -= 5;
+    }
+
+    // Drop remaining 1 XP cores (cyan)
+    for (int i = 0; i < remaining; i++) {
+      final loot = Loot(
+        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
+        xpValue: 1,
+      );
+      gameRef.world.add(loot);
+    }
+  }
+
   /// Called when enemy dies - handles loot drops and cleanup
   void die() {
     // Play explosion sound
@@ -171,13 +220,8 @@ abstract class BaseEnemy extends BaseRenderedComponent
     // Call custom death behavior first
     onDeath();
 
-    // Drop XP loot
-    for (int i = 0; i < lootValue; i++) {
-      final loot = Loot(
-        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
-      );
-      gameRef.world.add(loot);
-    }
+    // Drop XP loot - merge into higher-tier cores to reduce entity count
+    _dropMergedXP(lootValue);
 
     // Random chance to drop power-up (affected by player luck)
     final random = Random();
