@@ -406,7 +406,7 @@ class HomingUpgrade extends Upgrade {
   }
 
   @override
-  List<String> getStatusChanges() => ['+${homingStrength.toInt()} homing strength'];
+  List<String> getStatusChanges() => ['+${homingStrength.toInt()} tracking power'];
 }
 
 /// Chance to freeze enemies on hit

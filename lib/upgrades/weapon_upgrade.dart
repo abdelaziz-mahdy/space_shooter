@@ -312,7 +312,7 @@ class MissileLauncherHomingUpgrade extends WeaponUpgrade {
           weaponId: 'missile_launcher',
           id: 'missile_launcher_homing',
           name: 'Advanced Guidance',
-          description: '+${homingIncrease.toInt()} homing strength',
+          description: '+${homingIncrease.toInt()} tracking power',
           icon: '🚀',
         );
 
@@ -325,7 +325,7 @@ class MissileLauncherHomingUpgrade extends WeaponUpgrade {
   UpgradeRarity get rarity => UpgradeRarity.rare;
 
   @override
-  List<String> getStatusChanges() => ['+${homingIncrease.toInt()} homing strength (Missile Launcher)'];
+  List<String> getStatusChanges() => ['+${homingIncrease.toInt()} tracking power (Missile Launcher)'];
 }
 
 /// Missile Launcher: Bigger explosions
