@@ -12,7 +12,11 @@ on:
 
 jobs:
   claude-review:
-    # Optional: Filter by PR author
+    # Skip if the commit was made by Claude to avoid infinite review loops
+    if: |
+      !contains(github.event.head_commit.message, '🤖 Auto-applied by Claude Code Review')
+
+    # Optional: Additional filters by PR author
     # if: |
     #   github.event.pull_request.user.login == 'external-contributor' ||
     #   github.event.pull_request.user.login == 'new-developer' ||
