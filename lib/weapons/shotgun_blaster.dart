@@ -32,14 +32,17 @@ class ShotgunBlaster extends Weapon {
     final baseSpeed = getProjectileSpeed(player);
     final baseDamage = getDamage(player);
 
+    // Roll crit once for all pellets in this shot (consistency)
+    final shotIsCrit = Random().nextDouble() < player.critChance;
+
     // Fire 8 pellets in a cone
     const pelletCount = 8;
-    const spreadAngle = 25.0; // degrees total spread
+    const spreadAngle = 20.0; // degrees total spread (reduced from 25)
     final spreadRad = spreadAngle * (pi / 180);
 
     for (int i = 0; i < pelletCount; i++) {
-      // Calculate spread for this pellet
-      final spreadOffset = (i - (pelletCount / 2)) / pelletCount;
+      // Calculate spread for this pellet - center pellet goes straight
+      final spreadOffset = (i - (pelletCount - 1) / 2) / pelletCount;
       final angleOffset = spreadOffset * spreadRad;
 
       // Rotate target direction by spread offset
@@ -62,6 +65,7 @@ class ShotgunBlaster extends Weapon {
         baseDamage: baseDamage,
         baseColor: const Color(0xFFFF8800), // Orange pellets
         customSize: Vector2.all(player.bulletSize * 0.7), // Smaller pellets
+        forceCrit: shotIsCrit, // All pellets share same crit result
       );
 
       gameRef.world.add(bullet);
