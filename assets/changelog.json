@@ -1,5 +1,38 @@
 [
   {
+    "version": "0.3.1",
+    "title": "Critical Bug Fixes",
+    "date": "2025-01-28",
+    "sections": [
+      {
+        "title": "Critical Fixes",
+        "emoji": "🚨",
+        "items": [
+          "FIXED: Crit chance never worked (was always 0%)",
+          "FIXED: Crit damage upgrades now actually apply",
+          "All crit-based builds now functional"
+        ]
+      },
+      {
+        "title": "Visual Improvements",
+        "emoji": "✨",
+        "items": [
+          "Thorns damage now shows magenta with THORNS! label",
+          "Crit hits show orange glow and larger bullets",
+          "Better visual feedback for all damage types"
+        ]
+      },
+      {
+        "title": "Balance",
+        "emoji": "⚖️",
+        "items": [
+          "Multi Shot: +1 → +2 projectiles (now Rare)",
+          "Multi Shot now worth picking over weapon-specific"
+        ]
+      }
+    ]
+  },
+  {
     "version": "0.3.0",
     "title": "Weapon System Expansion",
     "date": "2025-01-28",
