@@ -1,9 +1,56 @@
 import 'package:flutter/material.dart';
 import '../managers/audio_manager.dart';
+import '../services/version_service.dart';
+import '../models/changelog.dart';
 import 'leaderboard_screen.dart';
+import 'changelog_dialog.dart';
 
-class MainMenu extends StatelessWidget {
+class MainMenu extends StatefulWidget {
   const MainMenu({super.key});
+
+  @override
+  State<MainMenu> createState() => _MainMenuState();
+}
+
+class _MainMenuState extends State<MainMenu> {
+  @override
+  void initState() {
+    super.initState();
+    _checkForUpdates();
+  }
+
+  /// Check if app has been updated and show changelog if needed
+  Future<void> _checkForUpdates() async {
+    try {
+      final versionService = await VersionService.create();
+
+      // Check if there's a new version
+      if (versionService.hasNewVersion()) {
+        final lastSeenVersion = versionService.getLastSeenVersion()!;
+        final changelogs =
+            await ChangelogRepository.getChangelogsSince(lastSeenVersion);
+
+        if (changelogs.isNotEmpty && mounted) {
+          // Show changelog dialog after a short delay (let UI settle)
+          await Future.delayed(const Duration(milliseconds: 500));
+
+          if (mounted) {
+            await ChangelogDialog.show(context, changelogs);
+          }
+        }
+      }
+
+      // Mark current version as seen
+      await versionService.markCurrentVersionAsSeen();
+
+      // Mark app as launched
+      if (versionService.isFirstLaunch()) {
+        await versionService.markAsLaunched();
+      }
+    } catch (e) {
+      print('[MainMenu] Error checking for updates: $e');
+    }
+  }
 
   void _startGame(BuildContext context) {
     AudioManager().playButtonClick();
