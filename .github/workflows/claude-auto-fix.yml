@@ -108,4 +108,4 @@ jobs:
             - `gh pr create` to create the fix PR
             - `gh pr comment` to communicate progress
 
-          claude_args: '--allowed-tools "Bash(gh:*),Bash(git:*)"'
+          claude_args: '--allowedTools "Read,Write,Edit,Glob,Grep,Bash(gh:*),Bash(git:*)"'

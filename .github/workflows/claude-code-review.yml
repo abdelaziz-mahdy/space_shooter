@@ -30,7 +30,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Need full history to create branches
+          ref: ${{ github.event.pull_request.head.ref }}  # Checkout the PR branch directly
+          fetch-depth: 0  # Need full history
 
       - name: Set up Git
         run: |
@@ -71,38 +72,35 @@ jobs:
                - Be constructive and helpful
                - Include severity (🔴 Critical, 🟡 Important, 🔵 Suggestion)
 
-            3. **AUTOMATICALLY APPLY FIXES:**
+            3. **AUTOMATICALLY APPLY FIXES TO THIS PR:**
                If you found ANY issues that can be fixed automatically:
 
-               a. Create a new branch: `fix/auto-fix-pr-${{ github.event.pull_request.number }}`
-               b. Apply ALL the fixes following CLAUDE.md principles:
+               a. Apply ALL the fixes directly to the current branch following CLAUDE.md principles:
                   - Replace enums with classes
                   - Replace hardcoded values with percentages
                   - Fix any violations of coding principles
                   - If changes are client-facing: update pubspec.yaml version AND assets/changelog.json
-               c. Commit changes with descriptive message
-               d. Create a new PR using `gh pr create` with:
-                  - Title: "Auto-fix: Address review issues from PR #${{ github.event.pull_request.number }}"
-                  - Body that includes:
-                    * "🤖 **Automated fixes based on code review**"
-                    * Summary of all changes made
-                    * Reference to original PR: "Fixes issues found in #${{ github.event.pull_request.number }}"
-                    * List of specific fixes with file:line references
-               e. Comment on the ORIGINAL PR with a link to the fix PR
+               b. Commit changes with descriptive message that includes:
+                  - "fix: Apply review suggestions"
+                  - List of what was fixed
+                  - "🤖 Auto-applied by Claude Code Review"
+               c. Push changes directly to this PR branch using `git push`
 
             4. **END YOUR REVIEW COMMENT WITH:**
                "---
-               ✅ **Automated fix PR created:** #[NEW_PR_NUMBER] (if fixes were applied)
+               ✅ **Automated fixes committed to this PR** - Please review the changes (if fixes were applied)
                OR
                ✨ **No automated fixes needed** - please review the suggestions above (if only manual fixes)"
 
             IMPORTANT:
             - Follow ALL principles in CLAUDE.md
-            - Only create fix PR if there are actual fixable issues
+            - Only apply fixes if there are actual fixable issues
             - If uncertain about a fix, mention it in review but don't auto-fix it
             - Always run the fixes, don't just suggest them
+            - You're working directly on the PR branch, not creating a new one
 
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options
-          claude_args: '--allowed-tools "Bash(gh:*),Bash(git:*)"'
+          # Allow file operations and git/gh commands
+          claude_args: '--allowedTools "Read,Write,Edit,Glob,Grep,Bash(gh:*),Bash(git:*)"'
 
