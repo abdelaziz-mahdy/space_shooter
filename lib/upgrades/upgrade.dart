@@ -567,6 +567,12 @@ class BerserkerRageUpgrade extends Upgrade {
   }
 
   @override
+  bool isValidForPlayer(PlayerShip player) {
+    // Don't show if player already has berserk
+    return player.berserkMultiplier == 0;
+  }
+
+  @override
   UpgradeRarity get rarity => UpgradeRarity.rare;
 
   @override
