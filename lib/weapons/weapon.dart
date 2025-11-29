@@ -53,7 +53,15 @@ abstract class Weapon {
 
   /// Get the actual damage based on player stats and weapon multiplier
   double getDamage(PlayerShip player) {
-    return player.damage * damageMultiplier;
+    var damage = player.damage * damageMultiplier;
+
+    // Check for berserk bonus (low health damage boost)
+    final healthPercent = player.health / player.maxHealth;
+    if (healthPercent < 0.3 && player.berserkMultiplier > 1.0) {
+      damage *= player.berserkMultiplier;
+    }
+
+    return damage;
   }
 
   /// Get the actual projectile speed based on player stats and weapon multiplier

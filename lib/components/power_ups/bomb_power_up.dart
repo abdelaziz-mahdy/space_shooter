@@ -9,7 +9,7 @@ import '../../utils/value_with_description.dart';
 /// Bomb Power-Up - Destroys all enemies in range
 class BombPowerUp extends BasePowerUp {
   static final _config = ValueWithDescription<double>(
-    value: 400.0,
+    value: 350.0,
     descriptionBuilder: PowerUpDescriptions.bomb,
   );
 
@@ -41,7 +41,7 @@ class BombPowerUp extends BasePowerUp {
         // Check if enemy is a boss (health > 500 is a simple heuristic for boss detection)
         final isBoss = enemy.maxHealth > 500;
         final bombDamage = isBoss
-            ? enemy.maxHealth * 0.25  // Bosses: 25% of max health
+            ? enemy.maxHealth * 0.15  // Bosses: 15% of max health
             : enemy.maxHealth;         // Normal enemies: one-shot kill
 
         enemy.takeDamage(bombDamage);

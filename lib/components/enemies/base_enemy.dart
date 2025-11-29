@@ -208,6 +208,13 @@ abstract class BaseEnemy extends BaseRenderedComponent
 
     if (other is PlayerShip) {
       other.takeDamage(contactDamage);
+
+      // Apply thorns damage reflection
+      if (player.thornsPercent > 0) {
+        final thornsDamage = contactDamage * (player.thornsPercent / 100.0);
+        takeDamage(thornsDamage);
+      }
+
       die(); // Enemy dies on collision with player
     }
   }

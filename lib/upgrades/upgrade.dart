@@ -248,6 +248,7 @@ class CritChanceUpgrade extends Upgrade {
   @override
   void apply(PlayerShip player) {
     player.critChance += critChanceIncrease;
+    player.critChance = player.critChance.clamp(0.0, 0.75);
   }
 
   @override
@@ -269,6 +270,7 @@ class CritDamageUpgrade extends Upgrade {
   @override
   void apply(PlayerShip player) {
     player.critDamage += critDamageIncrease;
+    player.critDamage = player.critDamage.clamp(1.0, 5.0);
   }
 
   @override
@@ -332,6 +334,7 @@ class ArmorUpgrade extends Upgrade {
   @override
   void apply(PlayerShip player) {
     player.damageReduction += damageReduction;
+    player.damageReduction = player.damageReduction.clamp(0.0, 0.80);
   }
 
   @override
@@ -439,6 +442,7 @@ class OrbitalUpgrade extends Upgrade {
   @override
   void apply(PlayerShip player) {
     player.orbitalCount += orbitals;
+    player.orbitalCount = player.orbitalCount.clamp(0, 10); // Cap at 10 for performance
   }
 
   @override
@@ -581,7 +585,8 @@ class ThornsArmorUpgrade extends Upgrade {
 
   @override
   void apply(PlayerShip player) {
-    player.thornsPercent += 0.2;
+    player.thornsPercent += 20.0;
+    player.thornsPercent = player.thornsPercent.clamp(0.0, 50.0);
   }
 
   @override
@@ -676,7 +681,6 @@ class TimeDilationUpgrade extends Upgrade {
     // Apply a permanent slow effect to enemies
     // This is tracked via a global time scale multiplier
     player.globalTimeScale = (player.globalTimeScale ?? 1.0) * 0.7;
-    print('[TimeDilation] Applied time dilation - scale: ${player.globalTimeScale}');
   }
 
   @override

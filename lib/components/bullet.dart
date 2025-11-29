@@ -152,8 +152,17 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
       // Play hit sound effect
       gameRef.audioManager.playHit();
 
+      // Calculate final damage with berserk multiplier
+      var finalDamage = actualDamage;
+
+      // Check for berserk bonus (low health damage boost)
+      final healthPercent = player.health / player.maxHealth;
+      if (healthPercent < 0.3 && player.berserkMultiplier > 1.0) {
+        finalDamage *= player.berserkMultiplier;
+      }
+
       // Deal damage to the hit enemy (damage number is shown by base_enemy.takeDamage)
-      other.takeDamage(actualDamage, isCrit: isCrit);
+      other.takeDamage(finalDamage, isCrit: isCrit);
 
       // Apply freeze effect (only BaseEnemy has freeze)
       if (player.freezeChance > 0 && Random().nextDouble() < player.freezeChance) {
@@ -355,7 +364,7 @@ class ExplosionEffect extends PositionComponent with HasGameRef<SpaceShooterGame
     super.render(canvas);
 
     final progress = lifetime / maxLifetime;
-    final currentRadius = radius * (1 + progress);
+    final currentRadius = radius; // Match visual to damage radius
     final alpha = (1 - progress) * 0.6;
 
     final paint = Paint()
