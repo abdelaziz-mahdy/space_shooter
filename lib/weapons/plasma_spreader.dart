@@ -37,12 +37,16 @@ class PlasmaSpreader extends Weapon {
     final baseProjectiles = 3;
     final totalProjectiles = baseProjectiles + player.projectileCount - 1;
 
-    // Wider spread angle for plasma spreader
-    final angleSpread = 0.4; // Wider than pulse cannon (0.2)
+    // Roll crit once for all bullets in this shot (consistency)
+    final shotIsCrit = Random().nextDouble() < player.critChance;
+
+    // Tighter spread angle - was too wide
+    final angleSpread = 0.2; // Reduced from 0.4
     final baseAngle = atan2(targetDirection.y, targetDirection.x);
 
     for (int i = 0; i < totalProjectiles; i++) {
-      final offset = (i - (totalProjectiles - 1) / 2) * angleSpread;
+      // First bullet always goes straight, rest spread around it
+      final offset = i == 0 ? 0.0 : ((i - totalProjectiles / 2) * angleSpread);
       final bulletAngle = baseAngle + offset;
       final bulletDirection = Vector2(cos(bulletAngle), sin(bulletAngle));
 
@@ -56,6 +60,7 @@ class PlasmaSpreader extends Weapon {
         pierceCount: player.bulletPierce,
         homingStrength: player.homingStrength,
         customSize: Vector2.all(player.bulletSize * 0.8), // Slightly smaller
+        forceCrit: shotIsCrit, // All bullets share same crit result
       );
       game.world.add(bullet);
     }

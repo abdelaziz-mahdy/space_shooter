@@ -36,6 +36,8 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
   static const double maxLifetime = 3.0; // 3 seconds before despawn
   int enemiesHit = 0; // Track how many enemies this bullet has hit
 
+  final bool? forceCrit; // Optional: force crit on/off for multi-shot consistency
+
   Bullet({
     required Vector2 position,
     required this.direction,
@@ -46,6 +48,7 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
     this.pierceCount = 0,
     this.homingStrength = 0.0, // Default to no homing
     Vector2? customSize,
+    this.forceCrit, // If provided, use this instead of rolling
   }) : super(position: position, size: customSize ?? Vector2(8, 8));
 
   @override
@@ -55,7 +58,8 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
 
     // Calculate critical hit AFTER component is added to tree (gameRef available)
     final player = gameRef.player;
-    isCrit = Random().nextDouble() < player.critChance;
+    // Use forceCrit if provided (for multi-shot consistency), otherwise roll
+    isCrit = forceCrit ?? (Random().nextDouble() < player.critChance);
     actualDamage = isCrit ? baseDamage * player.critDamage : baseDamage;
 
     // Visual indicator for crits (larger and orange-red)

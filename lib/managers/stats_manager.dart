@@ -45,4 +45,11 @@ class StatsManager extends Component with HasGameRef<SpaceShooterGame> {
     final seconds = (timeAlive % 60).floor();
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
+
+  /// Calculate current score (same formula as game over screen)
+  int getCurrentScore() {
+    final timeAliveSeconds = timeAlive.toInt();
+    final wavesCompleted = currentWave - 1; // Current wave not completed yet
+    return (enemiesKilled * 10) + (wavesCompleted * 100) + timeAliveSeconds;
+  }
 }

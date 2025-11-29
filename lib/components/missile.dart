@@ -16,10 +16,11 @@ class Missile extends BaseRenderedComponent
   final double speed;
   final double explosionRadius;
   final double explosionDamage;
+  final double homingStrength;
 
   double lifetime = 0;
   static const double maxLifetime = 5.0; // 5 seconds before despawn
-  static const double homingStrength = 150.0; // Turn rate
+  static const double baseHomingStrength = 150.0; // Base turn rate
 
   PositionComponent? targetEnemy;
 
@@ -30,6 +31,7 @@ class Missile extends BaseRenderedComponent
     required this.speed,
     this.explosionRadius = 40.0,
     this.explosionDamage = 0.8,
+    this.homingStrength = baseHomingStrength, // Use base by default
   }) : super(position: position, size: Vector2(12, 6));
 
   @override
@@ -98,7 +100,9 @@ class Missile extends BaseRenderedComponent
     final toTarget = PositionUtil.getDirectionTo(this, targetEnemy!);
 
     // Smoothly turn towards target
-    direction = (direction + (toTarget * homingStrength * dt)).normalized();
+    // Scale by dt and factor for consistent turn rate with bullets
+    final turnRate = homingStrength * dt * 0.01; // Adjusted for missile physics
+    direction = (direction + (toTarget * turnRate)).normalized();
   }
 
   @override

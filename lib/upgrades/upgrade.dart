@@ -395,8 +395,8 @@ class HomingUpgrade extends Upgrade {
   HomingUpgrade({this.homingStrength = 50.0})
       : super(
           id: 'homing',
-          name: 'Homing Missiles',
-          description: 'Bullets track enemies',
+          name: 'Smart Bullets',
+          description: 'All bullets track enemies',
           icon: '🎯',
         );
 
@@ -406,7 +406,7 @@ class HomingUpgrade extends Upgrade {
   }
 
   @override
-  List<String> getStatusChanges() => ['+${homingStrength.toInt()} homing strength'];
+  List<String> getStatusChanges() => ['+${homingStrength.toInt()} tracking power'];
 }
 
 /// Chance to freeze enemies on hit
@@ -466,6 +466,7 @@ class ShieldUpgrade extends Upgrade {
 
   @override
   void apply(PlayerShip player) {
+    player.maxShieldLayers += shieldLayers; // Increase max capacity
     player.shieldLayers = min(player.shieldLayers + shieldLayers, player.maxShieldLayers);
   }
 

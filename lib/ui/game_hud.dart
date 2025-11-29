@@ -256,10 +256,27 @@ class GameHUD extends PositionComponent with HasGameRef<SpaceShooterGame> {
       ),
     );
 
+    // Score (most important stat)
+    final scoreTextPaint = TextPaint(
+      style: TextStyle(
+        color: Color(0xFFFFD700), // Gold color for score
+        fontSize: 20 * scale,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+    scoreTextPaint.render(
+      canvas,
+      'Score: ${statsManager.getCurrentScore()}',
+      Vector2(rightX, rightY),
+      anchor: Anchor.topRight,
+    );
+
+    rightY += (30 * scale);
+
     // Total time alive
     rightStatsText.render(
       canvas,
-      'Total Time: ${statsManager.getTimeAliveFormatted()}',
+      'Time: ${statsManager.getTimeAliveFormatted()}',
       Vector2(rightX, rightY),
       anchor: Anchor.topRight,
     );

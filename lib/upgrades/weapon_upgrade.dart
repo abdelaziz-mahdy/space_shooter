@@ -2,7 +2,7 @@ import 'package:space_shooter/components/player_ship.dart';
 import 'package:space_shooter/upgrades/upgrade.dart';
 
 /// Base class for weapon-specific upgrades
-/// These upgrades only appear when the player has the specific weapon unlocked
+/// These upgrades only appear when the player has the specific weapon equipped
 abstract class WeaponUpgrade extends Upgrade {
   final String weaponId;
 
@@ -16,8 +16,8 @@ abstract class WeaponUpgrade extends Upgrade {
 
   @override
   bool isValidFor(PlayerShip player) {
-    // Only offer this upgrade if the weapon is unlocked
-    return player.weaponManager.isUnlocked(weaponId);
+    // Only offer this upgrade if the weapon is currently equipped
+    return player.weaponManager.currentWeapon?.id == weaponId;
   }
 }
 
@@ -34,7 +34,7 @@ class PulseCannonDamageUpgrade extends WeaponUpgrade {
           weaponId: 'pulse_cannon',
           id: 'pulse_cannon_damage',
           name: 'Pulse Amplification',
-          description: 'Pulse Cannon: +${damageIncrease.toInt()} damage',
+          description: '+${damageIncrease.toInt()} damage',
           icon: '⚡',
         );
 
@@ -56,7 +56,7 @@ class PulseCannonFireRateUpgrade extends WeaponUpgrade {
           weaponId: 'pulse_cannon',
           id: 'pulse_cannon_fire_rate',
           name: 'Rapid Pulse',
-          description: 'Pulse Cannon: -${(fireRateIncrease * 100).toInt()}% cooldown',
+          description: '-${(fireRateIncrease * 100).toInt()}% cooldown',
           icon: '⚡',
         );
 
@@ -78,7 +78,7 @@ class PulseCannonMultiShotUpgrade extends WeaponUpgrade {
           weaponId: 'pulse_cannon',
           id: 'pulse_cannon_multi_shot',
           name: 'Pulse Barrage',
-          description: 'Pulse Cannon: +$projectileIncrease projectile',
+          description: '+$projectileIncrease projectile',
           icon: '⚡',
         );
 
@@ -107,7 +107,7 @@ class PlasmaSpreaderDamageUpgrade extends WeaponUpgrade {
           weaponId: 'plasma_spreader',
           id: 'plasma_spreader_damage',
           name: 'Plasma Intensification',
-          description: 'Plasma Spreader: +${damageIncrease.toInt()} damage per shot',
+          description: '+${damageIncrease.toInt()} damage per shot',
           icon: '🌀',
         );
 
@@ -129,7 +129,7 @@ class PlasmaSpreaderWideSpreadUpgrade extends WeaponUpgrade {
           weaponId: 'plasma_spreader',
           id: 'plasma_spreader_wide_spread',
           name: 'Plasma Storm',
-          description: 'Plasma Spreader: +$projectileIncrease projectiles',
+          description: '+$projectileIncrease projectiles',
           icon: '🌀',
         );
 
@@ -154,7 +154,7 @@ class PlasmaSpreaderPierceUpgrade extends WeaponUpgrade {
           weaponId: 'plasma_spreader',
           id: 'plasma_spreader_pierce',
           name: 'Plasma Penetration',
-          description: 'Plasma Spreader: +$pierceIncrease pierce',
+          description: '+$pierceIncrease pierce',
           icon: '🌀',
         );
 
@@ -183,7 +183,7 @@ class RailgunDamageUpgrade extends WeaponUpgrade {
           weaponId: 'railgun',
           id: 'railgun_damage',
           name: 'Railgun Overcharge',
-          description: 'Railgun: +${damageIncrease.toInt()} damage',
+          description: '+${damageIncrease.toInt()} damage',
           icon: '🔫',
         );
 
@@ -208,7 +208,7 @@ class RailgunFireRateUpgrade extends WeaponUpgrade {
           weaponId: 'railgun',
           id: 'railgun_fire_rate',
           name: 'Rapid Charge',
-          description: 'Railgun: -${(fireRateIncrease * 100).toInt()}% charge time',
+          description: '-${(fireRateIncrease * 100).toInt()}% charge time',
           icon: '🔫',
         );
 
@@ -233,7 +233,7 @@ class RailgunExplosiveUpgrade extends WeaponUpgrade {
           weaponId: 'railgun',
           id: 'railgun_explosive',
           name: 'Explosive Rounds',
-          description: 'Railgun: +${explosionIncrease.toInt()} explosion radius',
+          description: '+${explosionIncrease.toInt()} explosion radius',
           icon: '🔫',
         );
 
@@ -262,7 +262,7 @@ class MissileLauncherDamageUpgrade extends WeaponUpgrade {
           weaponId: 'missile_launcher',
           id: 'missile_launcher_damage',
           name: 'Missile Warheads',
-          description: 'Missile Launcher: +${damageIncrease.toInt()} damage',
+          description: '+${damageIncrease.toInt()} damage',
           icon: '🚀',
         );
 
@@ -287,7 +287,7 @@ class MissileLauncherMultiShotUpgrade extends WeaponUpgrade {
           weaponId: 'missile_launcher',
           id: 'missile_launcher_multi_shot',
           name: 'Missile Barrage',
-          description: 'Missile Launcher: +$projectileIncrease missiles',
+          description: '+$projectileIncrease missiles',
           icon: '🚀',
         );
 
@@ -312,7 +312,7 @@ class MissileLauncherHomingUpgrade extends WeaponUpgrade {
           weaponId: 'missile_launcher',
           id: 'missile_launcher_homing',
           name: 'Advanced Guidance',
-          description: 'Missile Launcher: +${homingIncrease.toInt()} homing strength',
+          description: '+${homingIncrease.toInt()} tracking power',
           icon: '🚀',
         );
 
@@ -325,7 +325,7 @@ class MissileLauncherHomingUpgrade extends WeaponUpgrade {
   UpgradeRarity get rarity => UpgradeRarity.rare;
 
   @override
-  List<String> getStatusChanges() => ['+${homingIncrease.toInt()} homing strength (Missile Launcher)'];
+  List<String> getStatusChanges() => ['+${homingIncrease.toInt()} tracking power (Missile Launcher)'];
 }
 
 /// Missile Launcher: Bigger explosions
@@ -337,7 +337,7 @@ class MissileLauncherExplosionUpgrade extends WeaponUpgrade {
           weaponId: 'missile_launcher',
           id: 'missile_launcher_explosion',
           name: 'Cluster Warheads',
-          description: 'Missile Launcher: +${explosionIncrease.toInt()} explosion radius',
+          description: '+${explosionIncrease.toInt()} explosion radius',
           icon: '🚀',
         );
 

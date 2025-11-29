@@ -14,7 +14,19 @@ class Loot extends BaseRenderedComponent
   final int xpValue;
 
   Loot({required Vector2 position, this.xpValue = 1})
-    : super(position: position, size: Vector2(10, 10));
+    : super(
+        position: position,
+        // Size based on XP value: bigger cores for more XP
+        size: Vector2.all(_getSizeForXP(xpValue)),
+      );
+
+  /// Get size based on XP value
+  static double _getSizeForXP(int xp) {
+    if (xp >= 25) return 16.0; // Orange cores (largest)
+    if (xp >= 10) return 14.0; // Yellow cores
+    if (xp >= 5) return 12.0;  // Green cores
+    return 10.0;               // Cyan cores (smallest)
+  }
 
   @override
   Future<void> onLoad() async {
@@ -58,14 +70,24 @@ class Loot extends BaseRenderedComponent
     }
   }
 
+  /// Get color based on XP value
+  Color _getColorForXP() {
+    if (xpValue >= 25) return const Color(0xFFFF8800); // Orange (epic)
+    if (xpValue >= 10) return const Color(0xFFFFFF00); // Yellow (rare)
+    if (xpValue >= 5) return const Color(0xFF00FF00);  // Green (uncommon)
+    return const Color(0xFF00FFFF);                     // Cyan (common)
+  }
+
   @override
   void renderShape(Canvas canvas) {
+    final coreColor = _getColorForXP();
+
     final paint = Paint()
-      ..color = const Color(0xFF00FFFF)
+      ..color = coreColor
       ..style = PaintingStyle.fill;
 
     final glow = Paint()
-      ..color = const Color(0x4400FFFF)
+      ..color = coreColor.withOpacity(0.3)
       ..style = PaintingStyle.fill;
 
     // Draw circle in center of bounding box (from top-left)

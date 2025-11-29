@@ -1,5 +1,51 @@
 [
   {
+    "version": "0.3.2",
+    "title": "Major Bug Fixes & Balance",
+    "date": "2025-01-28",
+    "sections": [
+      {
+        "title": "Critical Fixes",
+        "emoji": "🚨",
+        "items": [
+          "FIXED: Missile upgrades not working (tracking/explosion)",
+          "FIXED: Energy Shield upgrade did nothing",
+          "FIXED: Spread weapons had inconsistent crit visuals",
+          "FIXED: Spread weapons couldn't hit center targets"
+        ]
+      },
+      {
+        "title": "Performance",
+        "emoji": "⚡",
+        "items": [
+          "XP drops now merge into higher-tier cores",
+          "Reduced XP entity count by up to 96%",
+          "Better performance in late game with many kills"
+        ]
+      },
+      {
+        "title": "Balance",
+        "emoji": "⚖️",
+        "items": [
+          "Powerup drop rate: 15% → 8% (less clutter)",
+          "Plasma Spreader: Tighter spread, center bullet",
+          "Shotgun: Tighter spread, center pellet",
+          "Weapon upgrades only show for equipped weapon"
+        ]
+      },
+      {
+        "title": "UI Improvements",
+        "emoji": "✨",
+        "items": [
+          "Added live score display in HUD (top right)",
+          "Renamed 'Homing Missiles' → 'Smart Bullets'",
+          "Renamed 'homing strength' → 'tracking power'",
+          "Removed confusing weapon prefixes from upgrades"
+        ]
+      }
+    ]
+  },
+  {
     "version": "0.3.1",
     "title": "Critical Bug Fixes",
     "date": "2025-01-28",
