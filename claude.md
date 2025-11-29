@@ -19,7 +19,7 @@
      {
        "version": "0.3.0",
        "title": "Brief Update Title (3-5 words)",
-       "date": "2025-MM-DD",
+       "date": "YYYY-MM-DD",  // Use DateTime.now() to get current date: DateTime.now().toIso8601String().split('T')[0]
        "sections": [
          {
            "title": "Section Name",
@@ -33,6 +33,12 @@
      },
      // ... older versions
    ]
+   ```
+
+   **Getting today's date:**
+   ```dart
+   // In Dart, get current date:
+   final today = DateTime.now().toIso8601String().split('T')[0]; // "2025-01-28"
    ```
 
 **IMPORTANT - Keep Changelogs Client-Friendly:**
@@ -482,7 +488,7 @@ enemy.takeDamage(999999);  // Calls die() → drops XP → removes
      {
        "version": "0.3.0",
        "title": "Brief Update Title",
-       "date": "2025-02-01",
+       "date": "YYYY-MM-DD",  // Use DateTime.now().toIso8601String().split('T')[0] to get today's date
        "sections": [
          {
            "title": "Section Name",
@@ -519,7 +525,7 @@ enemy.takeDamage(999999);  // Calls die() → drops XP → removes
 {
   "version": "0.3.0",
   "title": "Enemy Variety Update",
-  "date": "2025-02-15",
+  "date": "2025-02-15",  // Get current date: DateTime.now().toIso8601String().split('T')[0]
   "sections": [
     {
       "title": "New Content",
@@ -540,6 +546,8 @@ enemy.takeDamage(999999);  // Calls die() → drops XP → removes
   ]
 }
 ```
+
+**Note:** Always use code to get the current date to avoid hardcoding wrong dates.
 
 ### **Automatic Changelog Display**
 
