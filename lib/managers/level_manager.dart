@@ -63,6 +63,7 @@ class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
     final regularUpgradesNeeded = count - weaponUpgrades.length;
 
     // Get regular random upgrades (already filtered by player validity)
+    // Request extra to ensure variety, but we only need regularUpgradesNeeded
     final regularUpgrades = UpgradeFactory.getRandomUpgradesByRarity(
       regularUpgradesNeeded * 2, // Get extra to ensure variety
       player: player,
@@ -72,8 +73,10 @@ class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
     final allUpgrades = [...weaponUpgrades, ...regularUpgrades];
 
     // Validate we have enough upgrades (edge case protection)
+    // Only warn if we actually don't have enough upgrades, not if we requested extra for variety
     if (allUpgrades.length < count) {
       print('[LevelManager] Warning: Only ${allUpgrades.length} upgrades available, expected $count');
+      print('[LevelManager] Weapon upgrades: ${weaponUpgrades.length}, Regular upgrades: ${regularUpgrades.length}');
     }
 
     allUpgrades.shuffle(random);
