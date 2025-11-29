@@ -73,6 +73,9 @@ class PlayerShip extends BaseRenderedComponent
   int killStreakCount = 0;
   double? globalTimeScale; // Time scale multiplier (affects enemy speed)
 
+  // Helper getters
+  bool get isBerserk => (health / maxHealth) < berserkThreshold && berserkMultiplier > 1.0;
+
   // Defensive mechanics
   double thornsPercent = 0;
   double lastStandShield = 0;

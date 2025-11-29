@@ -585,8 +585,8 @@ class ThornsArmorUpgrade extends Upgrade {
 
   @override
   void apply(PlayerShip player) {
-    player.thornsPercent += 20.0;
-    player.thornsPercent = player.thornsPercent.clamp(0.0, 50.0);
+    player.thornsPercent += 0.20; // Store as fraction (0.20 = 20%)
+    player.thornsPercent = player.thornsPercent.clamp(0.0, 0.50); // Cap at 50%
   }
 
   @override
