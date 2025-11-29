@@ -53,7 +53,11 @@ abstract class Weapon {
 
   /// Get the actual damage based on player stats and weapon multiplier
   double getDamage(PlayerShip player) {
-    var damage = player.damage * damageMultiplier;
+    // Calculate final damage by combining:
+    // 1. player.damage - Base damage stat (e.g., 10)
+    // 2. this.damageMultiplier - Weapon-specific multiplier (e.g., Railgun = 4.0x, Plasma = 0.6x)
+    // 3. player.damageMultiplier - Player global multiplier from upgrades (e.g., Bullet Storm = 0.85x)
+    var damage = player.damage * this.damageMultiplier * player.damageMultiplier;
 
     // Apply berserk bonus (low health damage boost)
     if (player.isBerserk) {

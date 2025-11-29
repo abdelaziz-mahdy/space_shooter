@@ -1,5 +1,20 @@
 [
   {
+    "version": "0.3.4",
+    "title": "Bullet Storm Fix",
+    "date": "2025-01-29",
+    "sections": [
+      {
+        "title": "Critical Fixes",
+        "emoji": "🚨",
+        "items": [
+          "FIXED: Bullet Storm damage penalty now works correctly",
+          "Damage penalty properly applies when you gain extra projectiles"
+        ]
+      }
+    ]
+  },
+  {
     "version": "0.3.3",
     "title": "Upgrade Balance",
     "date": "2025-01-29",
