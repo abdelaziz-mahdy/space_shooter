@@ -88,7 +88,7 @@ class OrbitalDrone extends PositionComponent with HasGameRef<SpaceShooterGame> {
         position: position.clone(),
         direction: direction,
         baseDamage: player.damage * 0.5, // Orbitals do 50% player damage
-        speed: 400,
+        speed: player.bulletSpeed,
         homingStrength: player.homingStrength,
       );
       gameRef.world.add(bullet);
