@@ -1,5 +1,22 @@
 [
   {
+    "version": "0.3.2",
+    "title": "Missile Upgrade Fix",
+    "date": "2025-01-28",
+    "sections": [
+      {
+        "title": "Bug Fix",
+        "emoji": "🐛",
+        "items": [
+          "FIXED: Missile upgrades not working (homing strength & explosion radius)",
+          "Advanced Guidance now boosts missile homing",
+          "Cluster Warheads now increases explosion radius",
+          "All missile-specific upgrades now functional"
+        ]
+      }
+    ]
+  },
+  {
     "version": "0.3.1",
     "title": "Critical Bug Fixes",
     "date": "2025-01-28",
