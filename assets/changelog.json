@@ -28,6 +28,7 @@
         "title": "UI Improvements",
         "emoji": "✨",
         "items": [
+          "Added live score display in HUD (top right)",
           "Renamed 'Homing Missiles' → 'Smart Bullets'",
           "Renamed 'homing strength' → 'tracking power'",
           "Removed confusing weapon prefixes from upgrades"
