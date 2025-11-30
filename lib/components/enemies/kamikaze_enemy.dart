@@ -10,10 +10,11 @@ import '../player_ship.dart';
 
 /// Kamikaze Enemy: Suicide bomber with explosion
 /// - Pulsing circle, red with warning pulses, size 18x18
-/// - Health: 25 + (wave * 1.5), Speed: 80 + (wave * 3)
+/// - Health: 25 + (wave * 1.5), Speed: 100 + (wave * 3.75)
 /// - Speeds up as it gets closer to player
 /// - Explodes on death (60 radius, 20 damage)
 /// - Always explodes even if shot down
+/// - IMPORTANT: No contact damage - only explosion damage on death!
 class KamikazeEnemy extends BaseEnemy {
   static const String ID = 'kamikaze';
   static const double explosionRadius = 60; // Reduced from 80
@@ -36,7 +37,7 @@ class KamikazeEnemy extends BaseEnemy {
           lootValue: 1,
           color: const Color(0xFFFF0000), // Red
           size: Vector2(18, 18) * scale,
-          contactDamage: 15.0, // Reduced from 25 - total damage now 35 (contact + explosion)
+          contactDamage: 0.0, // No contact damage - only explosion damage!
         );
 
   @override
