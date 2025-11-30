@@ -225,45 +225,46 @@ class _UpgradeCardWidgetState extends State<UpgradeCardWidget> {
                         ),
                       ),
                     ),
-                    // Main content
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(height: spacing * 2),
-                        Text(
-                          widget.upgrade.icon,
-                          style: TextStyle(fontSize: iconSize),
-                        ),
-                        SizedBox(height: spacing),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: padding),
-                          child: Text(
-                            widget.upgrade.name,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: nameSize,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                    // Main content - centered
+                    Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            widget.upgrade.icon,
+                            style: TextStyle(fontSize: iconSize),
                           ),
-                        ),
-                        SizedBox(height: spacing * 0.5),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: padding),
-                          child: Text(
-                            widget.upgrade.description,
-                            style: TextStyle(
-                              color: const Color(0xFFCCCCCC),
-                              fontSize: descSize,
+                          SizedBox(height: spacing),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: padding),
+                            child: Text(
+                              widget.upgrade.name,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: nameSize,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            textAlign: TextAlign.center,
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
+                          SizedBox(height: spacing * 0.5),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: padding),
+                            child: Text(
+                              widget.upgrade.description,
+                              style: TextStyle(
+                                color: const Color(0xFFCCCCCC),
+                                fontSize: descSize,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
