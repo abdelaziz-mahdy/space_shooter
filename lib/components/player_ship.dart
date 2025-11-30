@@ -71,6 +71,13 @@ class PlayerShip extends BaseRenderedComponent
   double invulnerabilityTimer = 0;
   static const double invulnerabilityDuration = 1.0; // 1 second of immunity after hit
 
+  // Pushback animation state
+  bool isPushingBack = false;
+  double pushbackProgress = 0.0;
+  Vector2 pushbackStartPos = Vector2.zero();
+  Vector2 pushbackEndPos = Vector2.zero();
+  static const double pushbackDuration = 0.25; // 0.25 seconds smooth animation
+
   // Time/Wave mechanics
   double berserkThreshold = 0.3;
   double berserkMultiplier = 0;
@@ -174,6 +181,24 @@ class PlayerShip extends BaseRenderedComponent
       }
     }
 
+    // Update pushback animation
+    if (isPushingBack) {
+      pushbackProgress += dt / pushbackDuration;
+
+      if (pushbackProgress >= 1.0) {
+        // Animation complete
+        isPushingBack = false;
+        pushbackProgress = 0.0;
+        position = pushbackEndPos.clone();
+      } else {
+        // Cubic ease-out interpolation for smooth deceleration
+        final t = pushbackProgress;
+        final easeOut = 1 - pow(1 - t, 3);
+
+        position = pushbackStartPos + (pushbackEndPos - pushbackStartPos) * easeOut;
+      }
+    }
+
     // Update orbital drones when count changes
     _updateOrbitals();
 
@@ -208,8 +233,8 @@ class PlayerShip extends BaseRenderedComponent
       );
     }
 
-    // Normalize and apply velocity
-    if (velocity.length > 0) {
+    // Normalize and apply velocity (don't move during pushback)
+    if (velocity.length > 0 && !isPushingBack) {
       velocity.normalize();
       position += velocity * moveSpeed * dt;
       // No bounds clamping - infinite world with camera following player
@@ -282,11 +307,19 @@ class PlayerShip extends BaseRenderedComponent
     gameRef.audioManager.playShoot();
   }
 
-  /// Apply knockback force to push player away from enemy
+  /// Apply knockback force to push player away from enemy with smooth animation
   void _applyPushback(Vector2 direction) {
+    // Don't start new pushback if already pushing back
+    if (isPushingBack) return;
+
     // Use percentage-based pushback (15% of screen width) for responsive design
     final pushbackDistance = gameRef.size.x * 0.15;
-    position += direction * pushbackDistance;
+
+    // Set up animation
+    isPushingBack = true;
+    pushbackProgress = 0.0;
+    pushbackStartPos = position.clone();
+    pushbackEndPos = position + (direction * pushbackDistance);
   }
 
   void takeDamage(double damage, {Vector2? pushbackDirection}) {

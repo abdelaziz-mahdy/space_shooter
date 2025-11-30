@@ -10,6 +10,8 @@ import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, Tar
 import '../components/player_ship.dart';
 import '../components/star_particle.dart';
 import '../components/debug_overlay.dart';
+import '../components/loot.dart';
+import '../components/enemy_indicator.dart';
 import '../managers/enemy_manager.dart';
 import '../managers/loot_manager.dart';
 import '../managers/level_manager.dart';
@@ -188,7 +190,13 @@ class SpaceShooterGame extends FlameGame
     world.add(comboManager);
 
     enemyManager = EnemyManager(game: this, player: player);
+    // Set up wave complete callback for XP auto-collect
+    enemyManager.onWaveComplete = _onWaveComplete;
     world.add(enemyManager);
+
+    // Add enemy indicator to show off-screen enemies
+    final enemyIndicator = EnemyIndicator();
+    camera.viewport.add(enemyIndicator);
 
     // Add touch joystick for mobile/touch devices
     if (_isMobilePlatform()) {
@@ -245,6 +253,17 @@ class SpaceShooterGame extends FlameGame
     isPaused = false;
     enemyManager.startSpawning();
     print('[SpaceShooterGame] Game resumed from upgrade');
+  }
+
+  /// Called when a wave is completed - auto-collect all XP
+  void _onWaveComplete() {
+    print('[SpaceShooterGame] Wave complete - auto-collecting all XP');
+
+    // Get all loot in the world and start wave-end collection
+    final allLoot = world.children.whereType<Loot>();
+    for (final loot in allLoot) {
+      loot.startWaveEndCollection();
+    }
   }
 
   void gameOver() {

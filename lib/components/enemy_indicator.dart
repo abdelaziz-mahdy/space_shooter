@@ -1,0 +1,159 @@
+import 'dart:ui';
+import 'package:flame/components.dart';
+import '../utils/position_util.dart';
+import '../game/space_shooter_game.dart';
+import 'enemies/base_enemy.dart';
+import 'boss_ship.dart';
+
+/// Shows arrows at screen edges pointing to off-screen enemies
+class EnemyIndicator extends PositionComponent with HasGameRef<SpaceShooterGame> {
+  static const double edgeOffset = 20.0; // Distance from screen edge
+  static const double arrowSize = 20.0;
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    // Position will be updated every frame
+    size = Vector2.all(arrowSize);
+    anchor = Anchor.center;
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+
+    // Don't update if game is paused
+    if (gameRef.isPaused) return;
+
+    // Get all enemies
+    final allEnemies = [
+      ...gameRef.world.children.whereType<BaseEnemy>(),
+      ...gameRef.world.children.whereType<BossShip>(),
+    ];
+
+    // We'll track the nearest off-screen enemy for each edge direction
+    _updateIndicators(allEnemies);
+  }
+
+  void _updateIndicators(List<PositionComponent> enemies) {
+    // For now, we'll just render in renderShape
+    // The actual indicator rendering will happen there
+  }
+
+  @override
+  void render(Canvas canvas) {
+    super.render(canvas);
+
+    // Don't render if game is paused
+    if (gameRef.isPaused) return;
+
+    final player = gameRef.player;
+    final screenSize = gameRef.size;
+
+    // Get all enemies
+    final allEnemies = [
+      ...gameRef.world.children.whereType<BaseEnemy>(),
+      ...gameRef.world.children.whereType<BossShip>(),
+    ];
+
+    // Filter to only off-screen enemies
+    final offScreenEnemies = allEnemies.where((enemy) {
+      if (!enemy.isMounted) return false;
+
+      // Calculate relative position to player (center of screen)
+      final relativePos = PositionUtil.getRelativePosition(player, enemy);
+
+      // Check if off-screen
+      final isOffScreenX = relativePos.x.abs() > screenSize.x / 2;
+      final isOffScreenY = relativePos.y.abs() > screenSize.y / 2;
+
+      return isOffScreenX || isOffScreenY;
+    }).toList();
+
+    // Draw indicators for each off-screen enemy
+    for (final enemy in offScreenEnemies) {
+      _renderIndicator(canvas, player, enemy, screenSize);
+    }
+  }
+
+  void _renderIndicator(Canvas canvas, PositionComponent player, PositionComponent enemy, Vector2 screenSize) {
+    // Calculate relative position
+    final relativePos = PositionUtil.getRelativePosition(player, enemy);
+
+    // Calculate clamped position on screen edges
+    final clampedX = relativePos.x.clamp(-screenSize.x / 2 + edgeOffset, screenSize.x / 2 - edgeOffset);
+    final clampedY = relativePos.y.clamp(-screenSize.y / 2 + edgeOffset, screenSize.y / 2 - edgeOffset);
+
+    // Convert to screen coordinates (relative to player at center)
+    final indicatorPos = Vector2(
+      screenSize.x / 2 + clampedX,
+      screenSize.y / 2 + clampedY,
+    );
+
+    // Calculate direction to enemy
+    final direction = PositionUtil.getDirectionTo(player, enemy);
+    final angle = direction.angleToSigned(Vector2(0, -1)); // Angle from up
+
+    // Determine color based on enemy type
+    final color = enemy is BossShip
+        ? const Color(0xFFFF0000) // Red for bosses
+        : const Color(0xFFFFAA00); // Orange for normal enemies
+
+    // Draw arrow
+    canvas.save();
+    canvas.translate(indicatorPos.x, indicatorPos.y);
+    canvas.rotate(angle);
+
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final outlinePaint = Paint()
+      ..color = const Color(0xFFFFFFFF)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+
+    // Arrow shape (pointing up, will be rotated)
+    final arrowPath = Path()
+      ..moveTo(0, -arrowSize / 2) // Top point
+      ..lineTo(-arrowSize / 3, arrowSize / 2) // Bottom left
+      ..lineTo(0, arrowSize / 4) // Middle notch
+      ..lineTo(arrowSize / 3, arrowSize / 2) // Bottom right
+      ..close();
+
+    canvas.drawPath(arrowPath, paint);
+    canvas.drawPath(arrowPath, outlinePaint);
+
+    canvas.restore();
+
+    // Draw distance text if boss
+    if (enemy is BossShip) {
+      final distance = PositionUtil.getDistance(player, enemy);
+      final distanceText = '${(distance / 100).toStringAsFixed(0)}';
+
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: distanceText,
+          style: const TextStyle(
+            color: Color(0xFFFFFFFF),
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            shadows: [
+              Shadow(
+                color: Color(0xFF000000),
+                offset: Offset(1, 1),
+                blurRadius: 2,
+              ),
+            ],
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      );
+      textPainter.layout();
+      textPainter.paint(
+        canvas,
+        Offset(indicatorPos.x - textPainter.width / 2, indicatorPos.y + arrowSize / 2 + 5),
+      );
+    }
+  }
+}
