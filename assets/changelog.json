@@ -1,5 +1,23 @@
 [
   {
+    "version": "0.3.5",
+    "title": "Critical Collision Fixes",
+    "date": "2025-11-29",
+    "sections": [
+      {
+        "title": "Critical Fixes",
+        "emoji": "🚨",
+        "items": [
+          "FIXED: Kamikaze no longer deals double damage (contact + explosion)",
+          "FIXED: Added invulnerability frames (1 sec) to prevent rapid damage",
+          "FIXED: Added pushback when hit to prevent getting stuck in enemies",
+          "FIXED: Bosses no longer die instantly from player collision",
+          "FIXED: Score now displays in HUD (top-right corner)"
+        ]
+      }
+    ]
+  },
+  {
     "version": "0.3.4",
     "title": "Bullet Storm Fix",
     "date": "2025-11-29",

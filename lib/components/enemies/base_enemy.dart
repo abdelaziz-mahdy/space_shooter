@@ -4,6 +4,7 @@ import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import '../../game/space_shooter_game.dart';
 import '../../utils/visual_center_mixin.dart';
+import '../../utils/position_util.dart';
 import '../base_rendered_component.dart';
 import '../damage_number.dart';
 import '../loot.dart';
@@ -34,6 +35,9 @@ abstract class BaseEnemy extends BaseRenderedComponent
   double bleedTimer = 0;
   double bleedDamagePerSecond = 0;
   static const double bleedDuration = 3.0; // 3 seconds
+
+  // Collision behavior
+  static const double bossHealthThreshold = 100.0; // Enemies with health >= this survive collision
 
   BaseEnemy({
     required Vector2 position,
@@ -251,7 +255,11 @@ abstract class BaseEnemy extends BaseRenderedComponent
     super.onCollisionStart(intersectionPoints, other);
 
     if (other is PlayerShip) {
-      other.takeDamage(contactDamage);
+      // Calculate pushback direction (away from enemy)
+      final pushbackDirection = PositionUtil.getDirectionTo(this, other);
+
+      // Deal damage with pushback
+      other.takeDamage(contactDamage, pushbackDirection: pushbackDirection);
 
       // Apply thorns damage reflection
       if (player.thornsPercent > 0) {
@@ -269,7 +277,12 @@ abstract class BaseEnemy extends BaseRenderedComponent
         takeDamage(thornsDamage, showDamageNumber: false);
       }
 
-      die(); // Enemy dies on collision with player
+      // Only kill weak enemies on collision, bosses survive
+      // Bosses have high max HP and should not die from ramming
+      // Use maxHealth instead of health to prevent damaged bosses from dying
+      if (maxHealth < bossHealthThreshold) {
+        die(); // Small enemies die on collision with player
+      }
     }
   }
 

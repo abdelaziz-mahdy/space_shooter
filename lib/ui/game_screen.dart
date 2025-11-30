@@ -195,16 +195,16 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                 ),
               ),
 
-            // HUD overlay (always visible during gameplay)
+            // Combo Meter (shows during gameplay) - BEFORE HUD so it's behind
+            if (!_showGameOver && !_showUpgradeDialog && game.hasLoaded)
+              ComboMeter(game: game),
+
+            // HUD overlay (always visible during gameplay) - AFTER ComboMeter so it's on top
             if (!_showGameOver && game.hasLoaded)
               FlutterHUD(
                 game: game,
                 onSettingsPressed: _toggleSettingsDialog,
               ),
-
-            // Combo Meter (shows during gameplay)
-            if (!_showGameOver && !_showUpgradeDialog && game.hasLoaded)
-              ComboMeter(game: game),
 
             // Stats Panel (toggleable with TAB key or from settings)
             if (!_showGameOver && !_showUpgradeDialog && !_showSettingsDialog && game.hasLoaded)

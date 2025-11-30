@@ -66,6 +66,11 @@ class PlayerShip extends BaseRenderedComponent
   double attackSizeMultiplier = 1.0;
   double cooldownReduction = 0;
 
+  // Invulnerability frames (prevent multiple collision damage)
+  bool isInvulnerable = false;
+  double invulnerabilityTimer = 0;
+  static const double invulnerabilityDuration = 1.0; // 1 second of immunity after hit
+
   // Time/Wave mechanics
   double berserkThreshold = 0.3;
   double berserkMultiplier = 0;
@@ -159,6 +164,15 @@ class PlayerShip extends BaseRenderedComponent
 
     // Don't update if game is paused
     if (gameRef.isPaused) return;
+
+    // Update invulnerability timer
+    if (isInvulnerable) {
+      invulnerabilityTimer -= dt;
+      if (invulnerabilityTimer <= 0) {
+        isInvulnerable = false;
+        invulnerabilityTimer = 0;
+      }
+    }
 
     // Update orbital drones when count changes
     _updateOrbitals();
@@ -268,7 +282,17 @@ class PlayerShip extends BaseRenderedComponent
     gameRef.audioManager.playShoot();
   }
 
-  void takeDamage(double damage) {
+  /// Apply knockback force to push player away from enemy
+  void _applyPushback(Vector2 direction) {
+    // Use percentage-based pushback (15% of screen width) for responsive design
+    final pushbackDistance = gameRef.size.x * 0.15;
+    position += direction * pushbackDistance;
+  }
+
+  void takeDamage(double damage, {Vector2? pushbackDirection}) {
+    // Invulnerability frames prevent multiple hits
+    if (isInvulnerable) return;
+
     // Shield blocks damage
     if (shieldLayers > 0) {
       shieldLayers--;
@@ -279,6 +303,16 @@ class PlayerShip extends BaseRenderedComponent
         isPlayerDamage: false,
       );
       gameRef.world.add(blockedText);
+
+      // Apply pushback even when shield absorbs damage
+      if (pushbackDirection != null) {
+        _applyPushback(pushbackDirection);
+      }
+
+      // Start invulnerability frames
+      isInvulnerable = true;
+      invulnerabilityTimer = invulnerabilityDuration;
+
       return; // Shield absorbed hit
     }
 
@@ -293,8 +327,14 @@ class PlayerShip extends BaseRenderedComponent
     );
     gameRef.world.add(damageNumber);
 
-    // Thorns - reflect damage back to attacker (if applicable)
-    // Note: This is a placeholder - actual implementation would need enemy reference
+    // Apply pushback
+    if (pushbackDirection != null) {
+      _applyPushback(pushbackDirection);
+    }
+
+    // Start invulnerability frames
+    isInvulnerable = true;
+    invulnerabilityTimer = invulnerabilityDuration;
 
     health -= actualDamage;
 

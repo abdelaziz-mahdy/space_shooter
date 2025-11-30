@@ -9,17 +9,19 @@
 **MANDATORY STEPS for ANY client-facing changes:**
 
 1. **Update `pubspec.yaml` version:**
+
    ```yaml
-   version: 0.3.0  # Increment: major.minor.patch
+   version: 0.3.0 # Increment: major.minor.patch
    ```
 
 2. **Add entry to `assets/changelog.json` (at TOP of array):**
+
    ```json
    [
      {
        "version": "0.3.0",
        "title": "Brief Update Title (3-5 words)",
-       "date": "YYYY-MM-DD",  // Use DateTime.now() to get current date: DateTime.now().toIso8601String().split('T')[0]
+       "date": "YYYY-MM-DD", // Use DateTime.now() to get current date: DateTime.now().toIso8601String().split('T')[0]
        "sections": [
          {
            "title": "Section Name",
@@ -30,18 +32,20 @@
            ]
          }
        ]
-     },
+     }
      // ... older versions
    ]
    ```
 
    **Getting today's date:**
+
    ```dart
    // In Dart, get current date:
    final today = DateTime.now().toIso8601String().split('T')[0]; // "2025-01-28"
    ```
 
 **IMPORTANT - Keep Changelogs Client-Friendly:**
+
 - ✅ **DO**: "Added live score display in HUD"
 - ✅ **DO**: "Spread weapons now hit center targets"
 - ❌ **DON'T**: "Modified PlasmaSpreader fire() method to ensure i==0 has zero offset"
@@ -52,6 +56,7 @@
 **Rule:** Version in `pubspec.yaml` MUST match version in `changelog.json`. Both files must be updated together in the same commit.
 
 **When to increment:**
+
 - **Patch (0.2.1):** Bug fixes, small tweaks
 - **Minor (0.3.0):** New features, balance changes, new content
 - **Major (1.0.0):** Major releases, breaking changes
@@ -60,51 +65,128 @@ See [Release Process](#release-process--version-management) section for detailed
 
 ---
 
-### **RESPONSIVE DESIGN - USE PERCENTAGES, NOT CONDITIONALS!**
+### **RESPONSIVE DESIGN - GAME ENGINE VS FLUTTER UI**
 
-**Why:** Responsive UIs should scale naturally based on screen size, not use conditional logic to adjust values.
+**Why:** Different rendering systems require different approaches for responsive layouts.
+
+---
+
+#### **For Game Engine (Flame Components):**
+
+**Use percentage-based sizing** - Flame components don't have layout widgets, so calculate manually.
 
 **❌ NEVER DO THIS:**
-```dart
-// BAD: Conditional adjustments and clamping
-final scaleFactor = (size.x / 800.0).clamp(0.7, 1.5);
-var cardWidth = (280.0 * scaleFactor).clamp(200.0, 400.0);
-var spacing = (30.0 * scaleFactor).clamp(15.0, 50.0);
 
-// Then checking if it fits and adjusting...
-if (totalWidth > size.x * 0.95) {
-  cardWidth = (availableWidth - spacing) / count;
-  if (cardWidth < 120) {
-    spacing = 8.0;
-    cardWidth = ...
-  }
-}
+```dart
+// BAD: Conditional adjustments and clamping in game components
+final scaleFactor = (size.x / 800.0).clamp(0.7, 1.5);
+var enemySize = (50.0 * scaleFactor).clamp(30.0, 80.0);
 ```
 
 **✅ ALWAYS USE PERCENTAGE-BASED SIZING:**
+
 ```dart
-// GOOD: Simple percentage-based responsive sizing
-final availableWidth = size.x * 0.9; // Use 90% of screen width
-final spacing = size.x * 0.02; // 2% of screen width
+// GOOD: Simple percentage-based responsive sizing for game components
+final enemySize = gameRef.size.x * 0.05; // 5% of screen width
+final bulletSpeed = gameRef.size.y * 0.4; // 40% of screen height per second
+final spacing = gameRef.size.x * 0.02; // 2% of screen width
 
-// Calculate based on number of items
-final totalSpacing = spacing * (items.length - 1);
-final itemWidth = (availableWidth - totalSpacing) / items.length;
-final itemHeight = itemWidth * 1.4; // Maintain aspect ratio
+// Text sizes based on game canvas size
+final fontSize = gameRef.size.x * 0.03; // 3% of width
+```
 
-// Text sizes based on container width
-final titleFontSize = size.x * 0.06; // 6% of width
-final bodyFontSize = size.x * 0.03; // 3% of width
-final padding = size.x * 0.05; // 5% of width
+---
+
+#### **For Flutter UI (Overlays, Dialogs, HUD):**
+
+**Use Flutter's layout widgets** - Expanded, Flexible, AspectRatio, LayoutBuilder, etc.
+
+**❌ NEVER DO THIS:**
+
+```dart
+// BAD: Manual width calculations in Flutter UI
+final screenWidth = constraints.maxWidth;
+final cardWidth = (screenWidth * 0.9 - spacing) / 3;
+final cardHeight = cardWidth * 1.25;
+
+return Row(
+  children: [
+    Container(width: cardWidth, height: cardHeight, ...),
+    SizedBox(width: spacing),
+    Container(width: cardWidth, height: cardHeight, ...),
+  ],
+);
+```
+
+**✅ ALWAYS USE FLUTTER LAYOUT WIDGETS:**
+
+```dart
+// GOOD: Use Expanded, AspectRatio, and LayoutBuilder for responsive Flutter UI
+return Row(
+  children: List.generate(3, (index) {
+    return Expanded(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: spacing),
+        child: AspectRatio(
+          aspectRatio: 0.8, // width:height ratio
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // Now calculate font sizes based on actual size
+              final fontSize = constraints.maxWidth * 0.1;
+              return Container(...);
+            },
+          ),
+        ),
+      ),
+    );
+  }),
+);
 ```
 
 **Benefits:**
-1. **Works on all screen sizes** - Automatically scales from mobile to desktop
-2. **No conditionals needed** - Clean, simple code
-3. **Predictable behavior** - Always uses the same percentage
-4. **Maintainable** - One formula instead of many clamp/if statements
 
-**Rule:** Use percentages of parent size for all UI dimensions. Let the math handle responsiveness.
+1. **Game Engine (Flame)**: Manual percentages work because no layout system exists
+2. **Flutter UI**: Built-in widgets handle complex layouts automatically
+3. **Safer**: Flutter widgets prevent overflow and handle edge cases
+4. **More responsive**: Expanded/Flexible adapt to available space dynamically
+
+**Rule:**
+
+- **Flame components**: Use percentages of `gameRef.size.x/y` for positions and dimensions
+- **Flutter UI**: Use `Expanded`, `Flexible`, `AspectRatio`, and `LayoutBuilder` instead of manual calculations
+
+**Key Flutter Layout Patterns:**
+
+1. **For consistent element positioning across cards/items:**
+
+```dart
+// Use Expanded with flex ratios to ensure elements align across all items
+Column(
+  children: [
+    Expanded(flex: 3, child: IconWidget()),  // Icon takes 3 parts
+    SizedBox(height: spacing),
+    Expanded(flex: 2, child: TitleWidget()), // Title takes 2 parts
+    SizedBox(height: spacing),
+    Expanded(flex: 3, child: DescWidget()),  // Desc takes 3 parts
+  ],
+)
+```
+
+This ensures icons, titles, and descriptions are in the same vertical positions across all cards, regardless of text length.
+
+2. **For preventing icon/emoji cutoff:**
+
+```dart
+// Wrap in FittedBox with BoxFit.contain
+Expanded(
+  child: FittedBox(
+    fit: BoxFit.contain,
+    child: Text(emoji, style: TextStyle(fontSize: iconSize)),
+  ),
+)
+```
+
+This scales the emoji to fit within its container without clipping.
 
 ---
 
@@ -113,6 +195,7 @@ final padding = size.x * 0.05; // 5% of width
 **Why:** Enums are rigid, non-extensible, and lead to switch statements scattered throughout the codebase. They violate OOP principles.
 
 **❌ NEVER DO THIS:**
+
 ```dart
 enum PowerUpType { health, shield, damage }
 
@@ -133,6 +216,7 @@ Color getColor(PowerUpType type) {
 ```
 
 **✅ ALWAYS USE CLASSES WITH INTERFACES:**
+
 ```dart
 // Abstract base class defines the interface
 abstract class PowerUp {
@@ -183,6 +267,7 @@ void usePowerUp(PowerUp powerUp, PlayerShip player) {
 ```
 
 **Benefits of Classes over Enums:**
+
 1. **Extensible** - Add new power-ups without modifying existing code
 2. **Encapsulated** - Each power-up owns its logic and data
 3. **Polymorphic** - No switch statements, just call methods
@@ -195,6 +280,7 @@ void usePowerUp(PowerUp powerUp, PlayerShip player) {
 ### 1. **Avoid Code Duplication - Use Inheritance & Composition**
 
 **❌ BAD:**
+
 ```dart
 // Creating separate base classes that duplicate functionality
 class Enemy { /* health, damage logic */ }
@@ -202,6 +288,7 @@ class BossShip { /* health, damage logic - duplicated! */ }
 ```
 
 **✅ GOOD:**
+
 ```dart
 // BossShip extends BaseEnemy, inheriting all common functionality
 class BossShip extends BaseEnemy {
@@ -216,6 +303,7 @@ class BossShip extends BaseEnemy {
 ### 2. **Keep Data in Sync with Code - No Hardcoded Values**
 
 **❌ BAD:**
+
 ```dart
 // Hardcoded multiplier values that can drift from actual weapon code
 static String getDescription(String weaponId) {
@@ -227,6 +315,7 @@ static String getDescription(String weaponId) {
 ```
 
 **✅ GOOD:**
+
 ```dart
 // Dynamically fetch from the actual weapon instance
 static String getDetailedDescription(String weaponId) {
@@ -242,6 +331,7 @@ static String getDetailedDescription(String weaponId) {
 ### 3. **Use Extension Methods for Type-Specific Behavior**
 
 **❌ BAD:**
+
 ```dart
 // Scattered switch statements throughout codebase
 void renderPowerUp(PowerUpType type) {
@@ -262,6 +352,7 @@ void getPowerUpText(PowerUpType type) {
 ```
 
 **✅ GOOD:**
+
 ```dart
 // Extension methods keep type-specific behavior centralized
 extension PowerUpTypeExtension on PowerUpType {
@@ -292,6 +383,7 @@ final desc = type.getDescription();
 ### 4. **Follow Interface Patterns - Let Classes Expose Their Own Data**
 
 **❌ BAD:**
+
 ```dart
 // External class guessing about weapon properties
 class WeaponUI {
@@ -305,6 +397,7 @@ class WeaponUI {
 ```
 
 **✅ GOOD:**
+
 ```dart
 // Weapon classes expose their own properties
 abstract class Weapon {
@@ -337,6 +430,7 @@ String getWeaponStats(Weapon weapon) {
 ### 5. **Generic Type Handling - Use Base Classes Properly**
 
 **❌ BAD:**
+
 ```dart
 // Separate checks for each enemy type
 if (other is BaseEnemy) {
@@ -347,6 +441,7 @@ if (other is BaseEnemy) {
 ```
 
 **✅ GOOD:**
+
 ```dart
 // BossShip extends BaseEnemy, so one check handles all
 if (other is BaseEnemy) {
@@ -361,6 +456,7 @@ if (other is BaseEnemy) {
 ### 6. **Component Lifecycle - Proper Initialization Order**
 
 **✅ GOOD:**
+
 ```dart
 class PlayerShip extends Component {
   @override
@@ -384,6 +480,7 @@ class PlayerShip extends Component {
 ### 7. **Factory Pattern - Centralize Object Creation**
 
 **✅ GOOD:**
+
 ```dart
 // All weapons registered through factory
 class WeaponFactory {
@@ -415,6 +512,7 @@ class PulseCannon extends Weapon {
 ### 8. **Coordinate Systems - Be Consistent**
 
 **Rule:**
+
 - World coordinates for positions (infinite scrolling)
 - Local/relative coordinates for rendering (top-left origin)
 - Use `PositionUtil` for all distance/direction calculations between components
@@ -424,6 +522,7 @@ class PulseCannon extends Weapon {
 ### 9. **Pause Handling**
 
 **✅ GOOD:**
+
 ```dart
 @override
 void update(double dt) {
@@ -443,12 +542,14 @@ void update(double dt) {
 ### 10. **Damage Pipeline - Use Proper Death Sequence**
 
 **❌ BAD:**
+
 ```dart
 // Removing enemy directly - no loot!
 enemy.removeFromParent();
 ```
 
 **✅ GOOD:**
+
 ```dart
 // Using damage pipeline triggers proper death with loot
 enemy.takeDamage(999999);  // Calls die() → drops XP → removes
@@ -478,8 +579,9 @@ enemy.takeDamage(999999);  // Calls die() → drops XP → removes
 **CRITICAL:** Always update these files together:
 
 1. **`pubspec.yaml`** - Bump the version number
+
    ```yaml
-   version: 0.3.0  # Increment appropriately
+   version: 0.3.0 # Increment appropriately
    ```
 
 2. **`assets/changelog.json`** - Add new changelog entry at the TOP of the array
@@ -488,7 +590,7 @@ enemy.takeDamage(999999);  // Calls die() → drops XP → removes
      {
        "version": "0.3.0",
        "title": "Brief Update Title",
-       "date": "YYYY-MM-DD",  // Use DateTime.now().toIso8601String().split('T')[0] to get today's date
+       "date": "YYYY-MM-DD", // Use DateTime.now().toIso8601String().split('T')[0] to get today's date
        "sections": [
          {
            "title": "Section Name",
@@ -499,7 +601,7 @@ enemy.takeDamage(999999);  // Calls die() → drops XP → removes
            ]
          }
        ]
-     },
+     }
      // ... older versions below
    ]
    ```
@@ -507,12 +609,14 @@ enemy.takeDamage(999999);  // Calls die() → drops XP → removes
 ### **Changelog Best Practices**
 
 **Keep it Mobile-Friendly:**
+
 - Use **concise descriptions** (max 1-2 lines per item)
 - Focus on **user-visible changes** (not internal refactors)
 - Group related changes into sections
 - Use emojis for visual scanning
 
 **Section Examples:**
+
 - `🐛 Bug Fixes` - Fixed issues
 - `⚖️ Balance` - Gameplay balance changes
 - `✨ New Features` - New functionality
@@ -521,11 +625,12 @@ enemy.takeDamage(999999);  // Calls die() → drops XP → removes
 - `⚡ Performance` - Optimization changes
 
 **Example Entry:**
+
 ```json
 {
   "version": "0.3.0",
   "title": "Enemy Variety Update",
-  "date": "2025-02-15",  // Get current date: DateTime.now().toIso8601String().split('T')[0]
+  "date": "2025-02-15", // Get current date: DateTime.now().toIso8601String().split('T')[0]
   "sections": [
     {
       "title": "New Content",
@@ -552,12 +657,14 @@ enemy.takeDamage(999999);  // Calls die() → drops XP → removes
 ### **Automatic Changelog Display**
 
 The changelog system automatically:
+
 1. **Detects version changes** via `VersionService`
 2. **Shows on first launch** after update (500ms delay)
 3. **Tracks last seen version** in SharedPreferences
 4. **Only shows new changes** since user's last version
 
 **Files Involved:**
+
 - `lib/services/version_service.dart` - Version detection
 - `lib/models/changelog.dart` - Data models
 - `lib/ui/changelog_dialog.dart` - Display UI
