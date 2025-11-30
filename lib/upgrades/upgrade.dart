@@ -953,7 +953,6 @@ class UpgradeFactory {
     return [
       // Pulse Cannon upgrades
       PulseCannonDamageUpgrade(),
-      PulseCannonFireRateUpgrade(),
       PulseCannonMultiShotUpgrade(),
 
       // Plasma Spreader upgrades
@@ -963,7 +962,6 @@ class UpgradeFactory {
 
       // Railgun upgrades
       RailgunDamageUpgrade(),
-      RailgunFireRateUpgrade(),
       RailgunExplosiveUpgrade(),
 
       // Missile Launcher upgrades

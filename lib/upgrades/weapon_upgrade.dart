@@ -47,28 +47,6 @@ class PulseCannonDamageUpgrade extends WeaponUpgrade {
   List<String> getStatusChanges() => ['+${damageIncrease.toInt()} damage (Pulse Cannon)'];
 }
 
-/// Pulse Cannon: Faster fire rate
-class PulseCannonFireRateUpgrade extends WeaponUpgrade {
-  final double fireRateIncrease;
-
-  PulseCannonFireRateUpgrade({this.fireRateIncrease = 0.15})
-      : super(
-          weaponId: 'pulse_cannon',
-          id: 'pulse_cannon_fire_rate',
-          name: 'Rapid Pulse',
-          description: '+${(fireRateIncrease * 100).toInt()}% fire rate',
-          icon: '⚡',
-        );
-
-  @override
-  void apply(PlayerShip player) {
-    player.shootInterval = (player.shootInterval * (1 - fireRateIncrease)).clamp(0.1, 10.0);
-  }
-
-  @override
-  List<String> getStatusChanges() => ['+${(fireRateIncrease * 100).toInt()}% fire rate (Pulse Cannon)'];
-}
-
 /// Pulse Cannon: Extra projectiles
 class PulseCannonMultiShotUpgrade extends WeaponUpgrade {
   final int projectileIncrease;
@@ -197,31 +175,6 @@ class RailgunDamageUpgrade extends WeaponUpgrade {
 
   @override
   List<String> getStatusChanges() => ['+${damageIncrease.toInt()} damage (Railgun)'];
-}
-
-/// Railgun: Faster charge time
-class RailgunFireRateUpgrade extends WeaponUpgrade {
-  final double fireRateIncrease;
-
-  RailgunFireRateUpgrade({this.fireRateIncrease = 0.2})
-      : super(
-          weaponId: 'railgun',
-          id: 'railgun_fire_rate',
-          name: 'Rapid Charge',
-          description: '+${(fireRateIncrease * 100).toInt()}% fire rate',
-          icon: '🔫',
-        );
-
-  @override
-  void apply(PlayerShip player) {
-    player.shootInterval = (player.shootInterval * (1 - fireRateIncrease)).clamp(0.1, 10.0);
-  }
-
-  @override
-  UpgradeRarity get rarity => UpgradeRarity.rare;
-
-  @override
-  List<String> getStatusChanges() => ['+${(fireRateIncrease * 100).toInt()}% fire rate (Railgun)'];
 }
 
 /// Railgun: Explosive impact
