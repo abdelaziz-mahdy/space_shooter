@@ -48,12 +48,10 @@ class _FlutterHUDState extends State<FlutterHUD> with SingleTickerProviderStateM
 
     return LayoutBuilder(
         builder: (context, constraints) {
-          // Scale font sizes based on screen width
-          // Desktop: max 1.0, Mobile: max 1.3
-          final isMobile = constraints.maxWidth < 800;
-          final scale = (constraints.maxWidth / 800).clamp(0.7, isMobile ? 1.3 : 1.0);
-          final titleSize = 24.0 * scale;
-          final textSize = 16.0 * scale;
+          // Scale font sizes based on screen width (percentage-based)
+          final scale = constraints.maxWidth / 800;
+          final titleSize = constraints.maxWidth * 0.03; // 3% of screen width
+          final textSize = constraints.maxWidth * 0.02; // 2% of screen width
 
           // Get wave data from stats manager (single source of truth)
           final totalEnemies = statsManager.enemiesInWave;

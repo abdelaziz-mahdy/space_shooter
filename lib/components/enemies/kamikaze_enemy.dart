@@ -79,7 +79,9 @@ class KamikazeEnemy extends BaseEnemy {
     // Check if player is in explosion radius
     final distanceToPlayer = PositionUtil.getDistance(this, player);
     if (distanceToPlayer <= explosionRadius) {
-      player.takeDamage(explosionDamage);
+      // Calculate pushback direction for consistency with collision damage
+      final pushbackDirection = PositionUtil.getDirectionTo(this, player);
+      player.takeDamage(explosionDamage, pushbackDirection: pushbackDirection);
       print('[KamikazeEnemy] Player caught in explosion! Damage: $explosionDamage');
     }
 
