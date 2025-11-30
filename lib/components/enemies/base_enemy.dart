@@ -168,15 +168,45 @@ abstract class BaseEnemy extends BaseRenderedComponent
   }
 
   /// Drop XP in merged cores to reduce entity count
-  /// XP tiers: 1 XP (cyan), 5 XP (green), 10 XP (yellow), 25 XP (orange)
+  /// XP tiers: 1 XP (cyan), 5 XP (green), 10 XP (yellow), 25 XP (orange), 50 XP (pink), 100 XP (red), 250 XP (purple)
   void _dropMergedXP(int totalXP) {
     if (totalXP <= 0) return;
 
     // Merge into larger cores for better performance
-    // Priority: 25 XP cores > 10 XP cores > 5 XP cores > 1 XP cores
+    // Priority: 250 > 100 > 50 > 25 > 10 > 5 > 1
     int remaining = totalXP;
 
-    // Drop 25 XP cores (orange)
+    // Drop 250 XP cores (purple) - mega orbs
+    while (remaining >= 250) {
+      final loot = Loot(
+        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
+        xpValue: 250,
+      );
+      gameRef.world.add(loot);
+      remaining -= 250;
+    }
+
+    // Drop 100 XP cores (red) - huge orbs
+    while (remaining >= 100) {
+      final loot = Loot(
+        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
+        xpValue: 100,
+      );
+      gameRef.world.add(loot);
+      remaining -= 100;
+    }
+
+    // Drop 50 XP cores (pink) - very large orbs
+    while (remaining >= 50) {
+      final loot = Loot(
+        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
+        xpValue: 50,
+      );
+      gameRef.world.add(loot);
+      remaining -= 50;
+    }
+
+    // Drop 25 XP cores (orange) - large orbs
     while (remaining >= 25) {
       final loot = Loot(
         position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
@@ -186,7 +216,7 @@ abstract class BaseEnemy extends BaseRenderedComponent
       remaining -= 25;
     }
 
-    // Drop 10 XP cores (yellow)
+    // Drop 10 XP cores (yellow) - medium orbs
     while (remaining >= 10) {
       final loot = Loot(
         position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
@@ -196,7 +226,7 @@ abstract class BaseEnemy extends BaseRenderedComponent
       remaining -= 10;
     }
 
-    // Drop 5 XP cores (green)
+    // Drop 5 XP cores (green) - small orbs
     while (remaining >= 5) {
       final loot = Loot(
         position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
@@ -206,7 +236,7 @@ abstract class BaseEnemy extends BaseRenderedComponent
       remaining -= 5;
     }
 
-    // Drop remaining 1 XP cores (cyan)
+    // Drop remaining 1 XP cores (cyan) - tiny orbs
     for (int i = 0; i < remaining; i++) {
       final loot = Loot(
         position: position.clone() + Vector2.random() * 20 - Vector2.all(10),

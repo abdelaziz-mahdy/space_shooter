@@ -7,6 +7,7 @@ import '../components/player_ship.dart';
 import '../components/enemies/base_enemy.dart';
 import '../factories/enemy_factory.dart';
 import '../config/enemy_spawn_config.dart';
+import '../utils/game_logger.dart';
 
 class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
   final PlayerShip player;
@@ -24,6 +25,9 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
   bool isBossWave = false;
   double waveDelay = 1.0; // Faster wave transitions (was 2.0)
   double waveTimer = 0;
+
+  // Callback when wave completes (for XP auto-collect)
+  VoidCallback? onWaveComplete;
 
   // Boss pool for waves 55+ (excludes Nexus which only appears at wave 50)
   static const List<String> bossPool = [
@@ -45,6 +49,11 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
     startNextWave();
   }
 
+  /// Resume spawning without starting a new wave (for unpause/settings)
+  void resumeSpawning() {
+    isSpawning = true;
+  }
+
   void stopSpawning() {
     isSpawning = false;
   }
@@ -58,8 +67,8 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
     isBossWave = currentWave % 5 == 0;
 
     if (isBossWave) {
-      // We spawn all bosses at once, so count as 1 spawn event
-      enemiesToSpawnInWave = 1;
+      // For multi-boss waves (55+), we need to count each boss separately
+      enemiesToSpawnInWave = getBossCountForWave(currentWave);
 
       // Switch to boss music and play boss appearance sound (MUSIC DISABLED)
       // gameRef.audioManager.playMusic(boss: true);
@@ -75,7 +84,7 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
 
     gameRef.statsManager.startWave(currentWave, enemiesToSpawnInWave);
 
-    print('[EnemyManager] Wave $currentWave started - Enemies: $enemiesToSpawnInWave');
+    GameLogger.event('Wave $currentWave started - Enemies: $enemiesToSpawnInWave', tag: 'EnemyManager');
   }
 
   /// Determine how many bosses to spawn based on wave number
@@ -104,11 +113,10 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
       if (spawnTimer >= spawnInterval &&
           enemiesSpawnedInWave < enemiesToSpawnInWave) {
         if (isBossWave) {
-          // Determine boss count and spawn accordingly
-          final bossCount = getBossCountForWave(currentWave);
+          // For multi-boss waves (55+), spawn one boss at a time
           if (currentWave > 50) {
-            // Multi-boss spawn for waves 55+
-            spawnMultipleBosses(bossCount);
+            // Spawn a single boss from the pool
+            spawnSingleBossFromPool();
           } else {
             // Single boss spawn for waves 5-50
             spawnBoss();
@@ -121,9 +129,13 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
       }
 
       // Check if wave is complete (all enemies killed)
-      final enemyCount = gameRef.world.children.whereType<BaseEnemy>().length;
-      final bossCount = gameRef.world.children.whereType<BossShip>().length;
-      final allEnemiesKilled = (enemyCount == 0 && bossCount == 0);
+      // CRITICAL: Only count enemies that are still mounted (not in process of being removed)
+      // BossShip extends BaseEnemy, so we only need to count BaseEnemy (includes all bosses)
+      final totalEnemyCount = gameRef.world.children
+          .whereType<BaseEnemy>()
+          .where((enemy) => enemy.isMounted)
+          .length;
+      final allEnemiesKilled = (totalEnemyCount == 0);
 
       // Wave completes when: all enemies spawned AND all killed
       if (enemiesSpawnedInWave >= enemiesToSpawnInWave && allEnemiesKilled) {
@@ -132,7 +144,26 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
         waveTimer = 0;
         currentWave++;
 
-        print('[EnemyManager] Wave ${currentWave - 1} completed - ALL ENEMIES DEFEATED');
+        GameLogger.event(
+          'Wave ${currentWave - 1} completed - ALL ENEMIES DEFEATED',
+          tag: 'EnemyManager',
+          data: {'spawned': enemiesToSpawnInWave, 'remaining': totalEnemyCount},
+        );
+
+        // Trigger wave complete callback (for XP auto-collect)
+        onWaveComplete?.call();
+      }
+
+      // Debug: Log if wave should be complete but isn't
+      if (enemiesSpawnedInWave >= enemiesToSpawnInWave && totalEnemyCount > 0) {
+        // This helps debug when wave doesn't complete properly
+        // Only log occasionally to avoid spam
+        if (spawnTimer < dt * 2) { // Log roughly once per second
+          GameLogger.debug(
+            'Wave $currentWave waiting: spawned $enemiesSpawnedInWave/$enemiesToSpawnInWave, alive: $totalEnemyCount',
+            tag: 'EnemyManager',
+          );
+        }
       }
     } else {
       // Delay between waves
@@ -172,7 +203,7 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
         color: const Color(0xFFFF0000),
       );
       gameRef.world.add(boss);
-      print('[EnemyManager] Spawned fallback BossShip at wave $currentWave');
+      GameLogger.debug('Spawned fallback BossShip at wave $currentWave', tag: 'EnemyManager');
       return;
     }
 
@@ -185,66 +216,40 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
       scale: gameRef.entityScale,
     );
     gameRef.world.add(boss);
-    print('[EnemyManager] Spawned ${boss.runtimeType} at wave $currentWave');
+    GameLogger.debug('Spawned ${boss.runtimeType} at wave $currentWave', tag: 'EnemyManager');
   }
 
-  /// Spawn multiple bosses from the boss pool for waves 55+
-  /// Bosses are positioned with spacing to avoid overlap
-  void spawnMultipleBosses(int count) {
-    if (count <= 0) return;
-
+  /// Spawn a single boss from the pool for waves 55+
+  /// Used when spawning bosses one at a time (proper enemy counting)
+  void spawnSingleBossFromPool() {
     // Get player position for spawn reference
     final playerPos = player.position;
 
-    // Select random bosses from pool without duplicates
-    final selectedBosses = _selectRandomBosses(count);
+    // Select a random boss from pool
+    final bossId = bossPool[random.nextInt(bossPool.length)];
 
-    // Calculate spacing between bosses (horizontal spread)
-    final totalWidth = gameRef.size.x * 0.6; // Use 60% of screen width
-    final spacing = selectedBosses.length > 1
-        ? totalWidth / (selectedBosses.length - 1)
-        : 0.0;
+    // Calculate spawn position (top center with some horizontal variance)
+    final xVariance = (random.nextDouble() - 0.5) * gameRef.size.x * 0.4;
+    final spawnPos = Vector2(
+      playerPos.x + xVariance,
+      playerPos.y - gameRef.size.y / 2 - 100,
+    );
 
-    // Starting X position (centered)
-    final startX = playerPos.x - (totalWidth / 2);
+    // Create boss using factory
+    final boss = EnemyFactory.create(
+      bossId,
+      player,
+      currentWave,
+      spawnPos,
+      scale: gameRef.entityScale,
+    );
 
-    // Base Y position (top of screen)
-    final baseY = playerPos.y - gameRef.size.y / 2 - 100;
-
-    print('[EnemyManager] Spawning ${selectedBosses.length} bosses at wave $currentWave');
-
-    // Spawn each selected boss with proper spacing
-    for (int i = 0; i < selectedBosses.length; i++) {
-      final bossId = selectedBosses[i];
-
-      // Calculate position for this boss
-      final xOffset = selectedBosses.length > 1 ? i * spacing : 0.0;
-      final spawnPos = Vector2(startX + xOffset, baseY);
-
-      // Create boss directly using factory
-      final boss = EnemyFactory.create(
-        bossId,
-        player,
-        currentWave,
-        spawnPos,
-        scale: gameRef.entityScale,
-      );
-
-      gameRef.world.add(boss);
-      print('[EnemyManager]   - Spawned ${boss.runtimeType} ($bossId) at position ${spawnPos.x.toStringAsFixed(1)}, ${spawnPos.y.toStringAsFixed(1)}');
-    }
+    gameRef.world.add(boss);
+    GameLogger.debug(
+      'Spawned ${boss.runtimeType} ($bossId) at wave $currentWave (${enemiesSpawnedInWave + 1}/$enemiesToSpawnInWave)',
+      tag: 'EnemyManager',
+    );
   }
-
-  /// Select random bosses from the pool without duplicates
-  List<String> _selectRandomBosses(int count) {
-    // Create a shuffled copy of the boss pool
-    final shuffled = List<String>.from(bossPool)..shuffle(random);
-
-    // Take the requested count (or all if count > pool size)
-    final selectedCount = count.clamp(0, shuffled.length);
-    return shuffled.take(selectedCount).toList();
-  }
-
 
   Vector2 getRandomSpawnPosition() {
     // Random spawn position around player in world coordinates
@@ -296,7 +301,10 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
     final enemy = EnemyFactory.createWeightedRandom(player, currentWave, spawnPos, weights, scale: gameRef.entityScale);
 
     gameRef.world.add(enemy);
-    print('[EnemyManager] Spawned ${enemy.runtimeType} at wave $currentWave with scale ${gameRef.entityScale}');
+    GameLogger.debug(
+      'Spawned ${enemy.runtimeType} at wave $currentWave with scale ${gameRef.entityScale}',
+      tag: 'EnemyManager',
+    );
   }
 
   int getCurrentWave() => currentWave;

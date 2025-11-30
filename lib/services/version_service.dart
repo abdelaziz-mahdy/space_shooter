@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import '../utils/game_logger.dart';
 
 /// Service for managing app version and detecting updates
 class VersionService {
@@ -33,7 +34,7 @@ class VersionService {
         _currentVersion = '0.1.0'; // Fallback if changelog is empty
       }
     } catch (e) {
-      print('[VersionService] Error loading version from changelog.json: $e');
+      GameLogger.error('Error loading version from changelog.json', tag: 'VersionService', error: e);
       _currentVersion = '0.1.0'; // Fallback version
     }
   }

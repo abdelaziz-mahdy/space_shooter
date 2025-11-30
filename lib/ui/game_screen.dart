@@ -106,7 +106,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
         game.enemyManager.stopSpawning();
       } else {
         game.isPaused = false;
-        game.enemyManager.startSpawning();
+        game.enemyManager.resumeSpawning(); // Resume without starting new wave
       }
     });
   }
