@@ -278,8 +278,9 @@ abstract class BaseEnemy extends BaseRenderedComponent
       }
 
       // Only kill weak enemies on collision, bosses survive
-      // Bosses have high HP and should not die from ramming
-      if (health < bossHealthThreshold) {
+      // Bosses have high max HP and should not die from ramming
+      // Use maxHealth instead of health to prevent damaged bosses from dying
+      if (maxHealth < bossHealthThreshold) {
         die(); // Small enemies die on collision with player
       }
     }
