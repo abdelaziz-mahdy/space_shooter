@@ -37,10 +37,9 @@ class _FlutterUpgradeDialogState extends State<FlutterUpgradeDialog> {
       color: const Color(0xCC000000),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          // Scale text sizes based on screen width
-          final isMobile = constraints.maxWidth < 800;
-          final titleSize = isMobile ? 48.0 : 40.0;
-          final subtitleSize = isMobile ? 24.0 : 20.0;
+          // Percentage-based responsive sizing (follows claude.md principles)
+          final titleSize = constraints.maxWidth * 0.05; // 5% of screen width
+          final subtitleSize = constraints.maxWidth * 0.025; // 2.5% of screen width
 
           return Center(
             child: Column(
