@@ -4,6 +4,7 @@ import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import '../../game/space_shooter_game.dart';
 import '../../utils/visual_center_mixin.dart';
+import '../../utils/position_util.dart';
 import '../base_rendered_component.dart';
 import '../damage_number.dart';
 import '../loot.dart';
@@ -251,7 +252,11 @@ abstract class BaseEnemy extends BaseRenderedComponent
     super.onCollisionStart(intersectionPoints, other);
 
     if (other is PlayerShip) {
-      other.takeDamage(contactDamage);
+      // Calculate pushback direction (away from enemy)
+      final pushbackDirection = PositionUtil.getDirectionTo(this, other);
+
+      // Deal damage with pushback
+      other.takeDamage(contactDamage, pushbackDirection: pushbackDirection);
 
       // Apply thorns damage reflection
       if (player.thornsPercent > 0) {
