@@ -1,5 +1,57 @@
 [
   {
+    "version": "0.3.9",
+    "title": "New Features & Quality of Life",
+    "date": "2025-11-30",
+    "sections": [
+      {
+        "title": "New Features",
+        "emoji": "✨",
+        "items": [
+          "Added surrender option in settings menu",
+          "See your predicted global rank before submitting score",
+          "Faster and more accurate rank predictions"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "0.3.8",
+    "title": "Performance & Balance Fixes",
+    "date": "2025-11-30",
+    "sections": [
+      {
+        "title": "Critical Performance Fixes",
+        "emoji": "⚡",
+        "items": [
+          "FIXED: Game crashes at high waves (12GB RAM → 2GB)",
+          "Damage numbers now merge together for cleaner display",
+          "Much smoother gameplay at Wave 100+",
+          "Significantly reduced lag during intense combat"
+        ]
+      },
+      {
+        "title": "Critical Balance Fixes",
+        "emoji": "⚖️",
+        "items": [
+          "FIXED: Invincibility exploit with armor upgrades",
+          "Damage reduction now capped at 60% max",
+          "Armor upgrades no longer appear when at cap",
+          "Game is now properly challenging at all levels"
+        ]
+      },
+      {
+        "title": "Projectile System",
+        "emoji": "🎯",
+        "items": [
+          "Projectile count now capped at 5 max",
+          "Projectile upgrades hidden when at cap",
+          "Better balance between firepower and performance"
+        ]
+      }
+    ]
+  },
+  {
     "version": "0.3.7",
     "title": "Wave System & XP Improvements",
     "date": "2025-11-30",

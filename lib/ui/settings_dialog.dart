@@ -9,6 +9,7 @@ class SettingsDialog extends StatelessWidget {
   final VoidCallback onClose;
   final VoidCallback onBackToMenu;
   final VoidCallback onViewStats;
+  final VoidCallback onSurrender;
   final bool isAudioMuted;
   final ValueChanged<bool> onAudioMuteChanged;
 
@@ -18,9 +19,84 @@ class SettingsDialog extends StatelessWidget {
     required this.onClose,
     required this.onBackToMenu,
     required this.onViewStats,
+    required this.onSurrender,
     required this.isAudioMuted,
     required this.onAudioMuteChanged,
   });
+
+  void _showSurrenderConfirmation(BuildContext context, double scale) {
+    AudioManager().playButtonClick();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.black.withOpacity(0.95),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16 * scale),
+          side: BorderSide(
+            color: const Color(0xFFFF6600),
+            width: 3 * scale,
+          ),
+        ),
+        title: Text(
+          'SURRENDER?',
+          style: TextStyle(
+            fontSize: 24 * scale,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFFFF6600),
+            letterSpacing: 2 * scale,
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to surrender?\n\nYour current progress will be lost and you will receive a game over.',
+          style: TextStyle(
+            fontSize: 16 * scale,
+            color: Colors.white70,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              AudioManager().playButtonClick();
+              Navigator.of(context).pop();
+            },
+            child: Text(
+              'CANCEL',
+              style: TextStyle(
+                fontSize: 16 * scale,
+                color: const Color(0xFF00FFFF),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              AudioManager().playButtonClick();
+              Navigator.of(context).pop(); // Close confirmation
+              onSurrender(); // Call surrender callback
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF6600).withOpacity(0.2),
+              foregroundColor: const Color(0xFFFF6600),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8 * scale),
+                side: const BorderSide(
+                  color: Color(0xFFFF6600),
+                  width: 2,
+                ),
+              ),
+            ),
+            child: Text(
+              'SURRENDER',
+              style: TextStyle(
+                fontSize: 16 * scale,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -115,6 +191,17 @@ class SettingsDialog extends StatelessWidget {
                     icon: Icons.analytics,
                     onPressed: onViewStats,
                     color: const Color(0xFF00FFFF),
+                  ),
+
+                  SizedBox(height: 12 * scale),
+
+                  // Surrender Button
+                  _buildButton(
+                    scale: scale,
+                    label: 'SURRENDER',
+                    icon: Icons.flag,
+                    onPressed: () => _showSurrenderConfirmation(context, scale),
+                    color: const Color(0xFFFF6600),
                   ),
 
                   SizedBox(height: 12 * scale),

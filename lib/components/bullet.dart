@@ -219,40 +219,61 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
   }
 
   /// Generic helper to find enemies sorted by distance from a position
+  /// Optimized to use cached enemy list and avoid sorting when maxCount=1
   List<BaseEnemy> _findNearestEnemies({
     required Vector2 fromPosition,
     BaseEnemy? excludeEnemy,
     double? maxDistance,
     int? maxCount,
   }) {
-    final allEnemies = gameRef.world.children.whereType<BaseEnemy>().toList();
+    // Use cached enemy list from game (refreshed once per frame)
+    final allEnemies = gameRef.activeEnemies;
 
-    // Remove excluded enemy if specified
-    if (excludeEnemy != null) {
-      allEnemies.remove(excludeEnemy);
+    // Optimized path for finding single nearest enemy (most common case)
+    if (maxCount == 1) {
+      BaseEnemy? nearest;
+      double nearestDist = maxDistance ?? double.infinity;
+
+      for (final enemy in allEnemies) {
+        // Skip excluded enemy
+        if (enemy == excludeEnemy) continue;
+
+        final dist = fromPosition.distanceTo(enemy.position);
+        if (dist < nearestDist) {
+          nearestDist = dist;
+          nearest = enemy;
+        }
+      }
+
+      return nearest != null ? [nearest] : [];
     }
 
-    // Filter by distance if specified
-    if (maxDistance != null) {
-      allEnemies.removeWhere((enemy) {
+    // General path for multiple enemies (used by chain lightning)
+    final filteredEnemies = <BaseEnemy>[];
+    for (final enemy in allEnemies) {
+      if (enemy == excludeEnemy) continue;
+
+      if (maxDistance != null) {
         final distance = fromPosition.distanceTo(enemy.position);
-        return distance > maxDistance;
-      });
+        if (distance > maxDistance) continue;
+      }
+
+      filteredEnemies.add(enemy);
     }
 
     // Sort by distance
-    allEnemies.sort((a, b) {
+    filteredEnemies.sort((a, b) {
       final distA = fromPosition.distanceTo(a.position);
       final distB = fromPosition.distanceTo(b.position);
       return distA.compareTo(distB);
     });
 
     // Limit count if specified
-    if (maxCount != null && allEnemies.length > maxCount) {
-      return allEnemies.sublist(0, maxCount);
+    if (maxCount != null && filteredEnemies.length > maxCount) {
+      return filteredEnemies.sublist(0, maxCount);
     }
 
-    return allEnemies;
+    return filteredEnemies;
   }
 
   /// Generic helper to deal damage to an enemy with visual effects

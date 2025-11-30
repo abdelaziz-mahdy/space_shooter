@@ -22,6 +22,9 @@ import '../managers/combo_manager.dart';
 import '../managers/audio_manager.dart';
 import '../ui/touch_joystick.dart';
 
+// Import base enemy for caching
+import '../components/enemies/base_enemy.dart';
+
 // Import all enemies for factory registration
 import '../components/enemies/triangle_enemy.dart';
 import '../components/enemies/square_enemy.dart';
@@ -71,6 +74,14 @@ class SpaceShooterGame extends FlameGame
 
   // Entity scale factor based on screen size (smaller on mobile)
   double entityScale = 1.0;
+
+  // Enemy cache for performance (refreshed once per frame)
+  List<BaseEnemy> _cachedEnemies = [];
+  int _enemyCacheFrame = 0;
+  int _lastCacheFrame = -1;
+
+  // Game time tracking for rate limiting
+  double _gameTime = 0;
 
   // Callbacks for Flutter UI
   VoidCallback? onShowUpgrade;
@@ -131,8 +142,25 @@ class SpaceShooterGame extends FlameGame
     GameLogger.info('All factories registered successfully', tag: 'SpaceShooterGame');
   }
 
+  /// Get cached enemy list (refreshed once per frame for performance)
+  List<BaseEnemy> get activeEnemies {
+    if (_enemyCacheFrame != _lastCacheFrame) {
+      _cachedEnemies = world.children
+          .whereType<BaseEnemy>()
+          .where((e) => e.isMounted)
+          .toList();
+      _lastCacheFrame = _enemyCacheFrame;
+    }
+    return _cachedEnemies;
+  }
+
+  /// Get current game time (for rate limiting)
+  double get currentTime => _gameTime;
+
   @override
   void update(double dt) {
+    _enemyCacheFrame++; // Increment frame counter for cache invalidation
+    _gameTime += dt; // Track game time
     super.update(dt);
 
     // Manually update camera to follow player with no lag

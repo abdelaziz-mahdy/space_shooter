@@ -72,6 +72,11 @@ class PlayerShip extends BaseRenderedComponent
   double invulnerabilityTimer = 0;
   static const double invulnerabilityDuration = 1.0; // 1 second of immunity after hit
 
+  // Damage number rate limiting (for performance at high levels)
+  double _lastDamageNumberTime = 0;
+  double _accumulatedDamage = 0;
+  static const double damageNumberCooldown = 0.05; // Show damage every 50ms
+
   // Pushback animation state
   bool isPushingBack = false;
   double pushbackProgress = 0.0;
@@ -280,8 +285,8 @@ class PlayerShip extends BaseRenderedComponent
     PositionComponent? nearest;
     double nearestDistance = double.infinity;
 
-    // Get all enemies (BaseEnemy includes BossShip and all enemy types)
-    final allEnemies = gameRef.world.children.whereType<BaseEnemy>();
+    // Use cached enemy list from game (refreshed once per frame)
+    final allEnemies = gameRef.activeEnemies;
 
     for (final enemy in allEnemies) {
       // Use PositionUtil for consistent distance calculation
@@ -350,16 +355,24 @@ class PlayerShip extends BaseRenderedComponent
       return; // Shield absorbed hit
     }
 
-    // Apply damage reduction
-    final actualDamage = damage * (1.0 - damageReduction);
+    // Apply damage reduction with global 60% cap
+    final cappedReduction = damageReduction.clamp(0.0, 0.60);
+    final actualDamage = damage * (1.0 - cappedReduction);
 
-    // Spawn damage number showing player damage
-    final damageNumber = DamageNumber(
-      position: position.clone(),
-      damage: actualDamage,
-      isPlayerDamage: true,
-    );
-    gameRef.world.add(damageNumber);
+    // Accumulate damage and show merged numbers every 50ms
+    final now = gameRef.currentTime;
+    _accumulatedDamage += actualDamage;
+
+    if (now - _lastDamageNumberTime >= damageNumberCooldown) {
+      final damageNumber = DamageNumber(
+        position: position.clone(),
+        damage: _accumulatedDamage,
+        isPlayerDamage: true,
+      );
+      gameRef.world.add(damageNumber);
+      _lastDamageNumberTime = now;
+      _accumulatedDamage = 0;
+    }
 
     // Apply pushback
     if (pushbackDirection != null) {

@@ -250,4 +250,27 @@ class LeaderboardService {
       return false;
     }
   }
+
+  /// Get predicted rank for a score
+  static Future<int?> getPredictedRank(int score) async {
+    final baseUrl = EnvConfig.leaderboardApiUrl;
+    if (baseUrl == null) return null;
+
+    try {
+      final uri = Uri.parse('$baseUrl/rank/predict?score=$score');
+      final response = await http.get(uri).timeout(_timeout);
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body) as Map<String, dynamic>;
+        if (json['success'] == true) {
+          return json['predictedRank'] as int;
+        }
+      }
+
+      return null;
+    } catch (e) {
+      print('[LeaderboardService] Error getting predicted rank: $e');
+      return null;
+    }
+  }
 }

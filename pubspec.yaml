@@ -1,7 +1,7 @@
 name: space_shooter
 description: "A new Flutter project."
 publish_to: 'none'
-version: 0.3.7
+version: 0.3.9
 
 environment:
   sdk: ^3.10.0

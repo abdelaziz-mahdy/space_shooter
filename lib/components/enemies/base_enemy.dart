@@ -36,6 +36,12 @@ abstract class BaseEnemy extends BaseRenderedComponent
   double bleedDamagePerSecond = 0;
   static const double bleedDuration = 3.0; // 3 seconds
 
+  // Damage number rate limiting (for performance at high levels)
+  double _lastDamageNumberTime = 0;
+  double _accumulatedDamage = 0;
+  bool _wasLastCrit = false;
+  static const double damageNumberCooldown = 0.05; // Show damage every 50ms
+
   // Collision behavior
   static const double bossHealthThreshold = 100.0; // Enemies with health >= this survive collision
 
@@ -137,14 +143,23 @@ abstract class BaseEnemy extends BaseRenderedComponent
     final actualDamage = modifyIncomingDamage(damage);
     health -= actualDamage;
 
-    // Show damage number (centralized - all weapons get this for free)
+    // Accumulate damage and show merged numbers every 50ms
     if (showDamageNumber && actualDamage > 0) {
-      final damageNumber = DamageNumber(
-        position: position.clone(),
-        damage: actualDamage,
-        isCrit: isCrit,
-      );
-      gameRef.world.add(damageNumber);
+      final now = gameRef.currentTime;
+      _accumulatedDamage += actualDamage;
+      _wasLastCrit = _wasLastCrit || isCrit; // Track if any hit was a crit
+
+      if (now - _lastDamageNumberTime >= damageNumberCooldown) {
+        final damageNumber = DamageNumber(
+          position: position.clone(),
+          damage: _accumulatedDamage,
+          isCrit: _wasLastCrit,
+        );
+        gameRef.world.add(damageNumber);
+        _lastDamageNumberTime = now;
+        _accumulatedDamage = 0;
+        _wasLastCrit = false;
+      }
     }
 
     // Apply bleed effect if player has bleed damage

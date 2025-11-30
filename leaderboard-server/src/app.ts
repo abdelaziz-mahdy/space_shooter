@@ -120,6 +120,11 @@ app.get('/', (c) => {
             <p class="desc">Get top scores (supports ?limit=N&offset=N)</p>
           </div>
           <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/rank/predict?score=N</span>
+            <p class="desc">Get predicted rank for a score</p>
+          </div>
+          <div class="endpoint">
             <span class="method post">POST</span>
             <span class="path">/scores</span>
             <p class="desc">Submit a new score</p>
@@ -248,6 +253,49 @@ app.get('/scores', async (c) => {
     return c.json({
       success: false,
       error: 'Failed to fetch leaderboard',
+    }, 500);
+  }
+});
+
+// Get predicted rank for a score
+app.get('/rank/predict', async (c) => {
+  try {
+    const scoreParam = c.req.query('score');
+
+    if (!scoreParam) {
+      return c.json({
+        success: false,
+        error: 'Score parameter is required',
+      }, 400);
+    }
+
+    const score = parseInt(scoreParam);
+
+    if (isNaN(score) || score < 0) {
+      return c.json({
+        success: false,
+        error: 'Invalid score',
+      }, 400);
+    }
+
+    // Calculate rank: count how many scores are higher than this one
+    const rankResult = await query(
+      'SELECT COUNT(*) + 1 as rank FROM leaderboard WHERE score > $1',
+      [score]
+    );
+
+    const predictedRank = parseInt(rankResult.rows[0].rank);
+
+    return c.json({
+      success: true,
+      score,
+      predictedRank,
+    });
+  } catch (error) {
+    console.error('Error predicting rank:', error);
+    return c.json({
+      success: false,
+      error: 'Failed to predict rank',
     }, 500);
   }
 });

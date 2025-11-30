@@ -436,20 +436,40 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
     );
   }
 
+  void _showLocalScoreDetails(GameScore score, int rank) {
+    AudioManager().playButtonClick();
+    showDialog(
+      context: context,
+      builder: (context) => _ScoreDetailsDialog(
+        playerName: 'You', // Local scores don't have player names
+        score: score.score,
+        wave: score.wave,
+        kills: score.kills,
+        timeAlive: score.timeAlive,
+        upgrades: score.upgrades,
+        weaponUsed: score.weaponUsed,
+        platform: null, // Local scores don't track platform
+        rank: rank,
+      ),
+    );
+  }
+
   Widget _buildLocalScoreCard(GameScore score, int rank) {
     final isTopScore = rank == 1;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: isTopScore ? const Color(0xFFFFD700) : const Color(0xFF333333),
-          width: isTopScore ? 2 : 1,
+    return GestureDetector(
+      onTap: () => _showLocalScoreDetails(score, rank),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isTopScore ? const Color(0xFFFFD700) : const Color(0xFF333333),
+            width: isTopScore ? 2 : 1,
+          ),
         ),
-      ),
       child: Row(
         children: [
           // Rank
@@ -492,7 +512,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
             ),
           ),
 
-          // Score
+          // Score and tap hint
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -506,17 +526,31 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const Text(
-                'pts',
-                style: TextStyle(
-                  color: Color(0xFF888888),
-                  fontSize: 12,
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'pts',
+                    style: TextStyle(
+                      color: Color(0xFF888888),
+                      fontSize: 12,
+                    ),
+                  ),
+                  if (score.upgrades.isNotEmpty) ...[
+                    const SizedBox(width: 8),
+                    const Icon(
+                      Icons.info_outline,
+                      color: Color(0xFF666666),
+                      size: 14,
+                    ),
+                  ],
+                ],
               ),
             ],
           ),
         ],
       ),
+    ),
     );
   }
 

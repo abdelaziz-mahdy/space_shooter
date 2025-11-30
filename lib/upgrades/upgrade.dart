@@ -1,6 +1,7 @@
 import 'dart:math';
 import '../components/player_ship.dart';
 import '../config/weapon_unlock_config.dart';
+import '../config/balance_config.dart';
 import 'weapon_upgrade.dart';
 
 /// Upgrade rarity levels
@@ -118,6 +119,11 @@ class MultiShotUpgrade extends Upgrade {
   @override
   void apply(PlayerShip player) {
     player.projectileCount += additionalProjectiles;
+  }
+
+  @override
+  bool isValidFor(PlayerShip player) {
+    return player.projectileCount < BalanceConfig.maxProjectileCount;
   }
 
   @override
@@ -337,7 +343,12 @@ class ArmorUpgrade extends Upgrade {
   @override
   void apply(PlayerShip player) {
     player.damageReduction += damageReduction;
-    player.damageReduction = player.damageReduction.clamp(0.0, 0.80);
+    player.damageReduction = player.damageReduction.clamp(0.0, BalanceConfig.maxDamageReduction);
+  }
+
+  @override
+  bool isValidFor(PlayerShip player) {
+    return player.damageReduction < BalanceConfig.maxDamageReduction;
   }
 
   @override
@@ -717,6 +728,11 @@ class BulletStormUpgrade extends Upgrade {
   }
 
   @override
+  bool isValidFor(PlayerShip player) {
+    return player.projectileCount < BalanceConfig.maxProjectileCount;
+  }
+
+  @override
   UpgradeRarity get rarity => UpgradeRarity.epic;
 
   @override
@@ -852,6 +868,11 @@ class ImmovableObjectUpgrade extends Upgrade {
     player.health *= 3.0;
     player.damageReduction += 0.5;
     player.moveSpeed *= 0.7;
+  }
+
+  @override
+  bool isValidFor(PlayerShip player) {
+    return player.damageReduction < BalanceConfig.maxDamageReduction;
   }
 
   @override

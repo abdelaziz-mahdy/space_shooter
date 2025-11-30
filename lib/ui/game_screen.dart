@@ -142,6 +142,16 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
     Navigator.of(context).pushReplacementNamed('/');
   }
 
+  void _surrender() {
+    // Close settings dialog
+    setState(() {
+      _showSettingsDialog = false;
+    });
+
+    // Trigger game over
+    game.gameOver();
+  }
+
   void _restartGame() {
     setState(() {
       _showGameOver = false;
@@ -221,6 +231,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                 onClose: _toggleSettingsDialog,
                 onBackToMenu: _returnToMainMenu,
                 onViewStats: _openStatsFromSettings,
+                onSurrender: _surrender,
                 isAudioMuted: game.audioManager.isMuted,
                 onAudioMuteChanged: _toggleAudioMute,
               ),
