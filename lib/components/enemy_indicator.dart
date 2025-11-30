@@ -7,37 +7,10 @@ import 'boss_ship.dart';
 
 /// Shows arrows at screen edges pointing to off-screen enemies
 class EnemyIndicator extends PositionComponent with HasGameRef<SpaceShooterGame> {
-  static const double edgeOffset = 20.0; // Distance from screen edge
-  static const double arrowSize = 20.0;
-
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    // Position will be updated every frame
-    size = Vector2.all(arrowSize);
     anchor = Anchor.center;
-  }
-
-  @override
-  void update(double dt) {
-    super.update(dt);
-
-    // Don't update if game is paused
-    if (gameRef.isPaused) return;
-
-    // Get all enemies
-    final allEnemies = [
-      ...gameRef.world.children.whereType<BaseEnemy>(),
-      ...gameRef.world.children.whereType<BossShip>(),
-    ];
-
-    // We'll track the nearest off-screen enemy for each edge direction
-    _updateIndicators(allEnemies);
-  }
-
-  void _updateIndicators(List<PositionComponent> enemies) {
-    // For now, we'll just render in renderShape
-    // The actual indicator rendering will happen there
   }
 
   @override
@@ -50,11 +23,14 @@ class EnemyIndicator extends PositionComponent with HasGameRef<SpaceShooterGame>
     final player = gameRef.player;
     final screenSize = gameRef.size;
 
-    // Get all enemies
-    final allEnemies = [
-      ...gameRef.world.children.whereType<BaseEnemy>(),
-      ...gameRef.world.children.whereType<BossShip>(),
-    ];
+    // Percentage-based sizing for responsive design (CLAUDE.md line 86)
+    final edgeOffset = screenSize.x * 0.025; // 2.5% of screen width
+    final arrowSize = screenSize.x * 0.025; // 2.5% of screen width
+    final fontSize = screenSize.x * 0.015; // 1.5% of screen width
+
+    // Get all enemies (BossShip extends BaseEnemy, so one check handles all)
+    // CLAUDE.md line 446: Use whereType<BaseClass>() for generic filtering
+    final allEnemies = gameRef.world.children.whereType<BaseEnemy>();
 
     // Filter to only off-screen enemies
     final offScreenEnemies = allEnemies.where((enemy) {
@@ -72,11 +48,19 @@ class EnemyIndicator extends PositionComponent with HasGameRef<SpaceShooterGame>
 
     // Draw indicators for each off-screen enemy
     for (final enemy in offScreenEnemies) {
-      _renderIndicator(canvas, player, enemy, screenSize);
+      _renderIndicator(canvas, player, enemy, screenSize, edgeOffset, arrowSize, fontSize);
     }
   }
 
-  void _renderIndicator(Canvas canvas, PositionComponent player, PositionComponent enemy, Vector2 screenSize) {
+  void _renderIndicator(
+    Canvas canvas,
+    PositionComponent player,
+    BaseEnemy enemy,
+    Vector2 screenSize,
+    double edgeOffset,
+    double arrowSize,
+    double fontSize,
+  ) {
     // Calculate relative position
     final relativePos = PositionUtil.getRelativePosition(player, enemy);
 
@@ -134,11 +118,11 @@ class EnemyIndicator extends PositionComponent with HasGameRef<SpaceShooterGame>
       final textPainter = TextPainter(
         text: TextSpan(
           text: distanceText,
-          style: const TextStyle(
-            color: Color(0xFFFFFFFF),
-            fontSize: 12,
+          style: TextStyle(
+            color: const Color(0xFFFFFFFF),
+            fontSize: fontSize,
             fontWeight: FontWeight.bold,
-            shadows: [
+            shadows: const [
               Shadow(
                 color: Color(0xFF000000),
                 offset: Offset(1, 1),
