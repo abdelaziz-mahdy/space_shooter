@@ -36,6 +36,9 @@ abstract class BaseEnemy extends BaseRenderedComponent
   double bleedDamagePerSecond = 0;
   static const double bleedDuration = 3.0; // 3 seconds
 
+  // Collision behavior
+  static const double bossHealthThreshold = 100.0; // Enemies with health >= this survive collision
+
   BaseEnemy({
     required Vector2 position,
     required this.player,
@@ -276,7 +279,7 @@ abstract class BaseEnemy extends BaseRenderedComponent
 
       // Only kill weak enemies on collision, bosses survive
       // Bosses have high HP and should not die from ramming
-      if (health < 100) {
+      if (health < bossHealthThreshold) {
         die(); // Small enemies die on collision with player
       }
     }

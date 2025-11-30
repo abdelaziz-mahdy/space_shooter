@@ -70,6 +70,7 @@ class PlayerShip extends BaseRenderedComponent
   bool isInvulnerable = false;
   double invulnerabilityTimer = 0;
   static const double invulnerabilityDuration = 1.0; // 1 second of immunity after hit
+  static const double pushbackStrength = 150.0; // Pushback distance when hit
 
   // Time/Wave mechanics
   double berserkThreshold = 0.3;
@@ -284,7 +285,6 @@ class PlayerShip extends BaseRenderedComponent
 
   /// Apply knockback force to push player away from enemy
   void _applyPushback(Vector2 direction) {
-    const pushbackStrength = 150.0; // Pushback distance
     position += direction * pushbackStrength;
   }
 
