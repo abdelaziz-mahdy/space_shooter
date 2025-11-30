@@ -1,5 +1,20 @@
 [
   {
+    "version": "0.3.6",
+    "title": "Fire Rate Clarity Fix",
+    "date": "2025-11-30",
+    "sections": [
+      {
+        "title": "UI Improvements",
+        "emoji": "✨",
+        "items": [
+          "Standardized fire rate terminology in upgrades",
+          "Changed confusing cooldown/charge time to fire rate"
+        ]
+      }
+    ]
+  },
+  {
     "version": "0.3.5",
     "title": "Critical Collision Fixes",
     "date": "2025-11-29",
