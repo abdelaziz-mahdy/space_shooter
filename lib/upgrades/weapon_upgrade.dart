@@ -56,7 +56,7 @@ class PulseCannonFireRateUpgrade extends WeaponUpgrade {
           weaponId: 'pulse_cannon',
           id: 'pulse_cannon_fire_rate',
           name: 'Rapid Pulse',
-          description: '-${(fireRateIncrease * 100).toInt()}% cooldown',
+          description: '+${(fireRateIncrease * 100).toInt()}% fire rate',
           icon: '⚡',
         );
 
@@ -66,7 +66,7 @@ class PulseCannonFireRateUpgrade extends WeaponUpgrade {
   }
 
   @override
-  List<String> getStatusChanges() => ['-${(fireRateIncrease * 100).toInt()}% cooldown (Pulse Cannon)'];
+  List<String> getStatusChanges() => ['+${(fireRateIncrease * 100).toInt()}% fire rate (Pulse Cannon)'];
 }
 
 /// Pulse Cannon: Extra projectiles
@@ -208,7 +208,7 @@ class RailgunFireRateUpgrade extends WeaponUpgrade {
           weaponId: 'railgun',
           id: 'railgun_fire_rate',
           name: 'Rapid Charge',
-          description: '-${(fireRateIncrease * 100).toInt()}% charge time',
+          description: '+${(fireRateIncrease * 100).toInt()}% fire rate',
           icon: '🔫',
         );
 
@@ -221,7 +221,7 @@ class RailgunFireRateUpgrade extends WeaponUpgrade {
   UpgradeRarity get rarity => UpgradeRarity.rare;
 
   @override
-  List<String> getStatusChanges() => ['-${(fireRateIncrease * 100).toInt()}% charge time (Railgun)'];
+  List<String> getStatusChanges() => ['+${(fireRateIncrease * 100).toInt()}% fire rate (Railgun)'];
 }
 
 /// Railgun: Explosive impact
