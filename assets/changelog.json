@@ -1,5 +1,51 @@
 [
   {
+    "version": "0.3.6",
+    "title": "Wave System & XP Improvements",
+    "date": "2025-11-30",
+    "sections": [
+      {
+        "title": "Critical Fixes",
+        "emoji": "🚨",
+        "items": [
+          "FIXED: Wave completion logic (waves no longer complete early)",
+          "FIXED: Enemy counting bug (bosses were double-counted)",
+          "FIXED: Multi-boss waves now spawn correct number of bosses",
+          "FIXED: Pushback flickering replaced with smooth 0.25s animation",
+          "REMOVED: Weapon-specific fire rate upgrades (confusing with cooldown)"
+        ]
+      },
+      {
+        "title": "XP System Improvements",
+        "emoji": "💎",
+        "items": [
+          "NEW: Larger XP orbs (50 XP pink, 100 XP red, 250 XP purple)",
+          "IMPROVED: More aggressive XP merging reduces orb spam at late levels",
+          "NEW: Auto-collect all XP at wave end with animated pull",
+          "Better performance and visibility in late game"
+        ]
+      },
+      {
+        "title": "New Features",
+        "emoji": "✨",
+        "items": [
+          "NEW: Enemy spawn indicators at screen edges",
+          "Arrows point to off-screen enemies (orange for normal, red for bosses)",
+          "Boss indicators show distance in screen units"
+        ]
+      },
+      {
+        "title": "Polish",
+        "emoji": "🎨",
+        "items": [
+          "Smooth pushback animation with cubic ease-out",
+          "Better debug logging for wave completion tracking",
+          "Improved player feedback during combat"
+        ]
+      }
+    ]
+  },
+  {
     "version": "0.3.5",
     "title": "Critical Collision Fixes",
     "date": "2025-11-29",
