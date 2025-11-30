@@ -65,7 +65,7 @@ class _FlutterUpgradeDialogState extends State<FlutterUpgradeDialog> {
                 // Use Expanded for responsive layout without manual calculations
                 Padding(
                   padding: EdgeInsets.symmetric(
-                    horizontal: constraints.maxWidth * 0.05, // 5% padding on each side
+                    horizontal: constraints.maxWidth * 0.08, // 8% padding on each side
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -74,7 +74,7 @@ class _FlutterUpgradeDialogState extends State<FlutterUpgradeDialog> {
                       return Expanded(
                         child: Padding(
                           padding: EdgeInsets.symmetric(
-                            horizontal: constraints.maxWidth * 0.01, // 1% spacing between cards
+                            horizontal: constraints.maxWidth * 0.02, // 2% spacing between cards
                           ),
                           child: UpgradeCardWidget(
                             upgrade: upgrades[index],
@@ -148,19 +148,19 @@ class _UpgradeCardWidgetState extends State<UpgradeCardWidget> {
       child: GestureDetector(
         onTap: widget.onSelected,
         child: AspectRatio(
-          aspectRatio: 0.8, // Card aspect ratio (width:height = 4:5)
+          aspectRatio: 0.7, // Card aspect ratio (taller cards for more text space)
           child: LayoutBuilder(
             builder: (context, constraints) {
               // Responsive font sizes based on available width
               final cardWidth = constraints.maxWidth;
               final cardHeight = constraints.maxHeight;
-              final iconSize = cardWidth * 0.28;
-              final nameSize = cardWidth * 0.10;
-              final descSize = cardWidth * 0.07;
-              final raritySize = cardWidth * 0.06;
-              final borderWidth = cardWidth * 0.02;
-              final padding = cardWidth * 0.08;
-              final spacing = cardHeight * 0.03;
+              final iconSize = cardWidth * 0.3;
+              final nameSize = cardWidth * 0.11;
+              final descSize = cardWidth * 0.08;
+              final raritySize = cardWidth * 0.065;
+              final borderWidth = cardWidth * 0.015;
+              final padding = cardWidth * 0.06;
+              final spacing = cardHeight * 0.025;
 
               return Container(
                 decoration: BoxDecoration(
@@ -224,42 +224,62 @@ class _UpgradeCardWidgetState extends State<UpgradeCardWidget> {
                         ),
                       ),
                     ),
-                    // Main content - centered
-                    Center(
+                    // Main content - consistent spacing across all cards
+                    Padding(
+                      padding: EdgeInsets.only(
+                        top: cardHeight * 0.12, // Space for rarity badge
+                        left: padding,
+                        right: padding,
+                        bottom: padding,
+                      ),
                       child: Column(
-                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Text(
-                            widget.upgrade.icon,
-                            style: TextStyle(fontSize: iconSize),
+                          // Icon - contained to fit properly
+                          Expanded(
+                            flex: 3,
+                            child: FittedBox(
+                              fit: BoxFit.contain,
+                              child: Text(
+                                widget.upgrade.icon,
+                                style: TextStyle(fontSize: iconSize),
+                              ),
+                            ),
                           ),
                           SizedBox(height: spacing),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: padding),
-                            child: Text(
-                              widget.upgrade.name,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: nameSize,
-                                fontWeight: FontWeight.bold,
+                          // Name - takes proportional space
+                          Expanded(
+                            flex: 2,
+                            child: Center(
+                              child: Text(
+                                widget.upgrade.name,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: nameSize,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           SizedBox(height: spacing * 0.5),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: padding),
-                            child: Text(
-                              widget.upgrade.description,
-                              style: TextStyle(
-                                color: const Color(0xFFCCCCCC),
-                                fontSize: descSize,
+                          // Description - takes proportional space
+                          Expanded(
+                            flex: 3,
+                            child: Center(
+                              child: Text(
+                                widget.upgrade.description,
+                                style: TextStyle(
+                                  color: const Color(0xFFCCCCCC),
+                                  fontSize: descSize,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 4,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              textAlign: TextAlign.center,
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
