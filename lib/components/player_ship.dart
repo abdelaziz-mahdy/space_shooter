@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
 import '../utils/position_util.dart';
 import '../utils/visual_center_mixin.dart';
+import '../utils/game_logger.dart';
 import 'base_rendered_component.dart';
 import 'enemies/base_enemy.dart';
 import 'damage_number.dart';
@@ -570,7 +571,7 @@ class PlayerShip extends BaseRenderedComponent
     }
 
     _lastOrbitalCount = orbitalCount;
-    print('[PlayerShip] Updated orbitals: $orbitalCount drones');
+    GameLogger.debug('Updated orbitals: $orbitalCount drones', tag: 'PlayerShip');
   }
 
 }

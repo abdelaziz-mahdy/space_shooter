@@ -251,17 +251,6 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
     );
   }
 
-  /// Select random bosses from the pool without duplicates
-  List<String> _selectRandomBosses(int count) {
-    // Create a shuffled copy of the boss pool
-    final shuffled = List<String>.from(bossPool)..shuffle(random);
-
-    // Take the requested count (or all if count > pool size)
-    final selectedCount = count.clamp(0, shuffled.length);
-    return shuffled.take(selectedCount).toList();
-  }
-
-
   Vector2 getRandomSpawnPosition() {
     // Random spawn position around player in world coordinates
     final side = random.nextInt(4);
