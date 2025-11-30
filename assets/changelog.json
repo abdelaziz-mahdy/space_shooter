@@ -11,7 +11,8 @@
           "FIXED: Kamikaze no longer deals double damage (contact + explosion)",
           "FIXED: Added invulnerability frames (1 sec) to prevent rapid damage",
           "FIXED: Added pushback when hit to prevent getting stuck in enemies",
-          "Boss collisions now survivable with shields"
+          "FIXED: Bosses no longer die instantly from player collision",
+          "FIXED: Score now displays in HUD (top-right corner)"
         ]
       }
     ]
