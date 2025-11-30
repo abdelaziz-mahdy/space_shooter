@@ -143,33 +143,90 @@ class _FlutterHUDState extends State<FlutterHUD> with SingleTickerProviderStateM
                   ),
                 ),
 
-                // Top right corner - Settings button
+                // Top right corner - Stats and Settings
                 Positioned(
                   right: 20,
                   top: 20,
-                  child: IgnorePointer(
-                    ignoring: false,
-                    child: IconButton(
-                      iconSize: 32 * scale,
-                      padding: EdgeInsets.all(8 * scale),
-                      icon: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.6),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: const Color(0xFF00FFFF).withOpacity(0.5),
-                            width: 2,
-                          ),
-                        ),
-                        padding: EdgeInsets.all(8 * scale),
-                        child: Icon(
-                          Icons.settings,
-                          color: const Color(0xFF00FFFF),
-                          size: 24 * scale,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      // Score (gold, prominent)
+                      Text(
+                        'Score: ${statsManager.getCurrentScore()}',
+                        style: TextStyle(
+                          color: const Color(0xFFFFD700), // Gold
+                          fontSize: titleSize * 0.9,
+                          fontWeight: FontWeight.bold,
+                          shadows: const [
+                            Shadow(
+                              color: Colors.black,
+                              offset: Offset(2, 2),
+                              blurRadius: 4,
+                            ),
+                          ],
                         ),
                       ),
-                      onPressed: widget.onSettingsPressed,
-                    ),
+                      SizedBox(height: 8 * scale),
+                      // Time alive
+                      Text(
+                        'Time: ${statsManager.getTimeAliveFormatted()}',
+                        style: TextStyle(
+                          color: const Color(0xFFCCCCCC),
+                          fontSize: textSize,
+                          fontWeight: FontWeight.bold,
+                          shadows: const [
+                            Shadow(
+                              color: Colors.black,
+                              offset: Offset(1, 1),
+                              blurRadius: 2,
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 4 * scale),
+                      // Kills
+                      Text(
+                        'Kills: ${statsManager.enemiesKilled}',
+                        style: TextStyle(
+                          color: const Color(0xFFCCCCCC),
+                          fontSize: textSize,
+                          fontWeight: FontWeight.bold,
+                          shadows: const [
+                            Shadow(
+                              color: Colors.black,
+                              offset: Offset(1, 1),
+                              blurRadius: 2,
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 12 * scale),
+                      // Settings button
+                      IgnorePointer(
+                        ignoring: false,
+                        child: IconButton(
+                          iconSize: 32 * scale,
+                          padding: EdgeInsets.all(8 * scale),
+                          icon: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.6),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFF00FFFF).withOpacity(0.5),
+                                width: 2,
+                              ),
+                            ),
+                            padding: EdgeInsets.all(8 * scale),
+                            child: Icon(
+                              Icons.settings,
+                              color: const Color(0xFF00FFFF),
+                              size: 24 * scale,
+                            ),
+                          ),
+                          onPressed: widget.onSettingsPressed,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

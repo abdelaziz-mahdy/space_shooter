@@ -274,7 +274,11 @@ abstract class BaseEnemy extends BaseRenderedComponent
         takeDamage(thornsDamage, showDamageNumber: false);
       }
 
-      die(); // Enemy dies on collision with player
+      // Only kill weak enemies on collision, bosses survive
+      // Bosses have high HP and should not die from ramming
+      if (health < 100) {
+        die(); // Small enemies die on collision with player
+      }
     }
   }
 
