@@ -1,6 +1,6 @@
 [
   {
-    "version": "0.3.6",
+    "version": "0.3.7",
     "title": "Wave System & XP Improvements",
     "date": "2025-11-30",
     "sections": [
@@ -41,6 +41,21 @@
           "Smooth pushback animation with cubic ease-out",
           "Better debug logging for wave completion tracking",
           "Improved player feedback during combat"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "0.3.6",
+    "title": "Fire Rate Clarity Fix",
+    "date": "2025-11-30",
+    "sections": [
+      {
+        "title": "UI Improvements",
+        "emoji": "✨",
+        "items": [
+          "Standardized fire rate terminology in upgrades",
+          "Changed confusing cooldown/charge time to fire rate"
         ]
       }
     ]
