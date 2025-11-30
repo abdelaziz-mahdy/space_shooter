@@ -7,6 +7,7 @@ import '../components/player_ship.dart';
 import '../components/enemies/base_enemy.dart';
 import '../factories/enemy_factory.dart';
 import '../config/enemy_spawn_config.dart';
+import '../utils/game_logger.dart';
 
 class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
   final PlayerShip player;
@@ -78,7 +79,7 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
 
     gameRef.statsManager.startWave(currentWave, enemiesToSpawnInWave);
 
-    print('[EnemyManager] Wave $currentWave started - Enemies: $enemiesToSpawnInWave');
+    GameLogger.event('Wave $currentWave started - Enemies: $enemiesToSpawnInWave', tag: 'EnemyManager');
   }
 
   /// Determine how many bosses to spawn based on wave number
@@ -138,7 +139,11 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
         waveTimer = 0;
         currentWave++;
 
-        print('[EnemyManager] Wave ${currentWave - 1} completed - ALL ENEMIES DEFEATED (spawned: $enemiesToSpawnInWave, remaining: $totalEnemyCount)');
+        GameLogger.event(
+          'Wave ${currentWave - 1} completed - ALL ENEMIES DEFEATED',
+          tag: 'EnemyManager',
+          data: {'spawned': enemiesToSpawnInWave, 'remaining': totalEnemyCount},
+        );
 
         // Trigger wave complete callback (for XP auto-collect)
         onWaveComplete?.call();
@@ -149,7 +154,10 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
         // This helps debug when wave doesn't complete properly
         // Only log occasionally to avoid spam
         if (spawnTimer < dt * 2) { // Log roughly once per second
-          print('[EnemyManager] Wave $currentWave waiting: spawned $enemiesSpawnedInWave/$enemiesToSpawnInWave, alive: $totalEnemyCount');
+          GameLogger.debug(
+            'Wave $currentWave waiting: spawned $enemiesSpawnedInWave/$enemiesToSpawnInWave, alive: $totalEnemyCount',
+            tag: 'EnemyManager',
+          );
         }
       }
     } else {
@@ -190,7 +198,7 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
         color: const Color(0xFFFF0000),
       );
       gameRef.world.add(boss);
-      print('[EnemyManager] Spawned fallback BossShip at wave $currentWave');
+      GameLogger.debug('Spawned fallback BossShip at wave $currentWave', tag: 'EnemyManager');
       return;
     }
 
@@ -203,7 +211,7 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
       scale: gameRef.entityScale,
     );
     gameRef.world.add(boss);
-    print('[EnemyManager] Spawned ${boss.runtimeType} at wave $currentWave');
+    GameLogger.debug('Spawned ${boss.runtimeType} at wave $currentWave', tag: 'EnemyManager');
   }
 
   /// Spawn a single boss from the pool for waves 55+
@@ -232,7 +240,10 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
     );
 
     gameRef.world.add(boss);
-    print('[EnemyManager] Spawned ${boss.runtimeType} ($bossId) at wave $currentWave (${enemiesSpawnedInWave + 1}/$enemiesToSpawnInWave)');
+    GameLogger.debug(
+      'Spawned ${boss.runtimeType} ($bossId) at wave $currentWave (${enemiesSpawnedInWave + 1}/$enemiesToSpawnInWave)',
+      tag: 'EnemyManager',
+    );
   }
 
   /// Select random bosses from the pool without duplicates
@@ -296,7 +307,10 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
     final enemy = EnemyFactory.createWeightedRandom(player, currentWave, spawnPos, weights, scale: gameRef.entityScale);
 
     gameRef.world.add(enemy);
-    print('[EnemyManager] Spawned ${enemy.runtimeType} at wave $currentWave with scale ${gameRef.entityScale}');
+    GameLogger.debug(
+      'Spawned ${enemy.runtimeType} at wave $currentWave with scale ${gameRef.entityScale}',
+      tag: 'EnemyManager',
+    );
   }
 
   int getCurrentWave() => currentWave;
