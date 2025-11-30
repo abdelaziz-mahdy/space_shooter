@@ -49,6 +49,11 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
     startNextWave();
   }
 
+  /// Resume spawning without starting a new wave (for unpause/settings)
+  void resumeSpawning() {
+    isSpawning = true;
+  }
+
   void stopSpawning() {
     isSpawning = false;
   }

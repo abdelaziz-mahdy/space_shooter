@@ -250,9 +250,9 @@ class SpaceShooterGame extends FlameGame
   }
 
   void resumeFromUpgrade() {
-    // Resume spawning
+    // Resume spawning without starting new wave
     isPaused = false;
-    enemyManager.startSpawning();
+    enemyManager.resumeSpawning();
     GameLogger.debug('Game resumed from upgrade', tag: 'SpaceShooterGame');
   }
 
