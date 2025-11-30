@@ -72,25 +72,30 @@ class _FlutterUpgradeDialogState extends State<FlutterUpgradeDialog> {
                     builder: (context) {
                       // Calculate card dimensions based on available space
                       final screenWidth = constraints.maxWidth;
-                      final containerWidth = isMobile ? screenWidth * 0.95 : 900.0;
-                      final spacing = containerWidth * 0.025; // 2.5% spacing
+                      // Use percentage-based sizing for responsive design
+                      final availableWidth = screenWidth * 0.9; // Use 90% of screen width
+                      final spacing = screenWidth * 0.02; // 2% of screen width for spacing
+
+                      // Calculate based on number of items
                       final totalSpacing = spacing * (upgrades.length - 1);
-                      final cardWidth = (containerWidth - totalSpacing) / upgrades.length;
-                      final cardHeight = cardWidth * 1.25;
+                      final cardWidth = (availableWidth - totalSpacing) / upgrades.length;
+                      final cardHeight = cardWidth * 1.25; // Maintain aspect ratio
 
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: upgrades.map((upgrade) {
-                          return Padding(
-                            padding: EdgeInsets.symmetric(horizontal: spacing / 2),
+                        children: List.generate(upgrades.length, (index) {
+                          return Container(
+                            margin: EdgeInsets.only(
+                              left: index > 0 ? spacing : 0, // Only add spacing between cards
+                            ),
                             child: UpgradeCardWidget(
-                              upgrade: upgrade,
-                              onSelected: () => _selectUpgrade(upgrade),
+                              upgrade: upgrades[index],
+                              onSelected: () => _selectUpgrade(upgrades[index]),
                               width: cardWidth,
                               height: cardHeight,
                             ),
                           );
-                        }).toList(),
+                        }),
                       );
                     },
                   ),
