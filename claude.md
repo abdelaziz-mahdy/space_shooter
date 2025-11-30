@@ -60,51 +60,89 @@ See [Release Process](#release-process--version-management) section for detailed
 
 ---
 
-### **RESPONSIVE DESIGN - USE PERCENTAGES, NOT CONDITIONALS!**
+### **RESPONSIVE DESIGN - GAME ENGINE VS FLUTTER UI**
 
-**Why:** Responsive UIs should scale naturally based on screen size, not use conditional logic to adjust values.
+**Why:** Different rendering systems require different approaches for responsive layouts.
+
+---
+
+#### **For Game Engine (Flame Components):**
+
+**Use percentage-based sizing** - Flame components don't have layout widgets, so calculate manually.
 
 **❌ NEVER DO THIS:**
 ```dart
-// BAD: Conditional adjustments and clamping
+// BAD: Conditional adjustments and clamping in game components
 final scaleFactor = (size.x / 800.0).clamp(0.7, 1.5);
-var cardWidth = (280.0 * scaleFactor).clamp(200.0, 400.0);
-var spacing = (30.0 * scaleFactor).clamp(15.0, 50.0);
-
-// Then checking if it fits and adjusting...
-if (totalWidth > size.x * 0.95) {
-  cardWidth = (availableWidth - spacing) / count;
-  if (cardWidth < 120) {
-    spacing = 8.0;
-    cardWidth = ...
-  }
-}
+var enemySize = (50.0 * scaleFactor).clamp(30.0, 80.0);
 ```
 
 **✅ ALWAYS USE PERCENTAGE-BASED SIZING:**
 ```dart
-// GOOD: Simple percentage-based responsive sizing
-final availableWidth = size.x * 0.9; // Use 90% of screen width
-final spacing = size.x * 0.02; // 2% of screen width
+// GOOD: Simple percentage-based responsive sizing for game components
+final enemySize = gameRef.size.x * 0.05; // 5% of screen width
+final bulletSpeed = gameRef.size.y * 0.4; // 40% of screen height per second
+final spacing = gameRef.size.x * 0.02; // 2% of screen width
 
-// Calculate based on number of items
-final totalSpacing = spacing * (items.length - 1);
-final itemWidth = (availableWidth - totalSpacing) / items.length;
-final itemHeight = itemWidth * 1.4; // Maintain aspect ratio
+// Text sizes based on game canvas size
+final fontSize = gameRef.size.x * 0.03; // 3% of width
+```
 
-// Text sizes based on container width
-final titleFontSize = size.x * 0.06; // 6% of width
-final bodyFontSize = size.x * 0.03; // 3% of width
-final padding = size.x * 0.05; // 5% of width
+---
+
+#### **For Flutter UI (Overlays, Dialogs, HUD):**
+
+**Use Flutter's layout widgets** - Expanded, Flexible, AspectRatio, LayoutBuilder, etc.
+
+**❌ NEVER DO THIS:**
+```dart
+// BAD: Manual width calculations in Flutter UI
+final screenWidth = constraints.maxWidth;
+final cardWidth = (screenWidth * 0.9 - spacing) / 3;
+final cardHeight = cardWidth * 1.25;
+
+return Row(
+  children: [
+    Container(width: cardWidth, height: cardHeight, ...),
+    SizedBox(width: spacing),
+    Container(width: cardWidth, height: cardHeight, ...),
+  ],
+);
+```
+
+**✅ ALWAYS USE FLUTTER LAYOUT WIDGETS:**
+```dart
+// GOOD: Use Expanded, AspectRatio, and LayoutBuilder for responsive Flutter UI
+return Row(
+  children: List.generate(3, (index) {
+    return Expanded(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: spacing),
+        child: AspectRatio(
+          aspectRatio: 0.8, // width:height ratio
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // Now calculate font sizes based on actual size
+              final fontSize = constraints.maxWidth * 0.1;
+              return Container(...);
+            },
+          ),
+        ),
+      ),
+    );
+  }),
+);
 ```
 
 **Benefits:**
-1. **Works on all screen sizes** - Automatically scales from mobile to desktop
-2. **No conditionals needed** - Clean, simple code
-3. **Predictable behavior** - Always uses the same percentage
-4. **Maintainable** - One formula instead of many clamp/if statements
+1. **Game Engine (Flame)**: Manual percentages work because no layout system exists
+2. **Flutter UI**: Built-in widgets handle complex layouts automatically
+3. **Safer**: Flutter widgets prevent overflow and handle edge cases
+4. **More responsive**: Expanded/Flexible adapt to available space dynamically
 
-**Rule:** Use percentages of parent size for all UI dimensions. Let the math handle responsiveness.
+**Rule:**
+- **Flame components**: Use percentages of `gameRef.size.x/y` for positions and dimensions
+- **Flutter UI**: Use `Expanded`, `Flexible`, `AspectRatio`, and `LayoutBuilder` instead of manual calculations
 
 ---
 
