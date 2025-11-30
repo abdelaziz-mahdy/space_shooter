@@ -143,13 +143,39 @@ class _FlutterHUDState extends State<FlutterHUD> with SingleTickerProviderStateM
                   ),
                 ),
 
-                // Top right corner - Stats and Settings
+                // Top right corner - Settings button first, then stats below
                 Positioned(
                   right: 20,
                   top: 20,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
+                      // Settings button at the TOP
+                      IgnorePointer(
+                        ignoring: false,
+                        child: IconButton(
+                          iconSize: 32 * scale,
+                          padding: EdgeInsets.all(8 * scale),
+                          icon: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.6),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFF00FFFF).withOpacity(0.5),
+                                width: 2,
+                              ),
+                            ),
+                            padding: EdgeInsets.all(8 * scale),
+                            child: Icon(
+                              Icons.settings,
+                              color: const Color(0xFF00FFFF),
+                              size: 24 * scale,
+                            ),
+                          ),
+                          onPressed: widget.onSettingsPressed,
+                        ),
+                      ),
+                      SizedBox(height: 12 * scale),
                       // Score (gold, prominent)
                       Text(
                         'Score: ${statsManager.getCurrentScore()}',
@@ -198,32 +224,6 @@ class _FlutterHUDState extends State<FlutterHUD> with SingleTickerProviderStateM
                               blurRadius: 2,
                             ),
                           ],
-                        ),
-                      ),
-                      SizedBox(height: 12 * scale),
-                      // Settings button
-                      IgnorePointer(
-                        ignoring: false,
-                        child: IconButton(
-                          iconSize: 32 * scale,
-                          padding: EdgeInsets.all(8 * scale),
-                          icon: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.6),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: const Color(0xFF00FFFF).withOpacity(0.5),
-                                width: 2,
-                              ),
-                            ),
-                            padding: EdgeInsets.all(8 * scale),
-                            child: Icon(
-                              Icons.settings,
-                              color: const Color(0xFF00FFFF),
-                              size: 24 * scale,
-                            ),
-                          ),
-                          onPressed: widget.onSettingsPressed,
                         ),
                       ),
                     ],
