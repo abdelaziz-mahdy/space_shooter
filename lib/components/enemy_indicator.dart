@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart' hide Image;
@@ -75,16 +76,20 @@ class EnemyIndicator extends PositionComponent with HasGameRef<SpaceShooterGame>
       screenSize.y / 2 + clampedY,
     );
 
-    // Calculate direction to enemy
-    final direction = PositionUtil.getDirectionTo(player, enemy);
-    final angle = direction.angleToSigned(Vector2(0, -1)); // Angle from up
+    // Arrow should always point toward enemy (use relative position directly)
+    // This ensures arrows point outward from screen edges toward off-screen enemies
+    final directionVector = relativePos.clone();
+    directionVector.normalize();
+    // Use atan2 to get angle - atan2(y, x) gives angle from positive X axis
+    // We want angle from UP (negative Y), so we use atan2(x, -y)
+    final angle = atan2(directionVector.x, -directionVector.y);
 
     // Determine color based on enemy type
     final color = enemy is BossShip
         ? const Color(0xFFFF0000) // Red for bosses
         : const Color(0xFFFFAA00); // Orange for normal enemies
 
-    // Draw arrow
+    // Draw arrow with tip at the edge
     canvas.save();
     canvas.translate(indicatorPos.x, indicatorPos.y);
     canvas.rotate(angle);
@@ -99,11 +104,12 @@ class EnemyIndicator extends PositionComponent with HasGameRef<SpaceShooterGame>
       ..strokeWidth = 2.0;
 
     // Arrow shape (pointing up, will be rotated)
+    // Tip at (0, 0) so after translation, tip is at indicatorPos (screen edge)
     final arrowPath = Path()
-      ..moveTo(0, -arrowSize / 2) // Top point
-      ..lineTo(-arrowSize / 3, arrowSize / 2) // Bottom left
-      ..lineTo(0, arrowSize / 4) // Middle notch
-      ..lineTo(arrowSize / 3, arrowSize / 2) // Bottom right
+      ..moveTo(0, 0) // Tip at origin (will be at screen edge)
+      ..lineTo(-arrowSize / 3, arrowSize) // Bottom left
+      ..lineTo(0, arrowSize * 0.75) // Middle notch
+      ..lineTo(arrowSize / 3, arrowSize) // Bottom right
       ..close();
 
     canvas.drawPath(arrowPath, paint);
@@ -135,9 +141,10 @@ class EnemyIndicator extends PositionComponent with HasGameRef<SpaceShooterGame>
         textDirection: TextDirection.ltr,
       );
       textPainter.layout();
+      // Position text below the arrow base (arrow now extends from tip at edge)
       textPainter.paint(
         canvas,
-        Offset(indicatorPos.x - textPainter.width / 2, indicatorPos.y + arrowSize / 2 + 5),
+        Offset(indicatorPos.x - textPainter.width / 2, indicatorPos.y + arrowSize + 5),
       );
     }
   }
