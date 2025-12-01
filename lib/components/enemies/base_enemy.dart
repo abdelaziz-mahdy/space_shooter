@@ -5,6 +5,7 @@ import 'package:flame/collisions.dart';
 import '../../game/space_shooter_game.dart';
 import '../../utils/visual_center_mixin.dart';
 import '../../utils/position_util.dart';
+import '../../config/balance_config.dart';
 import '../base_rendered_component.dart';
 import '../damage_number.dart';
 import '../loot.dart';
@@ -40,7 +41,6 @@ abstract class BaseEnemy extends BaseRenderedComponent
   double _lastDamageNumberTime = 0;
   double _accumulatedDamage = 0;
   bool _wasLastCrit = false;
-  static const double damageNumberCooldown = 0.05; // Show damage every 50ms
 
   // Collision behavior
   static const double bossHealthThreshold = 100.0; // Enemies with health >= this survive collision
@@ -149,7 +149,7 @@ abstract class BaseEnemy extends BaseRenderedComponent
       _accumulatedDamage += actualDamage;
       _wasLastCrit = _wasLastCrit || isCrit; // Track if any hit was a crit
 
-      if (now - _lastDamageNumberTime >= damageNumberCooldown) {
+      if (now - _lastDamageNumberTime >= BalanceConfig.damageNumberCooldown) {
         final damageNumber = DamageNumber(
           position: position.clone(),
           damage: _accumulatedDamage,

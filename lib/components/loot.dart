@@ -3,6 +3,7 @@ import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import '../utils/position_util.dart';
 import '../utils/visual_center_mixin.dart';
+import '../config/balance_config.dart';
 import 'base_rendered_component.dart';
 import 'player_ship.dart';
 import '../game/space_shooter_game.dart';
@@ -10,12 +11,10 @@ import '../game/space_shooter_game.dart';
 class Loot extends BaseRenderedComponent
     with HasGameRef<SpaceShooterGame>, CollisionCallbacks, HasVisualCenter {
   static const double attractionRange = 100;
-  static const double attractionSpeed = 200;
   final int xpValue;
 
   // Wave-end collection state
   bool isWaveEndCollecting = false;
-  static const double waveEndCollectionSpeed = 800; // Faster than normal attraction
 
   Loot({required Vector2 position, this.xpValue = 1})
     : super(
@@ -65,14 +64,14 @@ class Loot extends BaseRenderedComponent
     // Wave-end collection: pull all XP aggressively
     if (isWaveEndCollecting) {
       final direction = PositionUtil.getDirectionTo(this, player);
-      position += direction * waveEndCollectionSpeed * dt;
+      position += direction * BalanceConfig.waveEndCollectionSpeed * dt;
       return;
     }
 
     // Normal attraction: use player's magnet radius
     if (distanceToPlayer < player.magnetRadius) {
       final direction = PositionUtil.getDirectionTo(this, player);
-      position += direction * attractionSpeed * dt;
+      position += direction * BalanceConfig.normalAttractionSpeed * dt;
     }
   }
 

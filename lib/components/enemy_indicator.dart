@@ -30,9 +30,9 @@ class EnemyIndicator extends PositionComponent with HasGameRef<SpaceShooterGame>
     final arrowSize = screenSize.x * 0.025; // 2.5% of screen width
     final fontSize = screenSize.x * 0.015; // 1.5% of screen width
 
-    // Get all enemies (BossShip extends BaseEnemy, so one check handles all)
-    // CLAUDE.md line 446: Use whereType<BaseClass>() for generic filtering
-    final allEnemies = gameRef.world.children.whereType<BaseEnemy>();
+    // Get all enemies from cached list (refreshed once per frame for performance)
+    // CLAUDE.md line 222: Use cached enemy list to avoid expensive queries every frame
+    final allEnemies = gameRef.activeEnemies;
 
     // Filter to only off-screen enemies
     final offScreenEnemies = allEnemies.where((enemy) {

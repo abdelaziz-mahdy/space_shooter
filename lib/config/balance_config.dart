@@ -15,4 +15,8 @@ class BalanceConfig {
 
   // Orbital Drones
   static const int maxOrbitalDrones = 10;
+
+  // XP Collection
+  static const double waveEndCollectionSpeed = 800; // Speed for wave-end XP pull
+  static const double normalAttractionSpeed = 200; // Normal magnet speed
 }
