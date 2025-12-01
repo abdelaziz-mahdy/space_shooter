@@ -159,6 +159,17 @@ class HydraBoss extends BaseEnemy {
     print('[HydraBoss] All cores destroyed! Vulnerable for ${vulnerabilityDuration}s');
   }
 
+  @override
+  void onDeath() {
+    // Clean up any remaining cores when boss dies
+    for (final core in cores) {
+      if (core.isMounted) {
+        core.removeFromParent();
+      }
+    }
+    cores.clear();
+  }
+
   void _spawnAllCores() {
     for (int i = 0; i < totalCores; i++) {
       _spawnCore(i, 1.0);
@@ -173,7 +184,7 @@ class HydraBoss extends BaseEnemy {
     );
 
     cores.add(core);
-    add(core);
+    gameRef.world.add(core);
 
     print('[HydraBoss] Spawned core $index (${cores.length}/$totalCores)');
   }
@@ -310,43 +321,36 @@ class HydraBoss extends BaseEnemy {
 }
 
 /// Orbiting core component for the Hydra Boss
-class _HydraCore extends PositionComponent
-    with HasGameRef<SpaceShooterGame>, CollisionCallbacks {
+class _HydraCore extends BaseEnemy {
   final HydraBoss parent;
   final int coreIndex;
-  final double healthPercent;
 
-  double health = 0;
-  double maxHealth = 0;
   double fireTimer = 0;
 
   _HydraCore({
     required this.parent,
     required this.coreIndex,
-    required this.healthPercent,
+    required double healthPercent,
   }) : super(
+          position: Vector2.zero(), // Position set in update loop
+          player: parent.player,
+          wave: parent.wave,
+          health: (150 + (parent.wave * 25)) * healthPercent,
+          speed: 0, // Cores don't move independently
+          lootValue: 0, // No loot from individual cores
+          color: const Color(0xFF8A2BE2), // Violet
           size: Vector2(35, 35),
-          anchor: Anchor.center,
+          contactDamage: 25.0,
         );
 
   @override
-  Future<void> onLoad() async {
-    await super.onLoad();
-
-    // Calculate health based on wave
-    maxHealth = 150 + (parent.wave * 25);
-    health = maxHealth * healthPercent;
-
-    // Add hitbox
+  Future<void> addHitbox() async {
+    // Add circular hitbox for the core
     add(CircleHitbox(radius: size.x / 2));
   }
 
   @override
-  void update(double dt) {
-    super.update(dt);
-
-    if (gameRef.isPaused) return;
-
+  void updateMovement(double dt) {
     // Update position to orbit around parent
     final baseAngle = (coreIndex * 2 * pi / HydraBoss.totalCores);
     final angle = baseAngle + parent.orbitAngle;
@@ -360,7 +364,8 @@ class _HydraCore extends PositionComponent
       sin(angle) * orbitRadius,
     );
 
-    position = offset;
+    // Set position relative to parent
+    position = parent.position + offset;
 
     // Fire bullets
     fireTimer += dt;
@@ -372,11 +377,10 @@ class _HydraCore extends PositionComponent
 
   void _fireBullet() {
     // Fire toward player
-    final coreWorldPos = parent.position + position;
-    final directionToPlayer = (parent.player.position - coreWorldPos).normalized();
+    final directionToPlayer = (player.position - position).normalized();
 
     final bullet = EnemyBullet(
-      position: coreWorldPos,
+      position: position.clone(),
       direction: directionToPlayer,
       damage: 18.0,
       speed: 160.0,
@@ -385,38 +389,29 @@ class _HydraCore extends PositionComponent
     gameRef.world.add(bullet);
   }
 
-  void takeDamage(double damage) {
-    health -= damage;
-    if (health <= 0) {
-      removeFromParent();
-      print('[HydraCore] Core $coreIndex destroyed!');
-    }
+  @override
+  void die() {
+    // Prevent double-death
+    if (isDying) return;
+    isDying = true;
+
+    print('[HydraCore] Core $coreIndex destroyed!');
+
+    // Don't drop loot (parent boss handles loot)
+    // Don't increment kill count (parent boss is the real enemy)
+    // Just remove the core
+    removeFromParent();
   }
 
   @override
-  void onCollisionStart(
-    Set<Vector2> intersectionPoints,
-    PositionComponent other,
-  ) {
-    super.onCollisionStart(intersectionPoints, other);
-
-    // Damage player on contact
-    if (other is PlayerShip) {
-      other.takeDamage(25.0);
-    }
-  }
-
-  @override
-  void render(Canvas canvas) {
-    super.render(canvas);
-
+  void renderShape(Canvas canvas) {
     final centerX = size.x / 2;
     final centerY = size.y / 2;
     final radius = size.x / 2;
 
     // Draw core body
     final corePaint = Paint()
-      ..color = const Color(0xFF8A2BE2) // Violet
+      ..color = color // Use color from BaseEnemy
       ..style = PaintingStyle.fill;
 
     canvas.drawCircle(
@@ -438,27 +433,9 @@ class _HydraCore extends PositionComponent
       glowPaint,
     );
 
-    // Draw health bar
-    final healthBarWidth = size.x;
-    final healthBarHeight = 2.0;
-    final healthBarY = -2.0;
-
-    final healthBgPaint = Paint()..color = const Color(0xFF333333);
-    canvas.drawRect(
-      Rect.fromLTWH(0, healthBarY, healthBarWidth, healthBarHeight),
-      healthBgPaint,
-    );
-
-    final healthPercent = health / maxHealth;
-    final healthPaint = Paint()..color = const Color(0xFF00FF00);
-    canvas.drawRect(
-      Rect.fromLTWH(
-        0,
-        healthBarY,
-        healthBarWidth * healthPercent,
-        healthBarHeight,
-      ),
-      healthPaint,
-    );
+    // Draw status effects and health bar (provided by BaseEnemy)
+    renderFreezeEffect(canvas);
+    renderBleedEffect(canvas);
+    renderHealthBar(canvas);
   }
 }
