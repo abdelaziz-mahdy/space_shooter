@@ -370,6 +370,23 @@ app.post('/scores', async (c) => {
     // Sanitize platform
     const sanitizedPlatform = typeof platform === 'string' ? platform.slice(0, 20) : null;
 
+    // Check for duplicate submission (same player, same score, within last 5 minutes)
+    const duplicateCheck = await query(
+      `SELECT id FROM leaderboard
+       WHERE player_name = $1
+         AND score = $2
+         AND created_at > NOW() - INTERVAL '5 minutes'
+       LIMIT 1`,
+      [trimmedName, score]
+    );
+
+    if (duplicateCheck.rows.length > 0) {
+      return c.json({
+        success: false,
+        error: 'Duplicate score submission detected',
+      }, 400);
+    }
+
     // Insert into database
     const result = await query(
       `INSERT INTO leaderboard (player_name, score, wave, kills, time_alive, upgrades, weapon_used, platform)

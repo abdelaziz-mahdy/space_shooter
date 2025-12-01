@@ -79,28 +79,50 @@ Changelogs are shown to PLAYERS, not developers. Avoid all technical jargon, cod
 - **Minor (0.3.0):** New features, balance changes, new content
 - **Major (1.0.0):** Major releases, breaking changes
 
-**CRITICAL - Always Run `flutter analyze` Before Completing:**
+**CRITICAL - Always Test Build Before Completing:**
 
-After finishing ALL changes for a version, you MUST run `flutter analyze` to check for errors:
+After finishing ALL changes for a version, you MUST run BOTH `flutter analyze` AND attempt to build/run:
 
+**Step 1: Run `flutter analyze`**
 ```bash
-flutter analyze
+flutter analyze --no-fatal-infos
 ```
 
-**What to check:**
-- ✅ **0 errors** - Code MUST have zero errors before release
-- ⚠️ **Warnings** - Fix critical warnings (unused imports, null-aware operators)
-- ℹ️ **Info** - Can be ignored (deprecations, print statements, style issues)
+Then check for errors (note the leading spaces in the pattern):
+```bash
+flutter analyze --no-fatal-infos 2>&1 | grep "error •"
+```
 
-**If errors are found:**
+- If output is empty: ✅ No errors found (but still need Step 2!)
+- If output shows errors: ❌ Fix them immediately
+
+**IMPORTANT:** Use `grep "error •"` NOT `grep "^error"` because analyze output has leading spaces!
+
+**Step 2: Attempt to build/run (REQUIRED!)**
+
+⚠️ **IMPORTANT:** `flutter analyze` does NOT catch all compilation errors! You MUST attempt to build:
+
+```bash
+flutter run
+# OR
+flutter build <platform>
+```
+
+**Why both are needed:**
+- `flutter analyze` catches: static analysis issues, lints, type hints
+- Build/run catches: actual compilation errors, missing imports, type conflicts
+
+**Common errors ONLY caught by build:**
+- Method name conflicts with inherited methods (e.g., `currentTime` vs `FlameGame.currentTime()`)
+- Missing imports for UI classes (`TextPainter`, `TextSpan` from `flutter/material.dart`)
+- Type conversion errors (`num` vs `double` from `pow()`)
+- Static method calls missing class name (`getAllUpgrades()` vs `Upgrade.getAllUpgrades()`)
+
+**If build errors are found:**
 1. Fix all errors immediately
-2. Run `flutter analyze` again to verify
-3. Only proceed when there are 0 errors
-
-**Common fixes:**
-- Missing imports: Add the required import
-- Undefined methods: Use static class methods (e.g., `Upgrade.getAllUpgrades()`)
-- Type errors: Check parameter types and return values
+2. Run `flutter analyze` again
+3. Attempt build again
+4. Only proceed when BOTH pass with 0 errors
 
 See [Release Process](#release-process--version-management) section for detailed guidelines.
 

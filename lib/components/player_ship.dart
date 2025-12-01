@@ -199,7 +199,7 @@ class PlayerShip extends BaseRenderedComponent
       } else {
         // Cubic ease-out interpolation for smooth deceleration
         final t = pushbackProgress;
-        final easeOut = 1 - pow(1 - t, 3);
+        final easeOut = (1 - pow(1 - t, 3)).toDouble();
 
         position = pushbackStartPos + (pushbackEndPos - pushbackStartPos) * easeOut;
       }
@@ -360,7 +360,7 @@ class PlayerShip extends BaseRenderedComponent
     final actualDamage = damage * (1.0 - cappedReduction);
 
     // Accumulate damage and show merged numbers every 50ms
-    final now = gameRef.currentTime;
+    final now = gameRef.gameTime;
     _accumulatedDamage += actualDamage;
 
     if (now - _lastDamageNumberTime >= damageNumberCooldown) {

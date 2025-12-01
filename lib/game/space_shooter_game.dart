@@ -155,7 +155,7 @@ class SpaceShooterGame extends FlameGame
   }
 
   /// Get current game time (for rate limiting)
-  double get currentTime => _gameTime;
+  double get gameTime => _gameTime;
 
   @override
   void update(double dt) {

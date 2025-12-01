@@ -298,7 +298,47 @@ class _FlutterGameOverScreenState extends State<FlutterGameOverScreen> {
                         ),
                       ],
                     ),
+                  )
+                else
+                  // Fallback when prediction fails - still show encouragement
+                  const Text(
+                    'Submit your score to see your global rank!',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
                   ),
+                const SizedBox(height: 20),
+              ],
+
+              // View Leaderboard button
+              if (isLeaderboardEnabled && !_leaderboardSubmitted) ...[
+                ElevatedButton.icon(
+                  onPressed: () {
+                    AudioManager().playButtonClick();
+                    Navigator.of(context).pushNamed('/leaderboard');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF9370DB).withOpacity(0.2),
+                    foregroundColor: const Color(0xFF9370DB),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      side: const BorderSide(
+                        color: Color(0xFF9370DB),
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                  icon: const Icon(Icons.leaderboard, size: 20),
+                  label: const Text(
+                    'VIEW LEADERBOARD',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 20),
               ],
 

@@ -145,7 +145,7 @@ abstract class BaseEnemy extends BaseRenderedComponent
 
     // Accumulate damage and show merged numbers every 50ms
     if (showDamageNumber && actualDamage > 0) {
-      final now = gameRef.currentTime;
+      final now = gameRef.gameTime;
       _accumulatedDamage += actualDamage;
       _wasLastCrit = _wasLastCrit || isCrit; // Track if any hit was a crit
 

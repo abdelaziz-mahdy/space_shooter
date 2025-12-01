@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../game/space_shooter_game.dart';
 import '../upgrades/upgrade.dart';
+import '../upgrades/weapon_upgrade.dart';
 
 /// Toggleable stats panel that shows detailed player statistics
 /// Can be shown/hidden with a button or key press
@@ -162,8 +163,8 @@ class StatsPanel extends StatelessWidget {
 
   List<Widget> _buildUpgradesList(List<String> upgradeIds, double scale) {
     // Get all available upgrades
-    final allUpgrades = Upgrade.getAllUpgrades();
-    final allWeaponUpgrades = Upgrade.getAllWeaponUpgrades();
+    final allUpgrades = UpgradeFactory.getAllUpgrades();
+    final allWeaponUpgrades = UpgradeFactory.getAllWeaponUpgrades();
 
     return upgradeIds.map((id) {
       // Find upgrade by ID
