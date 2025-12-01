@@ -9,6 +9,8 @@ import '../../game/space_shooter_game.dart';
 import '../enemies/base_enemy.dart';
 import '../player_ship.dart';
 import '../enemy_bullet.dart';
+import '../bullet.dart';
+import '../missile.dart';
 
 /// The Hydra Boss - Wave 45
 /// - Central hexagon (70x70) + 3 orbiting cores (35x35 each)
@@ -400,9 +402,39 @@ class _HydraCore extends PositionComponent
   ) {
     super.onCollisionStart(intersectionPoints, other);
 
-    // Damage player on contact
+    // Handle bullet collisions
+    if (other is Bullet) {
+      // Take damage from the bullet
+      takeDamage(other.actualDamage);
+
+      // Remove bullet if it's not a piercing bullet
+      if (other.enemiesHit >= other.pierceCount) {
+        other.removeFromParent();
+      } else {
+        other.enemiesHit++;
+      }
+      return;
+    }
+
+    // Handle missile collisions
+    if (other is Missile) {
+      // Take damage from the missile
+      takeDamage(other.damage);
+
+      // Missile will handle its own explosion and removal
+      return;
+    }
+
+    // Handle player ship collision
     if (other is PlayerShip) {
+      // Damage player on contact
       other.takeDamage(25.0);
+
+      // Take damage from collision (thorns-like effect)
+      if (other.thornsPercent > 0) {
+        final thornsDamage = 25.0 * other.thornsPercent;
+        takeDamage(thornsDamage);
+      }
     }
   }
 
