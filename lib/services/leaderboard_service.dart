@@ -135,6 +135,11 @@ class LeaderboardService {
   static const String _lastPlayerNameKey = 'last_player_name';
   static const Duration _timeout = Duration(seconds: 10);
 
+  /// Normalize base URL by removing trailing slash
+  static String _normalizeUrl(String url) {
+    return url.endsWith('/') ? url.substring(0, url.length - 1) : url;
+  }
+
   /// Get the saved player name from previous sessions
   static Future<String?> getSavedPlayerName() async {
     final prefs = await SharedPreferences.getInstance();
@@ -159,7 +164,8 @@ class LeaderboardService {
     }
 
     try {
-      final uri = Uri.parse('$baseUrl/scores?limit=$limit&offset=$offset');
+      final normalizedUrl = _normalizeUrl(baseUrl);
+      final uri = Uri.parse('$normalizedUrl/scores?limit=$limit&offset=$offset');
       final response = await http.get(uri).timeout(_timeout);
 
       if (response.statusCode == 200) {
@@ -197,7 +203,8 @@ class LeaderboardService {
     }
 
     try {
-      final uri = Uri.parse('$baseUrl/scores');
+      final normalizedUrl = _normalizeUrl(baseUrl);
+      final uri = Uri.parse('$normalizedUrl/scores');
       final response = await http
           .post(
             uri,
@@ -242,12 +249,37 @@ class LeaderboardService {
     if (baseUrl == null) return false;
 
     try {
-      final uri = Uri.parse('$baseUrl/health');
+      final normalizedUrl = _normalizeUrl(baseUrl);
+      final uri = Uri.parse('$normalizedUrl/health');
       final response = await http.get(uri).timeout(const Duration(seconds: 5));
       return response.statusCode == 200;
     } catch (e) {
       print('[LeaderboardService] Health check failed: $e');
       return false;
+    }
+  }
+
+  /// Get predicted rank for a score
+  static Future<int?> getPredictedRank(int score) async {
+    final baseUrl = EnvConfig.leaderboardApiUrl;
+    if (baseUrl == null) return null;
+
+    try {
+      final normalizedUrl = _normalizeUrl(baseUrl);
+      final uri = Uri.parse('$normalizedUrl/rank/predict?score=$score');
+      final response = await http.get(uri).timeout(_timeout);
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body) as Map<String, dynamic>;
+        if (json['success'] == true) {
+          return json['predictedRank'] as int;
+        }
+      }
+
+      return null;
+    } catch (e) {
+      print('[LeaderboardService] Error getting predicted rank: $e');
+      return null;
     }
   }
 }

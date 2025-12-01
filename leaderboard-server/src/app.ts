@@ -120,6 +120,11 @@ app.get('/', (c) => {
             <p class="desc">Get top scores (supports ?limit=N&offset=N)</p>
           </div>
           <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/rank/predict?score=N</span>
+            <p class="desc">Get predicted rank for a score</p>
+          </div>
+          <div class="endpoint">
             <span class="method post">POST</span>
             <span class="path">/scores</span>
             <p class="desc">Submit a new score</p>
@@ -252,6 +257,49 @@ app.get('/scores', async (c) => {
   }
 });
 
+// Get predicted rank for a score
+app.get('/rank/predict', async (c) => {
+  try {
+    const scoreParam = c.req.query('score');
+
+    if (!scoreParam) {
+      return c.json({
+        success: false,
+        error: 'Score parameter is required',
+      }, 400);
+    }
+
+    const score = parseInt(scoreParam);
+
+    if (isNaN(score) || score < 0) {
+      return c.json({
+        success: false,
+        error: 'Invalid score',
+      }, 400);
+    }
+
+    // Calculate rank: count how many scores are higher than this one
+    const rankResult = await query(
+      'SELECT COUNT(*) + 1 as rank FROM leaderboard WHERE score > $1',
+      [score]
+    );
+
+    const predictedRank = parseInt(rankResult.rows[0].rank);
+
+    return c.json({
+      success: true,
+      score,
+      predictedRank,
+    });
+  } catch (error) {
+    console.error('Error predicting rank:', error);
+    return c.json({
+      success: false,
+      error: 'Failed to predict rank',
+    }, 500);
+  }
+});
+
 // Submit a new score
 app.post('/scores', async (c) => {
   try {
@@ -321,6 +369,23 @@ app.post('/scores', async (c) => {
 
     // Sanitize platform
     const sanitizedPlatform = typeof platform === 'string' ? platform.slice(0, 20) : null;
+
+    // Check for duplicate submission (same player, same score, within last 5 minutes)
+    const duplicateCheck = await query(
+      `SELECT id FROM leaderboard
+       WHERE player_name = $1
+         AND score = $2
+         AND created_at > NOW() - INTERVAL '5 minutes'
+       LIMIT 1`,
+      [trimmedName, score]
+    );
+
+    if (duplicateCheck.rows.length > 0) {
+      return c.json({
+        success: false,
+        error: 'Duplicate score submission detected',
+      }, 400);
+    }
 
     // Insert into database
     const result = await query(

@@ -1,5 +1,6 @@
 import 'package:space_shooter/components/player_ship.dart';
 import 'package:space_shooter/upgrades/upgrade.dart';
+import '../config/balance_config.dart';
 
 /// Base class for weapon-specific upgrades
 /// These upgrades only appear when the player has the specific weapon equipped
@@ -63,6 +64,12 @@ class PulseCannonMultiShotUpgrade extends WeaponUpgrade {
   @override
   void apply(PlayerShip player) {
     player.projectileCount += projectileIncrease;
+  }
+
+  @override
+  bool isValidFor(PlayerShip player) {
+    return player.projectileCount < BalanceConfig.maxProjectileCount &&
+           player.weaponManager.currentWeapon?.id == weaponId;
   }
 
   @override
@@ -247,6 +254,12 @@ class MissileLauncherMultiShotUpgrade extends WeaponUpgrade {
   @override
   void apply(PlayerShip player) {
     player.projectileCount += projectileIncrease;
+  }
+
+  @override
+  bool isValidFor(PlayerShip player) {
+    return player.projectileCount < BalanceConfig.maxProjectileCount &&
+           player.weaponManager.currentWeapon?.id == weaponId;
   }
 
   @override

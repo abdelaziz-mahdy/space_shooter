@@ -46,12 +46,30 @@
 
 **IMPORTANT - Keep Changelogs Client-Friendly:**
 
-- ✅ **DO**: "Added live score display in HUD"
-- ✅ **DO**: "Spread weapons now hit center targets"
-- ❌ **DON'T**: "Modified PlasmaSpreader fire() method to ensure i==0 has zero offset"
-- ❌ **DON'T**: "Refactored Bullet class to accept forceCrit parameter"
-- **Why**: Players care about WHAT changed (features/fixes), not HOW (code details)
-- **Guideline**: Write for non-technical players, not developers
+Changelogs are shown to PLAYERS, not developers. Avoid all technical jargon, code details, and implementation specifics.
+
+**✅ GOOD (User-friendly):**
+- "Added surrender option in settings menu"
+- "See your predicted global rank before submitting score"
+- "Faster and more accurate rank predictions"
+- "Spread weapons now hit center targets"
+- "Fixed game crashes at high waves"
+
+**❌ BAD (Too technical):**
+- "Added /rank/predict endpoint for accurate rank calculation"
+- "Backend improvements with efficient SQL queries"
+- "Modified PlasmaSpreader fire() method to ensure i==0 has zero offset"
+- "Refactored Bullet class to accept forceCrit parameter"
+- "Implemented enemy caching with O(1) lookup performance"
+- "Reduced bandwidth usage for rank prediction"
+
+**Why:** Players care about WHAT changed (features/fixes), not HOW (code details, APIs, algorithms)
+
+**Guidelines:**
+- Write for non-technical players (age 10+)
+- Focus on gameplay impact, not code changes
+- Avoid: endpoints, APIs, SQL, classes, methods, parameters, bandwidth, caching, queries
+- Use: added, fixed, improved, faster, new option, better performance
 
 **Rule:** Version in `pubspec.yaml` MUST match version in `changelog.json`. Both files must be updated together in the same commit.
 
@@ -60,6 +78,51 @@
 - **Patch (0.2.1):** Bug fixes, small tweaks
 - **Minor (0.3.0):** New features, balance changes, new content
 - **Major (1.0.0):** Major releases, breaking changes
+
+**CRITICAL - Always Test Build Before Completing:**
+
+After finishing ALL changes for a version, you MUST run BOTH `flutter analyze` AND attempt to build/run:
+
+**Step 1: Run `flutter analyze`**
+```bash
+flutter analyze --no-fatal-infos
+```
+
+Then check for errors (note the leading spaces in the pattern):
+```bash
+flutter analyze --no-fatal-infos 2>&1 | grep "error •"
+```
+
+- If output is empty: ✅ No errors found (but still need Step 2!)
+- If output shows errors: ❌ Fix them immediately
+
+**IMPORTANT:** Use `grep "error •"` NOT `grep "^error"` because analyze output has leading spaces!
+
+**Step 2: Attempt to build/run (REQUIRED!)**
+
+⚠️ **IMPORTANT:** `flutter analyze` does NOT catch all compilation errors! You MUST attempt to build:
+
+```bash
+flutter run
+# OR
+flutter build <platform>
+```
+
+**Why both are needed:**
+- `flutter analyze` catches: static analysis issues, lints, type hints
+- Build/run catches: actual compilation errors, missing imports, type conflicts
+
+**Common errors ONLY caught by build:**
+- Method name conflicts with inherited methods (e.g., `currentTime` vs `FlameGame.currentTime()`)
+- Missing imports for UI classes (`TextPainter`, `TextSpan` from `flutter/material.dart`)
+- Type conversion errors (`num` vs `double` from `pow()`)
+- Static method calls missing class name (`getAllUpgrades()` vs `Upgrade.getAllUpgrades()`)
+
+**If build errors are found:**
+1. Fix all errors immediately
+2. Run `flutter analyze` again
+3. Attempt build again
+4. Only proceed when BOTH pass with 0 errors
 
 See [Release Process](#release-process--version-management) section for detailed guidelines.
 
@@ -509,7 +572,98 @@ class PulseCannon extends Weapon {
 
 ---
 
-### 8. **Coordinate Systems - Be Consistent**
+### 8. **Centralized Balance Configuration - Use Static Config Classes**
+
+**Why:** Balance values used across multiple files should be centralized in one place for easy tuning.
+
+**❌ BAD:**
+
+```dart
+// Scattered magic numbers across codebase
+class MultiShotUpgrade {
+  bool isValidFor(PlayerShip player) {
+    return player.projectileCount < 5; // Hardcoded cap
+  }
+}
+
+class PlayerShip {
+  void takeDamage(double damage) {
+    final cappedReduction = damageReduction.clamp(0.0, 0.60); // Hardcoded cap
+  }
+}
+
+class BaseEnemy {
+  static const double damageNumberCooldown = 0.05; // Hardcoded rate
+}
+```
+
+**✅ GOOD:**
+
+```dart
+// lib/config/balance_config.dart
+/// Global balance configuration for easy tuning
+class BalanceConfig {
+  // Projectile System
+  static const int maxProjectileCount = 5;
+
+  // Damage Reduction
+  static const double maxDamageReduction = 0.60; // 60% cap
+
+  // Damage Numbers (Performance)
+  static const double damageNumberCooldown = 0.05; // Show every 50ms
+
+  // Crit System
+  static const double maxCritChance = 0.75; // 75% cap
+  static const double maxCritDamage = 5.0; // 5x cap
+
+  // Orbital Drones
+  static const int maxOrbitalDrones = 10;
+}
+
+// Usage across codebase:
+class MultiShotUpgrade {
+  bool isValidFor(PlayerShip player) {
+    return player.projectileCount < BalanceConfig.maxProjectileCount;
+  }
+}
+
+class PlayerShip {
+  void takeDamage(double damage) {
+    final cappedReduction = damageReduction.clamp(0.0, BalanceConfig.maxDamageReduction);
+  }
+}
+
+class BaseEnemy {
+  static const double damageNumberCooldown = BalanceConfig.damageNumberCooldown;
+}
+```
+
+**Benefits:**
+
+1. **Single source of truth** - All balance values in one file
+2. **Easy tweaking** - Change value once, affects entire game
+3. **Clear visibility** - See all caps/limits at a glance
+4. **Better testing** - Modify all related values together
+5. **Prevents drift** - Can't have different caps in different files
+
+**What should go in BalanceConfig:**
+
+- Global caps/limits (max projectiles, max crit chance, max damage reduction)
+- Shared cooldowns (damage numbers, abilities)
+- Performance tuning values (spawn rates, entity limits)
+- Core balance numbers used in multiple places
+
+**What should NOT go in BalanceConfig:**
+
+- Component-specific values (enemy health, weapon damage) - keep in the component
+- One-time values used in a single place
+- Values that need to scale with wave/level
+
+**Rule:** If a balance value is referenced in 2+ files, or is a global cap/limit, put it in `BalanceConfig`. Always import and use the config instead of hardcoding values.
+
+---
+
+### 9. **Coordinate Systems - Be Consistent**
 
 **Rule:**
 
@@ -519,7 +673,7 @@ class PulseCannon extends Weapon {
 
 ---
 
-### 9. **Pause Handling**
+### 10. **Pause Handling**
 
 **✅ GOOD:**
 
@@ -539,7 +693,7 @@ void update(double dt) {
 
 ---
 
-### 10. **Damage Pipeline - Use Proper Death Sequence**
+### 11. **Damage Pipeline - Use Proper Death Sequence**
 
 **❌ BAD:**
 

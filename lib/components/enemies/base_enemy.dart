@@ -5,6 +5,7 @@ import 'package:flame/collisions.dart';
 import '../../game/space_shooter_game.dart';
 import '../../utils/visual_center_mixin.dart';
 import '../../utils/position_util.dart';
+import '../../config/balance_config.dart';
 import '../base_rendered_component.dart';
 import '../damage_number.dart';
 import '../loot.dart';
@@ -35,6 +36,11 @@ abstract class BaseEnemy extends BaseRenderedComponent
   double bleedTimer = 0;
   double bleedDamagePerSecond = 0;
   static const double bleedDuration = 3.0; // 3 seconds
+
+  // Damage number rate limiting (for performance at high levels)
+  double _lastDamageNumberTime = 0;
+  double _accumulatedDamage = 0;
+  bool _wasLastCrit = false;
 
   // Collision behavior
   static const double bossHealthThreshold = 100.0; // Enemies with health >= this survive collision
@@ -137,14 +143,23 @@ abstract class BaseEnemy extends BaseRenderedComponent
     final actualDamage = modifyIncomingDamage(damage);
     health -= actualDamage;
 
-    // Show damage number (centralized - all weapons get this for free)
+    // Accumulate damage and show merged numbers every 50ms
     if (showDamageNumber && actualDamage > 0) {
-      final damageNumber = DamageNumber(
-        position: position.clone(),
-        damage: actualDamage,
-        isCrit: isCrit,
-      );
-      gameRef.world.add(damageNumber);
+      final now = gameRef.gameTime;
+      _accumulatedDamage += actualDamage;
+      _wasLastCrit = _wasLastCrit || isCrit; // Track if any hit was a crit
+
+      if (now - _lastDamageNumberTime >= BalanceConfig.damageNumberCooldown) {
+        final damageNumber = DamageNumber(
+          position: position.clone(),
+          damage: _accumulatedDamage,
+          isCrit: _wasLastCrit,
+        );
+        gameRef.world.add(damageNumber);
+        _lastDamageNumberTime = now;
+        _accumulatedDamage = 0;
+        _wasLastCrit = false;
+      }
     }
 
     // Apply bleed effect if player has bleed damage
@@ -168,15 +183,45 @@ abstract class BaseEnemy extends BaseRenderedComponent
   }
 
   /// Drop XP in merged cores to reduce entity count
-  /// XP tiers: 1 XP (cyan), 5 XP (green), 10 XP (yellow), 25 XP (orange)
+  /// XP tiers: 1 XP (cyan), 5 XP (green), 10 XP (yellow), 25 XP (orange), 50 XP (pink), 100 XP (red), 250 XP (purple)
   void _dropMergedXP(int totalXP) {
     if (totalXP <= 0) return;
 
     // Merge into larger cores for better performance
-    // Priority: 25 XP cores > 10 XP cores > 5 XP cores > 1 XP cores
+    // Priority: 250 > 100 > 50 > 25 > 10 > 5 > 1
     int remaining = totalXP;
 
-    // Drop 25 XP cores (orange)
+    // Drop 250 XP cores (purple) - mega orbs
+    while (remaining >= 250) {
+      final loot = Loot(
+        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
+        xpValue: 250,
+      );
+      gameRef.world.add(loot);
+      remaining -= 250;
+    }
+
+    // Drop 100 XP cores (red) - huge orbs
+    while (remaining >= 100) {
+      final loot = Loot(
+        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
+        xpValue: 100,
+      );
+      gameRef.world.add(loot);
+      remaining -= 100;
+    }
+
+    // Drop 50 XP cores (pink) - very large orbs
+    while (remaining >= 50) {
+      final loot = Loot(
+        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
+        xpValue: 50,
+      );
+      gameRef.world.add(loot);
+      remaining -= 50;
+    }
+
+    // Drop 25 XP cores (orange) - large orbs
     while (remaining >= 25) {
       final loot = Loot(
         position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
@@ -186,7 +231,7 @@ abstract class BaseEnemy extends BaseRenderedComponent
       remaining -= 25;
     }
 
-    // Drop 10 XP cores (yellow)
+    // Drop 10 XP cores (yellow) - medium orbs
     while (remaining >= 10) {
       final loot = Loot(
         position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
@@ -196,7 +241,7 @@ abstract class BaseEnemy extends BaseRenderedComponent
       remaining -= 10;
     }
 
-    // Drop 5 XP cores (green)
+    // Drop 5 XP cores (green) - small orbs
     while (remaining >= 5) {
       final loot = Loot(
         position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
@@ -206,7 +251,7 @@ abstract class BaseEnemy extends BaseRenderedComponent
       remaining -= 5;
     }
 
-    // Drop remaining 1 XP cores (cyan)
+    // Drop remaining 1 XP cores (cyan) - tiny orbs
     for (int i = 0; i < remaining; i++) {
       final loot = Loot(
         position: position.clone() + Vector2.random() * 20 - Vector2.all(10),

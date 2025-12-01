@@ -10,6 +10,9 @@ import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, Tar
 import '../components/player_ship.dart';
 import '../components/star_particle.dart';
 import '../components/debug_overlay.dart';
+import '../components/loot.dart';
+import '../components/enemy_indicator.dart';
+import '../utils/game_logger.dart';
 import '../managers/enemy_manager.dart';
 import '../managers/loot_manager.dart';
 import '../managers/level_manager.dart';
@@ -18,6 +21,9 @@ import '../managers/star_manager.dart';
 import '../managers/combo_manager.dart';
 import '../managers/audio_manager.dart';
 import '../ui/touch_joystick.dart';
+
+// Import base enemy for caching
+import '../components/enemies/base_enemy.dart';
 
 // Import all enemies for factory registration
 import '../components/enemies/triangle_enemy.dart';
@@ -68,6 +74,14 @@ class SpaceShooterGame extends FlameGame
 
   // Entity scale factor based on screen size (smaller on mobile)
   double entityScale = 1.0;
+
+  // Enemy cache for performance (refreshed once per frame)
+  List<BaseEnemy> _cachedEnemies = [];
+  int _enemyCacheFrame = 0;
+  int _lastCacheFrame = -1;
+
+  // Game time tracking for rate limiting
+  double _gameTime = 0;
 
   // Callbacks for Flutter UI
   VoidCallback? onShowUpgrade;
@@ -125,11 +139,28 @@ class SpaceShooterGame extends FlameGame
     ShotgunBlaster.init();
     TeslaCoil.init();
 
-    print('[SpaceShooterGame] All factories registered successfully');
+    GameLogger.info('All factories registered successfully', tag: 'SpaceShooterGame');
   }
+
+  /// Get cached enemy list (refreshed once per frame for performance)
+  List<BaseEnemy> get activeEnemies {
+    if (_enemyCacheFrame != _lastCacheFrame) {
+      _cachedEnemies = world.children
+          .whereType<BaseEnemy>()
+          .where((e) => e.isMounted)
+          .toList();
+      _lastCacheFrame = _enemyCacheFrame;
+    }
+    return _cachedEnemies;
+  }
+
+  /// Get current game time (for rate limiting)
+  double get gameTime => _gameTime;
 
   @override
   void update(double dt) {
+    _enemyCacheFrame++; // Increment frame counter for cache invalidation
+    _gameTime += dt; // Track game time
     super.update(dt);
 
     // Manually update camera to follow player with no lag
@@ -154,7 +185,7 @@ class SpaceShooterGame extends FlameGame
     // Smaller screens (mobile) get smaller entities
     final screenWidth = size.x;
     entityScale = (screenWidth / 800.0).clamp(0.6, 1.0);
-    print('[SpaceShooterGame] Entity scale set to: $entityScale (screen width: $screenWidth)');
+    GameLogger.info('Entity scale set to: $entityScale (screen width: $screenWidth)', tag: 'SpaceShooterGame');
 
     // Initialize player in the center of the world with scaled size
     player = PlayerShip(position: Vector2.zero(), scale: entityScale);
@@ -188,7 +219,13 @@ class SpaceShooterGame extends FlameGame
     world.add(comboManager);
 
     enemyManager = EnemyManager(game: this, player: player);
+    // Set up wave complete callback for XP auto-collect
+    enemyManager.onWaveComplete = _onWaveComplete;
     world.add(enemyManager);
+
+    // Add enemy indicator to show off-screen enemies
+    final enemyIndicator = EnemyIndicator();
+    camera.viewport.add(enemyIndicator);
 
     // Add touch joystick for mobile/touch devices
     if (_isMobilePlatform()) {
@@ -232,7 +269,7 @@ class SpaceShooterGame extends FlameGame
     // The overlay will block interactions and we stop spawning enemies
     isPaused = true;
     enemyManager.stopSpawning();
-    print('[SpaceShooterGame] Game paused for upgrade');
+    GameLogger.debug('Game paused for upgrade', tag: 'SpaceShooterGame');
 
     // Trigger Flutter UI to show upgrade dialog
     if (onShowUpgrade != null) {
@@ -241,10 +278,21 @@ class SpaceShooterGame extends FlameGame
   }
 
   void resumeFromUpgrade() {
-    // Resume spawning
+    // Resume spawning without starting new wave
     isPaused = false;
-    enemyManager.startSpawning();
-    print('[SpaceShooterGame] Game resumed from upgrade');
+    enemyManager.resumeSpawning();
+    GameLogger.debug('Game resumed from upgrade', tag: 'SpaceShooterGame');
+  }
+
+  /// Called when a wave is completed - auto-collect all XP
+  void _onWaveComplete() {
+    GameLogger.event('Wave complete - auto-collecting all XP', tag: 'SpaceShooterGame');
+
+    // Get all loot in the world and start wave-end collection
+    final allLoot = world.children.whereType<Loot>();
+    for (final loot in allLoot) {
+      loot.startWaveEndCollection();
+    }
   }
 
   void gameOver() {
@@ -267,7 +315,7 @@ class SpaceShooterGame extends FlameGame
 
   void returnToMainMenu() {
     // This will be called from Flutter layer
-    print('[Game] Returning to main menu');
+    GameLogger.info('Returning to main menu', tag: 'Game');
 
     // Stop music when returning to menu
     audioManager.stopMusic();

@@ -106,7 +106,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
         game.enemyManager.stopSpawning();
       } else {
         game.isPaused = false;
-        game.enemyManager.startSpawning();
+        game.enemyManager.resumeSpawning(); // Resume without starting new wave
       }
     });
   }
@@ -140,6 +140,16 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
 
     // Navigate back to main menu, replacing the current route
     Navigator.of(context).pushReplacementNamed('/');
+  }
+
+  void _surrender() {
+    // Close settings dialog
+    setState(() {
+      _showSettingsDialog = false;
+    });
+
+    // Trigger game over
+    game.gameOver();
   }
 
   void _restartGame() {
@@ -221,6 +231,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                 onClose: _toggleSettingsDialog,
                 onBackToMenu: _returnToMainMenu,
                 onViewStats: _openStatsFromSettings,
+                onSurrender: _surrender,
                 isAudioMuted: game.audioManager.isMuted,
                 onAudioMuteChanged: _toggleAudioMute,
               ),

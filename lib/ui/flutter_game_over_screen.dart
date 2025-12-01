@@ -27,6 +27,8 @@ class _FlutterGameOverScreenState extends State<FlutterGameOverScreen> {
   bool _leaderboardSubmitted = false;
   String? _leaderboardError;
   int? _leaderboardRank;
+  int? _predictedRank;
+  bool _isPredictingRank = false;
 
   final TextEditingController _nameController = TextEditingController();
   final FocusNode _nameFocusNode = FocusNode();
@@ -36,6 +38,7 @@ class _FlutterGameOverScreenState extends State<FlutterGameOverScreen> {
     super.initState();
     _saveLocalScore();
     _loadSavedPlayerName();
+    _fetchPredictedRank();
   }
 
   @override
@@ -49,6 +52,37 @@ class _FlutterGameOverScreenState extends State<FlutterGameOverScreen> {
     final savedName = await LeaderboardService.getSavedPlayerName();
     if (savedName != null && savedName.isNotEmpty) {
       _nameController.text = savedName;
+    }
+  }
+
+  Future<void> _fetchPredictedRank() async {
+    if (!EnvConfig.isLeaderboardEnabled) return;
+
+    setState(() {
+      _isPredictingRank = true;
+    });
+
+    try {
+      final currentScore = _calculateScore();
+
+      // Get predicted rank from backend
+      final rank = await LeaderboardService.getPredictedRank(currentScore);
+
+      if (rank != null) {
+        setState(() {
+          _predictedRank = rank;
+          _isPredictingRank = false;
+        });
+      } else {
+        setState(() {
+          _isPredictingRank = false;
+        });
+      }
+    } catch (e) {
+      print('[GameOver] Error predicting rank: $e');
+      setState(() {
+        _isPredictingRank = false;
+      });
     }
   }
 
@@ -198,7 +232,115 @@ class _FlutterGameOverScreenState extends State<FlutterGameOverScreen> {
                   _buildStatCard('Waves', '${enemyManager.getCurrentWave() - 1}'),
                 ],
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 30),
+
+              // Predicted global rank
+              if (isLeaderboardEnabled && !_leaderboardSubmitted) ...[
+                if (_isPredictingRank)
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Color(0xFF00FFFF),
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      Text(
+                        'Calculating rank...',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  )
+                else if (_predictedRank != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF222222),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFFFD700)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.emoji_events,
+                          color: Color(0xFFFFD700),
+                          size: 24,
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Predicted Global Rank',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '#$_predictedRank',
+                              style: const TextStyle(
+                                color: Color(0xFFFFD700),
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  // Fallback when prediction fails - still show encouragement
+                  const Text(
+                    'Submit your score to see your global rank!',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
+                  ),
+                const SizedBox(height: 20),
+              ],
+
+              // View Leaderboard button
+              if (isLeaderboardEnabled && !_leaderboardSubmitted) ...[
+                ElevatedButton.icon(
+                  onPressed: () {
+                    AudioManager().playButtonClick();
+                    Navigator.of(context).pushNamed('/leaderboard');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF9370DB).withOpacity(0.2),
+                    foregroundColor: const Color(0xFF9370DB),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      side: const BorderSide(
+                        color: Color(0xFF9370DB),
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                  icon: const Icon(Icons.leaderboard, size: 20),
+                  label: const Text(
+                    'VIEW LEADERBOARD',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
 
               // Leaderboard section
               if (isLeaderboardEnabled) ...[
