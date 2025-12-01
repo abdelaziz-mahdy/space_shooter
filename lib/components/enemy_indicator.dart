@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:ui';
 import 'package:flame/components.dart';
-import 'package:flutter/material.dart' hide Image;
+import 'package:flutter/material.dart' hide Image; // Hide to avoid conflict with dart:ui Image
 import '../utils/position_util.dart';
 import '../game/space_shooter_game.dart';
 import 'enemies/base_enemy.dart';

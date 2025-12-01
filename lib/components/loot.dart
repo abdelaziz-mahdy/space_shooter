@@ -23,15 +23,15 @@ class Loot extends BaseRenderedComponent
         size: Vector2.all(_getSizeForXP(xpValue)),
       );
 
-  /// Get size based on XP value
+  /// Get size based on XP value - uses centralized BalanceConfig
   static double _getSizeForXP(int xp) {
-    if (xp >= 250) return 24.0; // Epic purple cores (mega)
-    if (xp >= 100) return 22.0; // Epic red cores (huge)
-    if (xp >= 50) return 20.0;  // Epic pink cores (very large)
-    if (xp >= 25) return 16.0;  // Orange cores (large)
-    if (xp >= 10) return 14.0;  // Yellow cores (medium)
-    if (xp >= 5) return 12.0;   // Green cores (small)
-    return 10.0;                // Cyan cores (tiny)
+    if (xp >= 250) return BalanceConfig.xpOrbSize250; // Epic purple cores (mega)
+    if (xp >= 100) return BalanceConfig.xpOrbSize100; // Epic red cores (huge)
+    if (xp >= 50) return BalanceConfig.xpOrbSize50;   // Epic pink cores (very large)
+    if (xp >= 25) return BalanceConfig.xpOrbSize25;   // Orange cores (large)
+    if (xp >= 10) return BalanceConfig.xpOrbSize10;   // Yellow cores (medium)
+    if (xp >= 5) return BalanceConfig.xpOrbSize5;     // Green cores (small)
+    return BalanceConfig.xpOrbSize1;                   // Cyan cores (tiny)
   }
 
   @override
