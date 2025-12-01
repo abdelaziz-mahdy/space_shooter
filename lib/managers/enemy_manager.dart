@@ -23,8 +23,11 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
   int enemiesToSpawnInWave = 10;
   bool isWaveActive = false;
   bool isBossWave = false;
-  double waveDelay = 1.0; // Faster wave transitions (was 2.0)
+  double waveDelay = 0.3; // Very fast wave transitions for better pacing
   double waveTimer = 0;
+
+  // Debug tracking
+  int _lastEnemyCount = -1;
 
   // Callback when wave completes (for XP auto-collect)
   VoidCallback? onWaveComplete;
@@ -62,6 +65,7 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
     isWaveActive = true;
     enemiesSpawnedInWave = 0;
     spawnTimer = 0; // Reset spawn timer to start spawning immediately
+    _lastEnemyCount = -1; // Reset debug tracker
 
     // Every 5th wave is a boss wave
     isBossWave = currentWave % 5 == 0;
@@ -126,20 +130,32 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
         }
         enemiesSpawnedInWave++;
         spawnTimer = 0;
+
+        // Skip wave completion check this frame (enemy just spawned, not mounted yet)
+        return;
       }
 
       // Check if wave is complete (all enemies killed)
-      // CRITICAL: Only count enemies that are still mounted (not in process of being removed)
-      // BossShip extends BaseEnemy, so we only need to count BaseEnemy (includes all bosses)
-      final totalEnemyCount = gameRef.world.children
-          .whereType<BaseEnemy>()
-          .where((enemy) => enemy.isMounted)
-          .length;
+      // Use cached enemy list for consistency (refreshed once per frame)
+      final totalEnemyCount = gameRef.activeEnemies.length;
       final allEnemiesKilled = (totalEnemyCount == 0);
+
+      // Debug: Log when enemy count changes
+      if (totalEnemyCount != _lastEnemyCount) {
+        final enemyTypes = gameRef.activeEnemies.map((e) => e.runtimeType.toString()).join(', ');
+        print('[EnemyManager] Enemy count changed: wave=$currentWave, spawned=$enemiesSpawnedInWave/$enemiesToSpawnInWave, alive=$totalEnemyCount (was $_lastEnemyCount)');
+        print('[EnemyManager] Active enemies: [$enemyTypes]');
+        GameLogger.debug(
+          'Enemy count changed: wave=$currentWave, spawned=$enemiesSpawnedInWave/$enemiesToSpawnInWave, alive=$totalEnemyCount (was $_lastEnemyCount)',
+          tag: 'EnemyManager',
+        );
+        _lastEnemyCount = totalEnemyCount;
+      }
 
       // Wave completes when: all enemies spawned AND all killed
       if (enemiesSpawnedInWave >= enemiesToSpawnInWave && allEnemiesKilled) {
         // Wave complete - all enemies defeated
+        print('[EnemyManager] *** WAVE COMPLETING *** wave=$currentWave, spawned=$enemiesSpawnedInWave/$enemiesToSpawnInWave, alive=$totalEnemyCount, isBoss=$isBossWave');
         isWaveActive = false;
         waveTimer = 0;
         currentWave++;
@@ -147,20 +163,21 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
         GameLogger.event(
           'Wave ${currentWave - 1} completed - ALL ENEMIES DEFEATED',
           tag: 'EnemyManager',
-          data: {'spawned': enemiesToSpawnInWave, 'remaining': totalEnemyCount},
+          data: {
+            'spawned': enemiesToSpawnInWave,
+            'required': enemiesToSpawnInWave,
+            'remaining': totalEnemyCount,
+            'isBossWave': isBossWave,
+          },
         );
 
         // Trigger wave complete callback (for XP auto-collect)
         onWaveComplete?.call();
-      }
-
-      // Debug: Log if wave should be complete but isn't
-      if (enemiesSpawnedInWave >= enemiesToSpawnInWave && totalEnemyCount > 0) {
-        // This helps debug when wave doesn't complete properly
-        // Only log occasionally to avoid spam
-        if (spawnTimer < dt * 2) { // Log roughly once per second
+      } else if (enemiesSpawnedInWave >= enemiesToSpawnInWave && !allEnemiesKilled) {
+        // Waiting for enemies to be killed - log every 2 seconds
+        if (spawnTimer.remainder(2.0) < dt) {
           GameLogger.debug(
-            'Wave $currentWave waiting: spawned $enemiesSpawnedInWave/$enemiesToSpawnInWave, alive: $totalEnemyCount',
+            'Wave $currentWave waiting for enemies: spawned=$enemiesSpawnedInWave/$enemiesToSpawnInWave, alive=$totalEnemyCount, isBoss=$isBossWave',
             tag: 'EnemyManager',
           );
         }
@@ -216,6 +233,7 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
       scale: gameRef.entityScale,
     );
     gameRef.world.add(boss);
+    print('[EnemyManager] *** BOSS SPAWNED *** ${boss.runtimeType} at wave $currentWave, isMounted=${boss.isMounted}');
     GameLogger.debug('Spawned ${boss.runtimeType} at wave $currentWave', tag: 'EnemyManager');
   }
 
@@ -301,6 +319,7 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
     final enemy = EnemyFactory.createWeightedRandom(player, currentWave, spawnPos, weights, scale: gameRef.entityScale);
 
     gameRef.world.add(enemy);
+    print('[EnemyManager] Spawned ${enemy.runtimeType} (${enemiesSpawnedInWave + 1}/$enemiesToSpawnInWave) at wave $currentWave');
     GameLogger.debug(
       'Spawned ${enemy.runtimeType} at wave $currentWave with scale ${gameRef.entityScale}',
       tag: 'EnemyManager',
