@@ -1,5 +1,38 @@
 [
   {
+    "version": "0.3.10",
+    "title": "Wave & Combat Improvements",
+    "date": "2025-12-01",
+    "sections": [
+      {
+        "title": "Bug Fixes",
+        "emoji": "🐛",
+        "items": [
+          "Fixed enemies sometimes dying twice causing incorrect kill counts",
+          "Fixed wave completion detection for splitting bosses",
+          "Waves now progress correctly when bosses split into clones"
+        ]
+      },
+      {
+        "title": "Balance Changes",
+        "emoji": "⚖️",
+        "items": [
+          "Faster wave transitions for better pacing",
+          "Combo XP multiplier no longer capped (was 3x max)",
+          "Bullet Storm upgrade now gives damage bonus instead of penalty",
+          "Smoother player knockback animation"
+        ]
+      },
+      {
+        "title": "UI Improvements",
+        "emoji": "🎨",
+        "items": [
+          "Combo meter moved down for better visibility"
+        ]
+      }
+    ]
+  },
+  {
     "version": "0.3.9",
     "title": "New Features & Quality of Life",
     "date": "2025-12-01",
