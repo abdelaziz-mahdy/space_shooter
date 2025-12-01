@@ -53,9 +53,9 @@ class ComboManager extends Component with HasGameRef<SpaceShooterGame> {
   }
 
   /// Get XP multiplier based on current combo
-  /// Formula: 1.0 + (combo / 100), capped at 3x
+  /// Formula: 1.0 + (combo / 100), no cap
   double getXPMultiplier() {
-    return min(1.0 + (combo / 100.0), 3.0);
+    return 1.0 + (combo / 100.0);
   }
 
   /// Get time remaining until combo resets (0-3 seconds)

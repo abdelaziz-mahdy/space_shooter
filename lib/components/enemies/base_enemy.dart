@@ -26,6 +26,9 @@ abstract class BaseEnemy extends BaseRenderedComponent
   final Color color;
   double contactDamage;
 
+  // Death guard to prevent double-death
+  bool isDying = false;
+
   // Freeze effect
   bool isFrozen = false;
   double freezeTimer = 0;
@@ -263,6 +266,15 @@ abstract class BaseEnemy extends BaseRenderedComponent
 
   /// Called when enemy dies - handles loot drops and cleanup
   void die() {
+    // Prevent double-death (race condition when multiple damage sources kill enemy simultaneously)
+    if (isDying) {
+      print('[BaseEnemy] die() called but already dying - IGNORED for ${runtimeType}');
+      return;
+    }
+    isDying = true;
+
+    print('[BaseEnemy] die() called for ${runtimeType} - wave=${gameRef.enemyManager.getCurrentWave()}, isMounted=$isMounted');
+
     // Play explosion sound
     gameRef.audioManager.playExplosion();
 
@@ -284,11 +296,15 @@ abstract class BaseEnemy extends BaseRenderedComponent
     }
 
     // Increment kill count
+    final beforeKills = gameRef.statsManager.enemiesKilledInWave;
     gameRef.statsManager.incrementKills();
+    final afterKills = gameRef.statsManager.enemiesKilledInWave;
+    print('[BaseEnemy] Kill count incremented: ${beforeKills} -> ${afterKills} (total in wave)');
 
     // Add kill to combo meter
     gameRef.comboManager.addKill();
 
+    print('[BaseEnemy] Calling removeFromParent() for ${runtimeType}');
     removeFromParent();
   }
 

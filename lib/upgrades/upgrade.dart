@@ -711,20 +711,20 @@ class TimeDilationUpgrade extends Upgrade {
   List<String> getStatusChanges() => ['Slow enemy speed by 30%'];
 }
 
-/// Bullet Storm - More projectiles with slight damage penalty
+/// Bullet Storm - More projectiles with increased damage
 class BulletStormUpgrade extends Upgrade {
   BulletStormUpgrade()
       : super(
           id: 'bullet_storm',
           name: 'Bullet Storm',
-          description: '+2 projectiles, -15% damage per shot',
+          description: '+2 projectiles, +20% damage',
           icon: '🌪️',
         );
 
   @override
   void apply(PlayerShip player) {
     player.projectileCount += 2;
-    player.damageMultiplier *= 0.85; // 15% damage reduction per bullet
+    player.damageMultiplier *= 1.20; // 20% damage increase
   }
 
   @override
@@ -738,7 +738,7 @@ class BulletStormUpgrade extends Upgrade {
   @override
   List<String> getStatusChanges() => [
     '+2 projectiles',
-    '-15% damage per shot'
+    '+20% damage'
   ];
 }
 

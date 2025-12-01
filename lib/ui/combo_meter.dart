@@ -46,7 +46,7 @@ class ComboMeter extends StatelessWidget {
 
     return Positioned(
       right: 20,
-      top: 100,
+      top: 200,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [

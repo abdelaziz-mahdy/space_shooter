@@ -82,7 +82,7 @@ class PlayerShip extends BaseRenderedComponent
   double pushbackProgress = 0.0;
   Vector2 pushbackStartPos = Vector2.zero();
   Vector2 pushbackEndPos = Vector2.zero();
-  static const double pushbackDuration = 0.25; // 0.25 seconds smooth animation
+  static const double pushbackDuration = 0.5; // 0.5 seconds smooth animation (doubled from 0.25s)
 
   // Time/Wave mechanics
   double berserkThreshold = 0.3;
