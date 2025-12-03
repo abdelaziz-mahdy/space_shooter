@@ -44,7 +44,6 @@ import '../components/bosses/summoner_boss.dart';
 import '../components/bosses/vortex_boss.dart';
 import '../components/bosses/fortress_boss.dart';
 import '../components/bosses/architect_boss.dart';
-// import '../components/bosses/hydra_boss.dart'; // Disabled - complex collision issues
 import '../components/bosses/nexus_boss.dart';
 
 // Import all weapons for factory registration
@@ -129,7 +128,6 @@ class SpaceShooterGame extends FlameGame
     VortexBoss.init();
     FortressBoss.init();
     ArchitectBoss.init();
-    // HydraBoss.init(); // Disabled - complex collision issues
     NexusBoss.init();
 
     // Register all weapons

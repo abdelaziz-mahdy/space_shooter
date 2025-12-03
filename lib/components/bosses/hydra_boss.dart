@@ -414,31 +414,8 @@ class _HydraCore extends BaseEnemy {
       return;
     }
 
-    // DETAILED DEBUGGING: Show actual hitbox positions and distances
-
-    // Calculate actual distance between components
-    final distance = position.distanceTo(other.position);
-
-    // Get hitbox info
-    final coreHitboxes = children.whereType<CircleHitbox>();
-    if (coreHitboxes.isNotEmpty) {
-      final hitbox = coreHitboxes.first;
-      // Calculate absolute position
-      final hitboxAbsPos = position + hitbox.position;
-    }
-
-    // Get other's hitbox info
-    final otherHitboxes = other.children.whereType<ShapeHitbox>();
-    if (otherHitboxes.isNotEmpty) {
-      final hitbox = otherHitboxes.first;
-      final hitboxAbsPos = other.position + hitbox.position;
-    }
-
-
     super.onCollisionStart(intersectionPoints, other);
   }
-
-  double _debugTimer = 0;
 
   @override
   void updateMovement(double dt) {
@@ -456,12 +433,6 @@ class _HydraCore extends BaseEnemy {
       cos(angle) * orbitRadius,
       sin(angle) * orbitRadius,
     );
-
-    // DEBUG: Log position periodically
-    _debugTimer += dt;
-    if (_debugTimer >= 2.0) {
-      _debugTimer = 0;
-    }
 
     // Fire bullets
     fireTimer += dt;
@@ -555,64 +526,6 @@ class _HydraCore extends BaseEnemy {
       glowPaint,
     );
 
-    // DEBUG: Draw ACTUAL hitbox from collision system
-    try {
-      final hitboxes = children.whereType<ShapeHitbox>();
-      if (hitboxes.isNotEmpty) {
-        final hitbox = hitboxes.first;
-
-        // CRITICAL: Get the hitbox's absolutePositionOfAnchor which is what collision uses!
-        // This is the REAL position the collision system sees
-        final hitboxAbsolutePos = hitbox.absolutePositionOfAnchor(hitbox.anchor);
-
-        // Draw the REAL hitbox position in world space
-        // Convert from world to local canvas coordinates
-        final localHitboxX = hitboxAbsolutePos.x - position.x + centerX;
-        final localHitboxY = hitboxAbsolutePos.y - position.y + centerY;
-
-        // Draw bright red circle at ACTUAL collision hitbox position
-        final actualHitboxPaint = Paint()
-          ..color = const Color(0xFFFF0000).withOpacity(1.0) // Bright RED - real hitbox
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 4;
-
-        canvas.drawCircle(
-          Offset(localHitboxX, localHitboxY),
-          radius,
-          actualHitboxPaint,
-        );
-
-        // Draw yellow cross at component visual center for comparison
-        final crossPaint = Paint()
-          ..color = const Color(0xFFFFFF00)
-          ..strokeWidth = 2;
-        canvas.drawLine(
-          Offset(centerX - 10, centerY),
-          Offset(centerX + 10, centerY),
-          crossPaint,
-        );
-        canvas.drawLine(
-          Offset(centerX, centerY - 10),
-          Offset(centerX, centerY + 10),
-          crossPaint,
-        );
-
-        // Draw line connecting visual center to hitbox center if they differ
-        final offsetDistance = (Vector2(localHitboxX, localHitboxY) - Vector2(centerX, centerY)).length;
-        if (offsetDistance > 1.0) {
-          final linePaint = Paint()
-            ..color = const Color(0xFFFF00FF)
-            ..strokeWidth = 2;
-          canvas.drawLine(
-            Offset(centerX, centerY),
-            Offset(localHitboxX, localHitboxY),
-            linePaint,
-          );
-
-        }
-      }
-    } catch (e) {
-    }
 
     // Draw status effects and health bar (provided by BaseEnemy)
     renderFreezeEffect(canvas);
