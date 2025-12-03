@@ -71,7 +71,7 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
       renderSize = size.clone();
     }
 
-    add(CircleHitbox());
+    add(CircleHitbox(anchor: Anchor.center));
   }
 
   @override
@@ -144,6 +144,7 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
 
     // Handle enemy collisions
     if (other is BaseEnemy) {
+      print('[Bullet] Hit ${other.runtimeType} at pos ${other.position} with $actualDamage damage (bullet at $position)');
       final player = gameRef.player;
 
       // Play hit sound effect
@@ -161,7 +162,8 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
       }
 
       // Chain Lightning - jump to nearby enemies
-      if (player.chainCount > 0) {
+      // Only trigger chain if enemy actually took damage (not invulnerable)
+      if (player.chainCount > 0 && other.modifyIncomingDamage(actualDamage) > 0) {
         _createChainLightning(other, player.chainCount);
       }
 
@@ -238,6 +240,9 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
         // Skip excluded enemy
         if (enemy == excludeEnemy) continue;
 
+        // Skip non-targetable enemies (e.g., invulnerable bosses)
+        if (!enemy.isTargetable) continue;
+
         final dist = fromPosition.distanceTo(enemy.position);
         if (dist < nearestDist) {
           nearestDist = dist;
@@ -252,6 +257,9 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
     final filteredEnemies = <BaseEnemy>[];
     for (final enemy in allEnemies) {
       if (enemy == excludeEnemy) continue;
+
+      // Skip non-targetable enemies (e.g., invulnerable bosses)
+      if (!enemy.isTargetable) continue;
 
       if (maxDistance != null) {
         final distance = fromPosition.distanceTo(enemy.position);

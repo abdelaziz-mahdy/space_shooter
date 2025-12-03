@@ -79,6 +79,10 @@ abstract class BaseEnemy extends BaseRenderedComponent
   /// Override this for custom movement behavior
   void updateMovement(double dt);
 
+  /// Override this to make enemy non-targetable (e.g., invulnerable bosses)
+  /// When false, weapons and auto-targeting will skip this enemy
+  bool get isTargetable => true;
+
   /// Apply freeze effect to this enemy
   void applyFreeze(double duration) {
     isFrozen = true;
@@ -313,9 +317,11 @@ abstract class BaseEnemy extends BaseRenderedComponent
     Set<Vector2> intersectionPoints,
     PositionComponent other,
   ) {
+    print('[BaseEnemy] ${runtimeType} onCollisionStart with ${other.runtimeType}');
     super.onCollisionStart(intersectionPoints, other);
 
     if (other is PlayerShip) {
+      print('[BaseEnemy] ${runtimeType} collided with PlayerShip - contactDamage=$contactDamage');
       // Calculate pushback direction (away from enemy)
       final pushbackDirection = PositionUtil.getDirectionTo(this, other);
 

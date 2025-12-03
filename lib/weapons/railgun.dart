@@ -72,11 +72,14 @@ class Railgun extends Weapon {
     final isCrit = Random().nextDouble() < player.critChance;
     final actualDamage = isCrit ? damage * player.critDamage : damage;
 
-    // Get all enemies
-    final allEnemies = game.world.children.whereType<BaseEnemy>();
+    // Get all enemies (including nested children like boss cores)
+    final allEnemies = game.activeEnemies;
 
     // Check each enemy if it's in the beam's path
     for (final enemy in allEnemies) {
+      // Skip non-targetable enemies (e.g., invulnerable bosses)
+      if (!enemy.isTargetable) continue;
+
       if (_isEnemyInBeamPath(start, directionNormalized, maxRange, enemy, beamHitRadius)) {
         // Apply damage to enemy (damage number shown automatically by base_enemy)
         enemy.takeDamage(actualDamage, isCrit: isCrit);

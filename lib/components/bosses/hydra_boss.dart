@@ -9,6 +9,7 @@ import '../../game/space_shooter_game.dart';
 import '../enemies/base_enemy.dart';
 import '../player_ship.dart';
 import '../enemy_bullet.dart';
+import '../damage_number.dart';
 
 /// The Hydra Boss - Wave 45
 /// - Central hexagon (70x70) + 3 orbiting cores (35x35 each)
@@ -48,6 +49,7 @@ class HydraBoss extends BaseEnemy {
   double coreRegenTimer = 0;
   int coresDestroyed = 0;
   double orbitAngle = 0;
+  bool _coresInitialized = false; // Prevent vulnerability check until cores are ready
 
   HydraBoss({
     required Vector2 position,
@@ -69,9 +71,20 @@ class HydraBoss extends BaseEnemy {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
+  }
 
-    // Spawn 3 cores
+  @override
+  void onMount() {
+    super.onMount();
+
+    // Spawn cores after the boss is fully mounted and positioned
     _spawnAllCores();
+
+    // Mark cores as initialized after spawning
+    // (they'll mount asynchronously but we can start checking them now)
+    Future.delayed(Duration.zero, () {
+      _coresInitialized = true;
+    });
   }
 
   @override
@@ -94,9 +107,14 @@ class HydraBoss extends BaseEnemy {
   }
 
   int get aliveCoresCount {
-    cores.removeWhere((core) => !core.isMounted);
+    // Only remove cores that were mounted and then removed (died)
+    // Don't remove cores that haven't mounted yet (just spawned)
+    cores.removeWhere((core) => core.isRemoved);
     return cores.length;
   }
+
+  @override
+  bool get isTargetable => aliveCoresCount == 0; // Only targetable when all cores destroyed
 
   @override
   double modifyIncomingDamage(double damage) {
@@ -117,8 +135,8 @@ class HydraBoss extends BaseEnemy {
       orbitAngle -= 2 * pi;
     }
 
-    // Check if all cores destroyed
-    if (aliveCoresCount == 0 && !isVulnerable) {
+    // Check if all cores destroyed (only after cores are initialized)
+    if (_coresInitialized && aliveCoresCount == 0 && !isVulnerable) {
       _startVulnerabilityWindow();
     }
 
@@ -131,7 +149,6 @@ class HydraBoss extends BaseEnemy {
         isVulnerable = false;
         vulnerabilityTimer = 0;
         coresDestroyed = 0;
-        print('[HydraBoss] Vulnerability window ended, regenerating cores');
       }
     }
 
@@ -156,7 +173,24 @@ class HydraBoss extends BaseEnemy {
   void _startVulnerabilityWindow() {
     isVulnerable = true;
     vulnerabilityTimer = 0;
-    print('[HydraBoss] All cores destroyed! Vulnerable for ${vulnerabilityDuration}s');
+  }
+
+  @override
+  void onCollisionStart(
+    Set<Vector2> intersectionPoints,
+    PositionComponent other,
+  ) {
+    // Ignore collisions with own cores (they orbit around us)
+    if (other is _HydraCore) {
+      return;
+    }
+
+    // Ignore collisions with enemy bullets (we're an enemy)
+    if (other is EnemyBullet) {
+      return;
+    }
+
+    super.onCollisionStart(intersectionPoints, other);
   }
 
   @override
@@ -177,16 +211,28 @@ class HydraBoss extends BaseEnemy {
   }
 
   void _spawnCore(int index, double healthPercent) {
+    // Calculate initial orbital position (relative to parent)
+    final baseAngle = (index * 2 * pi / HydraBoss.totalCores);
+    final angle = baseAngle + orbitAngle;
+    final orbitRadius = HydraBoss.coreMinOrbitRadius;
+
+    // CRITICAL: Position RELATIVE to parent (boss center at 0,0)
+    final initialPos = Vector2(
+      cos(angle) * orbitRadius,
+      sin(angle) * orbitRadius,
+    );
+
     final core = _HydraCore(
       parent: this,
       coreIndex: index,
       healthPercent: healthPercent,
+      initialPosition: initialPos,
     );
 
     cores.add(core);
-    gameRef.world.add(core);
-
-    print('[HydraBoss] Spawned core $index (${cores.length}/$totalCores)');
+    // CRITICAL: Add as CHILD of boss, not to world!
+    // This makes the core position relative to boss, and hitbox follows automatically
+    add(core);
   }
 
   void _regenerateCore() {
@@ -331,8 +377,9 @@ class _HydraCore extends BaseEnemy {
     required this.parent,
     required this.coreIndex,
     required double healthPercent,
+    Vector2? initialPosition, // Allow setting initial position
   }) : super(
-          position: Vector2.zero(), // Position set in update loop
+          position: initialPosition ?? Vector2.zero(), // Use provided position or zero
           player: parent.player,
           wave: parent.wave,
           health: (150 + (parent.wave * 25)) * healthPercent,
@@ -345,13 +392,57 @@ class _HydraCore extends BaseEnemy {
 
   @override
   Future<void> addHitbox() async {
-    // Add circular hitbox for the core
-    add(CircleHitbox(radius: size.x / 2));
+    // Use simple CircleHitbox with RELATIVE positioning
+    add(CircleHitbox.relative(
+      0.9, // 90% of component size
+      parentSize: size,
+    ));
   }
 
   @override
+  void onCollisionStart(
+    Set<Vector2> intersectionPoints,
+    PositionComponent other,
+  ) {
+    // Ignore collisions with enemy bullets (cores are enemies, shouldn't take friendly fire)
+    if (other is EnemyBullet) {
+      return;
+    }
+
+    // Ignore collisions with parent boss (part of the same entity)
+    if (other is HydraBoss) {
+      return;
+    }
+
+    // DETAILED DEBUGGING: Show actual hitbox positions and distances
+
+    // Calculate actual distance between components
+    final distance = position.distanceTo(other.position);
+
+    // Get hitbox info
+    final coreHitboxes = children.whereType<CircleHitbox>();
+    if (coreHitboxes.isNotEmpty) {
+      final hitbox = coreHitboxes.first;
+      // Calculate absolute position
+      final hitboxAbsPos = position + hitbox.position;
+    }
+
+    // Get other's hitbox info
+    final otherHitboxes = other.children.whereType<ShapeHitbox>();
+    if (otherHitboxes.isNotEmpty) {
+      final hitbox = otherHitboxes.first;
+      final hitboxAbsPos = other.position + hitbox.position;
+    }
+
+
+    super.onCollisionStart(intersectionPoints, other);
+  }
+
+  double _debugTimer = 0;
+
+  @override
   void updateMovement(double dt) {
-    // Update position to orbit around parent
+    // Update position to orbit around parent (cores are children of boss now)
     final baseAngle = (coreIndex * 2 * pi / HydraBoss.totalCores);
     final angle = baseAngle + parent.orbitAngle;
 
@@ -359,13 +450,18 @@ class _HydraCore extends BaseEnemy {
     final radiusVariation = sin(parent.orbitAngle * 2) * 50;
     final orbitRadius = HydraBoss.coreMinOrbitRadius + radiusVariation;
 
-    final offset = Vector2(
+    // CRITICAL: Position is now RELATIVE to parent (since cores are children)
+    // No need to add parent.position - that's handled automatically by Flame!
+    position = Vector2(
       cos(angle) * orbitRadius,
       sin(angle) * orbitRadius,
     );
 
-    // Set position relative to parent
-    position = parent.position + offset;
+    // DEBUG: Log position periodically
+    _debugTimer += dt;
+    if (_debugTimer >= 2.0) {
+      _debugTimer = 0;
+    }
 
     // Fire bullets
     fireTimer += dt;
@@ -376,11 +472,12 @@ class _HydraCore extends BaseEnemy {
   }
 
   void _fireBullet() {
-    // Fire toward player
-    final directionToPlayer = (player.position - position).normalized();
+    // Fire toward player (use absolutePosition since cores are children of boss)
+    final coreWorldPos = absolutePosition;
+    final directionToPlayer = (player.position - coreWorldPos).normalized();
 
     final bullet = EnemyBullet(
-      position: position.clone(),
+      position: coreWorldPos.clone(),
       direction: directionToPlayer,
       damage: 18.0,
       speed: 160.0,
@@ -390,12 +487,37 @@ class _HydraCore extends BaseEnemy {
   }
 
   @override
+  void takeDamage(double damage, {bool isCrit = false, bool showDamageNumber = true}) {
+    // ALWAYS show damage numbers for cores (disable rate limiting)
+    // This helps players see hits more clearly
+    final actualDamage = modifyIncomingDamage(damage);
+    health -= actualDamage;
+
+    if (showDamageNumber && actualDamage > 0) {
+      final damageNumber = DamageNumber(
+        position: absolutePosition.clone(), // Use absolute position for world-space damage number
+        damage: actualDamage,
+        isCrit: isCrit,
+      );
+      gameRef.world.add(damageNumber);
+    }
+
+    // Apply bleed effect if player has bleed damage
+    if (player.bleedDamage > 0) {
+      applyBleed(player.bleedDamage);
+    }
+
+    if (health <= 0) {
+      die();
+    }
+  }
+
+  @override
   void die() {
     // Prevent double-death
     if (isDying) return;
     isDying = true;
 
-    print('[HydraCore] Core $coreIndex destroyed!');
 
     // Don't drop loot (parent boss handles loot)
     // Don't increment kill count (parent boss is the real enemy)
@@ -432,6 +554,65 @@ class _HydraCore extends BaseEnemy {
       radius + 3,
       glowPaint,
     );
+
+    // DEBUG: Draw ACTUAL hitbox from collision system
+    try {
+      final hitboxes = children.whereType<ShapeHitbox>();
+      if (hitboxes.isNotEmpty) {
+        final hitbox = hitboxes.first;
+
+        // CRITICAL: Get the hitbox's absolutePositionOfAnchor which is what collision uses!
+        // This is the REAL position the collision system sees
+        final hitboxAbsolutePos = hitbox.absolutePositionOfAnchor(hitbox.anchor);
+
+        // Draw the REAL hitbox position in world space
+        // Convert from world to local canvas coordinates
+        final localHitboxX = hitboxAbsolutePos.x - position.x + centerX;
+        final localHitboxY = hitboxAbsolutePos.y - position.y + centerY;
+
+        // Draw bright red circle at ACTUAL collision hitbox position
+        final actualHitboxPaint = Paint()
+          ..color = const Color(0xFFFF0000).withOpacity(1.0) // Bright RED - real hitbox
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 4;
+
+        canvas.drawCircle(
+          Offset(localHitboxX, localHitboxY),
+          radius,
+          actualHitboxPaint,
+        );
+
+        // Draw yellow cross at component visual center for comparison
+        final crossPaint = Paint()
+          ..color = const Color(0xFFFFFF00)
+          ..strokeWidth = 2;
+        canvas.drawLine(
+          Offset(centerX - 10, centerY),
+          Offset(centerX + 10, centerY),
+          crossPaint,
+        );
+        canvas.drawLine(
+          Offset(centerX, centerY - 10),
+          Offset(centerX, centerY + 10),
+          crossPaint,
+        );
+
+        // Draw line connecting visual center to hitbox center if they differ
+        final offsetDistance = (Vector2(localHitboxX, localHitboxY) - Vector2(centerX, centerY)).length;
+        if (offsetDistance > 1.0) {
+          final linePaint = Paint()
+            ..color = const Color(0xFFFF00FF)
+            ..strokeWidth = 2;
+          canvas.drawLine(
+            Offset(centerX, centerY),
+            Offset(localHitboxX, localHitboxY),
+            linePaint,
+          );
+
+        }
+      }
+    } catch (e) {
+    }
 
     // Draw status effects and health bar (provided by BaseEnemy)
     renderFreezeEffect(canvas);

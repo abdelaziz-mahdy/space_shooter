@@ -72,6 +72,9 @@ class OrbitalDrone extends PositionComponent with HasGameRef<SpaceShooterGame> {
 
     // Use whereType to properly filter for BaseEnemy instances
     for (final enemy in gameRef.world.children.whereType<BaseEnemy>()) {
+      // Skip non-targetable enemies (e.g., invulnerable bosses)
+      if (!enemy.isTargetable) continue;
+
       final distance = position.distanceTo(enemy.position);
       if (distance < nearestDistance) {
         nearestDistance = distance;
