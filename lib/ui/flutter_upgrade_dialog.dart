@@ -23,8 +23,9 @@ class _FlutterUpgradeDialogState extends State<FlutterUpgradeDialog> {
 
   void _selectUpgrade(Upgrade upgrade) {
     upgrade.apply(widget.game.player);
-    // Track upgrade for leaderboard
-    widget.game.player.appliedUpgrades.add(upgrade.id);
+    // Track upgrade count for leaderboard
+    final upgrades = widget.game.player.appliedUpgrades;
+    upgrades[upgrade.id] = (upgrades[upgrade.id] ?? 0) + 1;
     widget.game.resumeFromUpgrade();
     if (widget.game.onHideUpgrade != null) {
       widget.game.onHideUpgrade!();

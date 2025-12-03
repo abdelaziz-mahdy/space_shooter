@@ -48,7 +48,7 @@ class LeaderboardEntry {
   final int wave;
   final int kills;
   final double timeAlive;
-  final List<String> upgrades;
+  final Map<String, int> upgrades; // Changed from List<String> to Map<String, int>
   final String? weaponUsed;
   final String? platform;
   final DateTime? createdAt;
@@ -74,12 +74,28 @@ class LeaderboardEntry {
         'wave': wave,
         'kills': kills,
         'timeAlive': timeAlive,
-        'upgrades': upgrades,
+        'upgrades': upgrades, // Now sends Map<String, int>
         'weaponUsed': weaponUsed,
         'platform': platform ?? _getPlatformString(),
       };
 
   factory LeaderboardEntry.fromJson(Map<String, dynamic> json) {
+    // Handle backward compatibility: old format was List<String>, new is Map<String, int>
+    Map<String, int> upgradesMap = {};
+    final upgradesData = json['upgrades'];
+
+    if (upgradesData is List) {
+      // Old format: convert List<String> to Map with count=1 for each
+      for (final id in upgradesData) {
+        upgradesMap[id.toString()] = (upgradesMap[id.toString()] ?? 0) + 1;
+      }
+    } else if (upgradesData is Map) {
+      // New format: already a map, convert values to int
+      upgradesMap = (upgradesData as Map<String, dynamic>).map(
+        (key, value) => MapEntry(key, value as int),
+      );
+    }
+
     return LeaderboardEntry(
       id: json['id'] as int?,
       playerName: (json['playerName'] ?? json['player_name']) as String,
@@ -87,7 +103,7 @@ class LeaderboardEntry {
       wave: json['wave'] as int,
       kills: json['kills'] as int,
       timeAlive: (json['timeAlive'] ?? json['time_alive'] as num).toDouble(),
-      upgrades: ((json['upgrades'] ?? []) as List<dynamic>).map((e) => e.toString()).toList(),
+      upgrades: upgradesMap,
       weaponUsed: (json['weaponUsed'] ?? json['weapon_used']) as String?,
       platform: (json['platform'] ?? json['platform']) as String?,
       createdAt: json['createdAt'] != null

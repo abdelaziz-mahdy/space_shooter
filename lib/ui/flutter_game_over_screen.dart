@@ -109,7 +109,7 @@ class _FlutterGameOverScreenState extends State<FlutterGameOverScreen> {
       kills: enemiesKilled,
       timeAlive: timeAliveSeconds,
       timestamp: DateTime.now(),
-      upgrades: List<String>.from(player.appliedUpgrades),
+      upgrades: Map<String, int>.from(player.appliedUpgrades),
       weaponUsed: player.weaponManager.getCurrentWeaponId(),
     );
 
@@ -170,7 +170,7 @@ class _FlutterGameOverScreenState extends State<FlutterGameOverScreen> {
       wave: enemyManager.getCurrentWave() - 1,
       kills: statsManager.enemiesKilled,
       timeAlive: statsManager.timeAlive,
-      upgrades: List<String>.from(player.appliedUpgrades),
+      upgrades: Map<String, int>.from(player.appliedUpgrades),
       weaponUsed: player.weaponManager.getCurrentWeaponId(),
     );
 

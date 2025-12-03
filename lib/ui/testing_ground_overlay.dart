@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../game/space_shooter_game.dart';
 import '../managers/debug_manager.dart';
 import '../upgrades/upgrade.dart';
+import 'widgets/upgrade_display_widget.dart';
 
 /// Testing ground overlay for debugging and testing
 /// Provides controls to:
@@ -510,6 +511,23 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
         _buildStatRow('Damage', '${player.damage.toInt()}'),
         _buildStatRow('Fire Rate', '${player.shootInterval.toStringAsFixed(2)}s'),
         _buildStatRow('Speed', '${player.moveSpeed.toInt()}'),
+
+        if (player.appliedUpgrades.isNotEmpty) ...[
+          const SizedBox(height: 20),
+          _buildSectionTitle('Applied Upgrades (${player.appliedUpgrades.values.fold(0, (sum, count) => sum + count)})'),
+          const SizedBox(height: 8),
+          Container(
+            constraints: const BoxConstraints(maxHeight: 120),
+            child: SingleChildScrollView(
+              child: UpgradeDisplayWidget(
+                upgrades: player.appliedUpgrades,
+                scale: 0.9,
+                showTooltip: false,
+                displayMode: DisplayMode.compact,
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
