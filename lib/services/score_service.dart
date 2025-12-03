@@ -7,7 +7,7 @@ class GameScore {
   final int kills;
   final double timeAlive;
   final DateTime timestamp;
-  final List<String> upgrades;
+  final Map<String, int> upgrades; // upgradeId -> count
   final String? weaponUsed;
 
   GameScore({
@@ -16,7 +16,7 @@ class GameScore {
     required this.kills,
     required this.timeAlive,
     required this.timestamp,
-    this.upgrades = const [],
+    this.upgrades = const {},
     this.weaponUsed,
   });
 
@@ -32,21 +32,37 @@ class GameScore {
         'kills': kills,
         'timeAlive': timeAlive,
         'timestamp': timestamp.toIso8601String(),
-        'upgrades': upgrades,
+        'upgrades': upgrades, // Map<String, int>
         'weaponUsed': weaponUsed,
       };
 
-  factory GameScore.fromJson(Map<String, dynamic> json) => GameScore(
-        score: json['score'] as int,
-        wave: json['wave'] as int,
-        kills: json['kills'] as int,
-        timeAlive: (json['timeAlive'] as num).toDouble(),
-        timestamp: DateTime.parse(json['timestamp'] as String),
-        upgrades: ((json['upgrades'] ?? []) as List<dynamic>)
-            .map((e) => e.toString())
-            .toList(),
-        weaponUsed: json['weaponUsed'] as String?,
+  factory GameScore.fromJson(Map<String, dynamic> json) {
+    // Handle backward compatibility: old format was List<String>, new is Map<String, int>
+    Map<String, int> upgradesMap = {};
+    final upgradesData = json['upgrades'];
+
+    if (upgradesData is List) {
+      // Old format: convert List<String> to Map with count=1 for each
+      for (final id in upgradesData) {
+        upgradesMap[id.toString()] = (upgradesMap[id.toString()] ?? 0) + 1;
+      }
+    } else if (upgradesData is Map) {
+      // New format: already a map, convert values to int
+      upgradesMap = (upgradesData as Map<String, dynamic>).map(
+        (key, value) => MapEntry(key, value as int),
       );
+    }
+
+    return GameScore(
+      score: json['score'] as int,
+      wave: json['wave'] as int,
+      kills: json['kills'] as int,
+      timeAlive: (json['timeAlive'] as num).toDouble(),
+      timestamp: DateTime.parse(json['timestamp'] as String),
+      upgrades: upgradesMap,
+      weaponUsed: json['weaponUsed'] as String?,
+    );
+  }
 }
 
 class ScoreService {

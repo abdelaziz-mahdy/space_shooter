@@ -116,8 +116,8 @@ class PlayerShip extends BaseRenderedComponent
   final List<OrbitalDrone> _orbitals = [];
   int _lastOrbitalCount = 0;
 
-  // Track applied upgrades for leaderboard
-  final List<String> appliedUpgrades = [];
+  // Track applied upgrades with counts (upgradeId -> count)
+  final Map<String, int> appliedUpgrades = {};
 
   PlayerShip({required Vector2 position, double scale = 1.0})
     : super(position: position, size: Vector2(30, 30) * scale);

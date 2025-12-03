@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../game/space_shooter_game.dart';
-import '../upgrades/upgrade.dart';
-import '../upgrades/weapon_upgrade.dart';
+import 'widgets/upgrade_display_widget.dart';
 
 /// Toggleable stats panel that shows detailed player statistics
 /// Can be shown/hidden with a button or key press
@@ -144,9 +143,14 @@ class StatsPanel extends StatelessWidget {
                   // Upgrades section
                   if (player.appliedUpgrades.isNotEmpty) ...[
                     SizedBox(height: 12 * scale),
-                    _buildSectionHeader('UPGRADES (${player.appliedUpgrades.length})', scale),
+                    _buildSectionHeader('UPGRADES (${player.appliedUpgrades.values.fold(0, (sum, count) => sum + count)})', scale),
                     SizedBox(height: 6 * scale),
-                    ..._buildUpgradesList(player.appliedUpgrades, scale),
+                    UpgradeDisplayWidget(
+                      upgrades: player.appliedUpgrades,
+                      scale: scale,
+                      showTooltip: false,
+                      displayMode: DisplayMode.compact,
+                    ),
                   ],
                 ],
               ),
@@ -159,70 +163,6 @@ class StatsPanel extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  List<Widget> _buildUpgradesList(List<String> upgradeIds, double scale) {
-    // Get all available upgrades
-    final allUpgrades = UpgradeFactory.getAllUpgrades();
-    final allWeaponUpgrades = UpgradeFactory.getAllWeaponUpgrades();
-
-    return upgradeIds.map((id) {
-      // Find upgrade by ID
-      Upgrade? upgrade;
-      try {
-        upgrade = allUpgrades.firstWhere((u) => u.id == id);
-      } catch (e) {
-        try {
-          upgrade = allWeaponUpgrades.firstWhere((u) => u.id == id);
-        } catch (e) {
-          // Upgrade not found, skip it
-          return const SizedBox.shrink();
-        }
-      }
-
-      if (upgrade == null) return const SizedBox.shrink();
-
-      // Get rarity color
-      Color rarityColor;
-      switch (upgrade.rarity) {
-        case UpgradeRarity.common:
-          rarityColor = Colors.white70;
-          break;
-        case UpgradeRarity.rare:
-          rarityColor = const Color(0xFF4169E1); // Royal blue
-          break;
-        case UpgradeRarity.epic:
-          rarityColor = const Color(0xFF9370DB); // Medium purple
-          break;
-        case UpgradeRarity.legendary:
-          rarityColor = const Color(0xFFFFD700); // Gold
-          break;
-      }
-
-      return Padding(
-        padding: EdgeInsets.symmetric(vertical: 3 * scale),
-        child: Row(
-          children: [
-            Text(
-              upgrade.icon,
-              style: TextStyle(fontSize: 16 * scale),
-            ),
-            SizedBox(width: 8 * scale),
-            Expanded(
-              child: Text(
-                upgrade.name,
-                style: TextStyle(
-                  color: rarityColor,
-                  fontSize: 12 * scale,
-                  fontWeight: FontWeight.w500,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      );
-    }).toList();
   }
 
   Widget _buildSectionHeader(String title, double scale) {

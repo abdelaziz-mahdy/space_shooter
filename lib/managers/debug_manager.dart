@@ -72,7 +72,9 @@ class DebugManager extends Component with HasGameRef<SpaceShooterGame> {
       );
 
       upgrade.apply(player);
-      print('[DebugManager] Granted upgrade: ${upgrade.name}');
+      // Track upgrade count
+      player.appliedUpgrades[upgradeId] = (player.appliedUpgrades[upgradeId] ?? 0) + 1;
+      print('[DebugManager] Granted upgrade: ${upgrade.name} (count: ${player.appliedUpgrades[upgradeId]})');
     } catch (e) {
       print('[DebugManager] Failed to grant upgrade $upgradeId: $e');
     }
