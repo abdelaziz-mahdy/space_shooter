@@ -1,5 +1,30 @@
 [
   {
+    "version": "0.3.12",
+    "title": "Testing & Debug Tools",
+    "date": "2025-12-03",
+    "sections": [
+      {
+        "title": "Development Tools",
+        "emoji": "🛠️",
+        "items": [
+          "Added testing ground for developers",
+          "Debug tools for in-game testing (debug builds only)",
+          "Hitbox visualization for debugging collisions"
+        ]
+      },
+      {
+        "title": "Technical Improvements",
+        "emoji": "⚙️",
+        "items": [
+          "Improved enemy targeting for nested boss structures",
+          "Better weapon targeting system",
+          "Temporarily disabled Hydra Boss (wave 45)"
+        ]
+      }
+    ]
+  },
+  {
     "version": "0.3.11",
     "title": "Hydra Boss Fix",
     "date": "2025-12-01",

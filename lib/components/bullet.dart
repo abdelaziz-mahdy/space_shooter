@@ -144,7 +144,6 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
 
     // Handle enemy collisions
     if (other is BaseEnemy) {
-      print('[Bullet] Hit ${other.runtimeType} at pos ${other.position} with $actualDamage damage (bullet at $position)');
       final player = gameRef.player;
 
       // Play hit sound effect

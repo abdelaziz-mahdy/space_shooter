@@ -22,7 +22,7 @@ abstract class BaseRenderedComponent extends PositionComponent with HasGameRef<S
     renderShape(canvas);
 
     // Render hitbox debug visualization if enabled
-    if (gameRef.debugManager.showHitboxes) {
+    if (gameRef.debugManager?.showHitboxes ?? false) {
       _renderHitboxDebug(canvas);
     }
 

@@ -317,11 +317,9 @@ abstract class BaseEnemy extends BaseRenderedComponent
     Set<Vector2> intersectionPoints,
     PositionComponent other,
   ) {
-    print('[BaseEnemy] ${runtimeType} onCollisionStart with ${other.runtimeType}');
     super.onCollisionStart(intersectionPoints, other);
 
     if (other is PlayerShip) {
-      print('[BaseEnemy] ${runtimeType} collided with PlayerShip - contactDamage=$contactDamage');
       // Calculate pushback direction (away from enemy)
       final pushbackDirection = PositionUtil.getDirectionTo(this, other);
 
