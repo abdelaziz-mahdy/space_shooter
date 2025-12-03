@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import '../utils/visual_center_mixin.dart';
-import '../utils/position_util.dart';
+import '../utils/targeting_system.dart';
 import 'base_rendered_component.dart';
 import 'enemies/base_enemy.dart';
 import 'damage_number.dart'; // Still needed for healing numbers
@@ -219,68 +219,21 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
     gameRef.world.add(explosion);
   }
 
-  /// Generic helper to find enemies sorted by distance from a position
-  /// Optimized to use cached enemy list and avoid sorting when maxCount=1
+  /// Find nearest enemies using centralized targeting system
   List<BaseEnemy> _findNearestEnemies({
     required Vector2 fromPosition,
     BaseEnemy? excludeEnemy,
     double? maxDistance,
     int? maxCount,
   }) {
-    // Use cached enemy list from game (refreshed once per frame)
-    final allEnemies = gameRef.activeEnemies;
-
-    // Optimized path for finding single nearest enemy (most common case)
-    if (maxCount == 1) {
-      BaseEnemy? nearest;
-      double nearestDist = maxDistance ?? double.infinity;
-
-      for (final enemy in allEnemies) {
-        // Skip excluded enemy
-        if (enemy == excludeEnemy) continue;
-
-        // Skip non-targetable enemies (e.g., invulnerable bosses)
-        if (!enemy.isTargetable) continue;
-
-        final dist = fromPosition.distanceTo(enemy.position);
-        if (dist < nearestDist) {
-          nearestDist = dist;
-          nearest = enemy;
-        }
-      }
-
-      return nearest != null ? [nearest] : [];
-    }
-
-    // General path for multiple enemies (used by chain lightning)
-    final filteredEnemies = <BaseEnemy>[];
-    for (final enemy in allEnemies) {
-      if (enemy == excludeEnemy) continue;
-
-      // Skip non-targetable enemies (e.g., invulnerable bosses)
-      if (!enemy.isTargetable) continue;
-
-      if (maxDistance != null) {
-        final distance = fromPosition.distanceTo(enemy.position);
-        if (distance > maxDistance) continue;
-      }
-
-      filteredEnemies.add(enemy);
-    }
-
-    // Sort by distance
-    filteredEnemies.sort((a, b) {
-      final distA = fromPosition.distanceTo(a.position);
-      final distB = fromPosition.distanceTo(b.position);
-      return distA.compareTo(distB);
-    });
-
-    // Limit count if specified
-    if (maxCount != null && filteredEnemies.length > maxCount) {
-      return filteredEnemies.sublist(0, maxCount);
-    }
-
-    return filteredEnemies;
+    return TargetingSystem.findNearestEnemies(
+      game: gameRef,
+      fromPosition: fromPosition,
+      maxDistance: maxDistance,
+      maxCount: maxCount,
+      excludeEnemy: excludeEnemy,
+      onlyTargetable: true,
+    );
   }
 
   /// Generic helper to deal damage to an enemy with visual effects

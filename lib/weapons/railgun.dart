@@ -3,10 +3,10 @@ import 'dart:ui';
 import 'package:flame/components.dart';
 import '../components/beam_effect.dart';
 import '../components/player_ship.dart';
-import '../components/enemies/base_enemy.dart';
 import '../game/space_shooter_game.dart';
 import '../factories/weapon_factory.dart';
 import '../config/weapon_unlock_config.dart';
+import '../utils/targeting_system.dart';
 import 'weapon.dart';
 
 /// Railgun - instant piercing beam that hits all enemies in line
@@ -72,62 +72,30 @@ class Railgun extends Weapon {
     final isCrit = Random().nextDouble() < player.critChance;
     final actualDamage = isCrit ? damage * player.critDamage : damage;
 
-    // Get all enemies (including nested children like boss cores)
-    final allEnemies = game.activeEnemies;
+    // Use centralized targeting system to find all enemies in beam
+    final enemiesInBeam = TargetingSystem.findEnemiesInBeam(
+      game: game,
+      beamStart: start,
+      beamDirection: directionNormalized,
+      beamMaxRange: maxRange,
+      beamRadius: beamHitRadius,
+      onlyTargetable: true,
+    );
 
-    // Check each enemy if it's in the beam's path
-    for (final enemy in allEnemies) {
-      // Skip non-targetable enemies (e.g., invulnerable bosses)
-      if (!enemy.isTargetable) continue;
+    // Apply damage to all enemies in beam
+    for (final enemy in enemiesInBeam) {
+      // Apply damage to enemy (damage number shown automatically by base_enemy)
+      enemy.takeDamage(actualDamage, isCrit: isCrit);
 
-      if (_isEnemyInBeamPath(start, directionNormalized, maxRange, enemy, beamHitRadius)) {
-        // Apply damage to enemy (damage number shown automatically by base_enemy)
-        enemy.takeDamage(actualDamage, isCrit: isCrit);
+      // Play hit sound
+      game.audioManager.playHit();
 
-        // Play hit sound
-        game.audioManager.playHit();
-
-        // Apply lifesteal
-        if (player.lifesteal > 0) {
-          final healAmount = actualDamage * player.lifesteal;
-          player.health = min(player.health + healAmount, player.maxHealth);
-        }
+      // Apply lifesteal
+      if (player.lifesteal > 0) {
+        final healAmount = actualDamage * player.lifesteal;
+        player.health = min(player.health + healAmount, player.maxHealth);
       }
     }
-  }
-
-  bool _isEnemyInBeamPath(
-    Vector2 start,
-    Vector2 direction,
-    double maxRange,
-    PositionComponent enemy,
-    double beamRadius,
-  ) {
-    // Get enemy position
-    final enemyPos = enemy.position;
-
-    // Vector from beam start to enemy
-    final toEnemy = enemyPos - start;
-
-    // Project enemy position onto beam direction
-    final projectionLength = toEnemy.dot(direction);
-
-    // Check if enemy is within beam range
-    if (projectionLength < 0 || projectionLength > maxRange) {
-      return false;
-    }
-
-    // Calculate closest point on beam to enemy
-    final closestPoint = start + (direction * projectionLength);
-
-    // Calculate distance from enemy to beam line
-    final distanceToBeam = enemyPos.distanceTo(closestPoint);
-
-    // Enemy hitbox radius (approximate)
-    final enemyRadius = enemy.size.length / 2;
-
-    // Check if enemy is close enough to beam (beamRadius passed in)
-    return distanceToBeam <= (enemyRadius + beamRadius);
   }
 
   Vector2 _getBulletSpawnPosition(PlayerShip player) {

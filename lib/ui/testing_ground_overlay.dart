@@ -30,11 +30,11 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
     super.dispose();
   }
 
-  DebugManager get debugManager => widget.game.debugManager;
+  DebugManager? get debugManager => widget.game.debugManager;
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.game.hasLoaded) {
+    if (!widget.game.hasLoaded || debugManager == null) {
       return const SizedBox.shrink();
     }
 
@@ -207,7 +207,7 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
               onPressed: () {
                 final wave = int.tryParse(_waveController.text);
                 if (wave != null && wave > 0) {
-                  debugManager.jumpToWave(wave);
+                  debugManager!.jumpToWave(wave);
                   _waveController.clear();
                   setState(() {});
                 }
@@ -289,7 +289,7 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
         const SizedBox(height: 20),
         ElevatedButton.icon(
           onPressed: () {
-            debugManager.killAllEnemies();
+            debugManager!.killAllEnemies();
             setState(() {});
           },
           icon: const Icon(Icons.delete_sweep, size: 18),
@@ -406,7 +406,7 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
 
   Widget _buildPlayerTab() {
     final player = widget.game.player;
-    final invincible = debugManager.isInvincible;
+    final invincible = debugManager!.isInvincible;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -418,7 +418,7 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
             Expanded(
               child: ElevatedButton(
                 onPressed: () {
-                  debugManager.healToFull();
+                  debugManager!.healToFull();
                   setState(() {});
                 },
                 style: ElevatedButton.styleFrom(
@@ -432,7 +432,7 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
             Expanded(
               child: ElevatedButton(
                 onPressed: () {
-                  debugManager.toggleInvincibility();
+                  debugManager!.toggleInvincibility();
                   setState(() {});
                 },
                 style: ElevatedButton.styleFrom(
@@ -454,16 +454,16 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
           width: double.infinity,
           child: ElevatedButton(
             onPressed: () {
-              debugManager.toggleHitboxes();
+              debugManager!.toggleHitboxes();
               setState(() {});
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: debugManager.showHitboxes
+              backgroundColor: debugManager!.showHitboxes
                   ? Colors.cyan.withOpacity(0.8)
                   : Colors.grey.withOpacity(0.6),
               foregroundColor: Colors.white,
             ),
-            child: Text(debugManager.showHitboxes ? 'Hitboxes ON' : 'Hitboxes OFF'),
+            child: Text(debugManager!.showHitboxes ? 'Hitboxes ON' : 'Hitboxes OFF'),
           ),
         ),
 
@@ -478,10 +478,10 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
           spacing: 8,
           runSpacing: 8,
           children: [
-            _buildResourceButton('+100 XP', () => debugManager.addXP(100)),
-            _buildResourceButton('+500 XP', () => debugManager.addXP(500)),
-            _buildResourceButton('+1000 XP', () => debugManager.addXP(1000)),
-            _buildResourceButton('+5000 XP', () => debugManager.addXP(5000)),
+            _buildResourceButton('+100 XP', () => debugManager!.addXP(100)),
+            _buildResourceButton('+500 XP', () => debugManager!.addXP(500)),
+            _buildResourceButton('+1000 XP', () => debugManager!.addXP(1000)),
+            _buildResourceButton('+5000 XP', () => debugManager!.addXP(5000)),
           ],
         ),
 
@@ -494,10 +494,10 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
           spacing: 8,
           runSpacing: 8,
           children: [
-            _buildResourceButton('+100 💎', () => debugManager.addLoot(100)),
-            _buildResourceButton('+500 💎', () => debugManager.addLoot(500)),
-            _buildResourceButton('+1000 💎', () => debugManager.addLoot(1000)),
-            _buildResourceButton('+5000 💎', () => debugManager.addLoot(5000)),
+            _buildResourceButton('+100 💎', () => debugManager!.addLoot(100)),
+            _buildResourceButton('+500 💎', () => debugManager!.addLoot(500)),
+            _buildResourceButton('+1000 💎', () => debugManager!.addLoot(1000)),
+            _buildResourceButton('+5000 💎', () => debugManager!.addLoot(5000)),
           ],
         ),
 
@@ -531,7 +531,7 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
       height: 50,
       child: ElevatedButton(
         onPressed: () {
-          debugManager.jumpToWave(wave);
+          debugManager!.jumpToWave(wave);
           setState(() {});
         },
         style: ElevatedButton.styleFrom(
@@ -551,7 +551,7 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
   Widget _buildSpawnButton(String label, String enemyId) {
     return ElevatedButton(
       onPressed: () {
-        debugManager.spawnEnemy(enemyId);
+        debugManager!.spawnEnemy(enemyId);
         setState(() {});
       },
       style: ElevatedButton.styleFrom(
@@ -566,13 +566,13 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
   Widget _buildUpgradeButton(String label, String upgradeId) {
     return ElevatedButton(
       onPressed: () {
-        debugManager.grantUpgrade(upgradeId);
+        debugManager!.grantUpgrade(upgradeId);
         setState(() {});
       },
       onLongPress: () {
         // Long press to apply 5 times
         for (int i = 0; i < 5; i++) {
-          debugManager.grantUpgrade(upgradeId);
+          debugManager!.grantUpgrade(upgradeId);
         }
         setState(() {});
       },
@@ -588,7 +588,7 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
   Widget _buildWeaponButton(String label, String weaponId) {
     return ElevatedButton(
       onPressed: () {
-        debugManager.changeWeapon(weaponId);
+        debugManager!.changeWeapon(weaponId);
         setState(() {});
       },
       style: ElevatedButton.styleFrom(
