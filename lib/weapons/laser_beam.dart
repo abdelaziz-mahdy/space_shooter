@@ -38,11 +38,14 @@ class LaserBeam extends Weapon {
     // Shorter beam range than railgun
     const beamMaxRange = 350.0;
 
-    // Find all enemies in beam path within range
+    // Find all enemies in beam path within range (including nested children like boss cores)
     final hitEnemies = <BaseEnemy>[];
-    final allEnemies = gameRef.world.children.whereType<BaseEnemy>();
+    final allEnemies = gameRef.activeEnemies;
 
     for (final enemy in allEnemies) {
+      // Skip non-targetable enemies (e.g., invulnerable bosses)
+      if (!enemy.isTargetable) continue;
+
       final toEnemy = enemy.position - bulletSpawnPosition;
       final distance = toEnemy.length;
 

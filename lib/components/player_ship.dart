@@ -289,6 +289,9 @@ class PlayerShip extends BaseRenderedComponent
     final allEnemies = gameRef.activeEnemies;
 
     for (final enemy in allEnemies) {
+      // Skip non-targetable enemies (e.g., invulnerable bosses)
+      if (!enemy.isTargetable) continue;
+
       // Use PositionUtil for consistent distance calculation
       final distance = PositionUtil.getDistance(this, enemy);
       if (distance < nearestDistance && distance <= targetRange) {
@@ -329,6 +332,14 @@ class PlayerShip extends BaseRenderedComponent
   }
 
   void takeDamage(double damage, {Vector2? pushbackDirection}) {
+    // Always apply pushback first (even when invincible)
+    if (pushbackDirection != null) {
+      _applyPushback(pushbackDirection);
+    }
+
+    // Debug invincibility (testing ground) - blocks damage but not pushback
+    if (gameRef.debugManager.isInvincible) return;
+
     // Invulnerability frames prevent multiple hits
     if (isInvulnerable) return;
 
@@ -342,11 +353,6 @@ class PlayerShip extends BaseRenderedComponent
         isPlayerDamage: false,
       );
       gameRef.world.add(blockedText);
-
-      // Apply pushback even when shield absorbs damage
-      if (pushbackDirection != null) {
-        _applyPushback(pushbackDirection);
-      }
 
       // Start invulnerability frames
       isInvulnerable = true;
@@ -372,11 +378,6 @@ class PlayerShip extends BaseRenderedComponent
       gameRef.world.add(damageNumber);
       _lastDamageNumberTime = now;
       _accumulatedDamage = 0;
-    }
-
-    // Apply pushback
-    if (pushbackDirection != null) {
-      _applyPushback(pushbackDirection);
     }
 
     // Start invulnerability frames

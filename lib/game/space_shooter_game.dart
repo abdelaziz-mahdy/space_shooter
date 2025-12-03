@@ -20,6 +20,7 @@ import '../managers/stats_manager.dart';
 import '../managers/star_manager.dart';
 import '../managers/combo_manager.dart';
 import '../managers/audio_manager.dart';
+import '../managers/debug_manager.dart';
 import '../ui/touch_joystick.dart';
 
 // Import base enemy for caching
@@ -43,7 +44,7 @@ import '../components/bosses/summoner_boss.dart';
 import '../components/bosses/vortex_boss.dart';
 import '../components/bosses/fortress_boss.dart';
 import '../components/bosses/architect_boss.dart';
-import '../components/bosses/hydra_boss.dart';
+// import '../components/bosses/hydra_boss.dart'; // Disabled - complex collision issues
 import '../components/bosses/nexus_boss.dart';
 
 // Import all weapons for factory registration
@@ -65,6 +66,7 @@ class SpaceShooterGame extends FlameGame
   late StarManager starManager;
   late ComboManager comboManager;
   late AudioManager audioManager;
+  DebugManager? debugManager; // Only initialized in debug mode
   TouchJoystick? joystick;
 
   bool isGameOver = false;
@@ -127,7 +129,7 @@ class SpaceShooterGame extends FlameGame
     VortexBoss.init();
     FortressBoss.init();
     ArchitectBoss.init();
-    HydraBoss.init();
+    // HydraBoss.init(); // Disabled - complex collision issues
     NexusBoss.init();
 
     // Register all weapons
@@ -143,15 +145,33 @@ class SpaceShooterGame extends FlameGame
   }
 
   /// Get cached enemy list (refreshed once per frame for performance)
+  /// Recursively finds all BaseEnemy instances, including nested children (e.g., boss cores)
   List<BaseEnemy> get activeEnemies {
     if (_enemyCacheFrame != _lastCacheFrame) {
-      _cachedEnemies = world.children
-          .whereType<BaseEnemy>()
+      _cachedEnemies = _findAllEnemiesRecursive(world)
           .where((e) => e.isMounted)
           .toList();
       _lastCacheFrame = _enemyCacheFrame;
     }
     return _cachedEnemies;
+  }
+
+  /// Recursively find all BaseEnemy components in the tree
+  /// This allows bosses to have child enemies (e.g., HydraBoss cores)
+  List<BaseEnemy> _findAllEnemiesRecursive(Component root) {
+    final enemies = <BaseEnemy>[];
+
+    for (final child in root.children) {
+      // If this child is a BaseEnemy, add it
+      if (child is BaseEnemy) {
+        enemies.add(child);
+      }
+
+      // Recursively search this child's children
+      enemies.addAll(_findAllEnemiesRecursive(child));
+    }
+
+    return enemies;
   }
 
   /// Get current game time (for rate limiting)
@@ -217,6 +237,12 @@ class SpaceShooterGame extends FlameGame
 
     comboManager = ComboManager();
     world.add(comboManager);
+
+    // Only add debug manager in debug mode
+    if (kDebugMode) {
+      debugManager = DebugManager(player: player);
+      world.add(debugManager);
+    }
 
     enemyManager = EnemyManager(game: this, player: player);
     // Set up wave complete callback for XP auto-collect

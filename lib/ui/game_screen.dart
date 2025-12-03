@@ -8,6 +8,7 @@ import 'flutter_game_over_screen.dart';
 import 'combo_meter.dart';
 import 'stats_panel.dart';
 import 'settings_dialog.dart';
+import 'testing_ground_overlay.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -215,6 +216,10 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                 game: game,
                 onSettingsPressed: _toggleSettingsDialog,
               ),
+
+            // Testing Ground overlay (debug/testing menu)
+            if (!_showGameOver && !_showUpgradeDialog && game.hasLoaded)
+              TestingGroundOverlay(game: game),
 
             // Stats Panel (toggleable with TAB key or from settings)
             if (!_showGameOver && !_showUpgradeDialog && !_showSettingsDialog && game.hasLoaded)
