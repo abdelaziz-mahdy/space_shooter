@@ -7,6 +7,7 @@ import 'package:flutter/rendering.dart';
 import '../utils/position_util.dart';
 import '../utils/visual_center_mixin.dart';
 import '../utils/game_logger.dart';
+import '../utils/targeting_system.dart';
 import 'base_rendered_component.dart';
 import 'enemies/base_enemy.dart';
 import 'damage_number.dart';
@@ -282,25 +283,13 @@ class PlayerShip extends BaseRenderedComponent
   }
 
   void findNearestEnemy() {
-    PositionComponent? nearest;
-    double nearestDistance = double.infinity;
-
-    // Use cached enemy list from game (refreshed once per frame)
-    final allEnemies = gameRef.activeEnemies;
-
-    for (final enemy in allEnemies) {
-      // Skip non-targetable enemies (e.g., invulnerable bosses)
-      if (!enemy.isTargetable) continue;
-
-      // Use PositionUtil for consistent distance calculation
-      final distance = PositionUtil.getDistance(this, enemy);
-      if (distance < nearestDistance && distance <= targetRange) {
-        nearestDistance = distance;
-        nearest = enemy;
-      }
-    }
-
-    targetEnemy = nearest;
+    // Use centralized targeting system for consistent behavior
+    targetEnemy = TargetingSystem.findNearestEnemy(
+      game: gameRef,
+      fromPosition: position,
+      maxRange: targetRange,
+      onlyTargetable: true,
+    );
   }
 
   void shoot() {
@@ -338,7 +327,7 @@ class PlayerShip extends BaseRenderedComponent
     }
 
     // Debug invincibility (testing ground) - blocks damage but not pushback
-    if (gameRef.debugManager.isInvincible) return;
+    if (gameRef.debugManager?.isInvincible ?? false) return;
 
     // Invulnerability frames prevent multiple hits
     if (isInvulnerable) return;

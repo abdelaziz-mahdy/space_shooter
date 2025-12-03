@@ -3,10 +3,10 @@ import 'dart:ui';
 import 'package:flame/components.dart';
 import '../components/beam_effect.dart';
 import '../components/player_ship.dart';
-import '../components/enemies/base_enemy.dart';
 import '../game/space_shooter_game.dart';
 import '../factories/weapon_factory.dart';
 import '../config/weapon_unlock_config.dart';
+import '../utils/targeting_system.dart';
 import 'weapon.dart';
 
 /// Laser Beam - continuous damage beam with shorter range than railgun
@@ -37,35 +37,17 @@ class LaserBeam extends Weapon {
 
     // Shorter beam range than railgun
     const beamMaxRange = 350.0;
+    const coneAngle = 0.02; // ~11 degree cone (dotProduct 0.98 ≈ cos(11°) ≈ 0.98)
 
-    // Find all enemies in beam path within range (including nested children like boss cores)
-    final hitEnemies = <BaseEnemy>[];
-    final allEnemies = gameRef.activeEnemies;
-
-    for (final enemy in allEnemies) {
-      // Skip non-targetable enemies (e.g., invulnerable bosses)
-      if (!enemy.isTargetable) continue;
-
-      final toEnemy = enemy.position - bulletSpawnPosition;
-      final distance = toEnemy.length;
-
-      // Skip enemies beyond range
-      if (distance > beamMaxRange) continue;
-
-      // Calculate if enemy is in beam path
-      final dotProduct = toEnemy.normalized().dot(targetDirection.normalized());
-      if (dotProduct > 0.98) {
-        // Roughly 11 degrees cone
-        hitEnemies.add(enemy);
-      }
-    }
-
-    // Sort by distance and damage all
-    hitEnemies.sort((a, b) {
-      final distA = (a.position - bulletSpawnPosition).length;
-      final distB = (b.position - bulletSpawnPosition).length;
-      return distA.compareTo(distB);
-    });
+    // Use centralized targeting system to find all enemies in cone
+    final hitEnemies = TargetingSystem.findEnemiesInCone(
+      game: gameRef,
+      origin: bulletSpawnPosition,
+      direction: targetDirection,
+      maxRange: beamMaxRange,
+      coneAngle: coneAngle,
+      onlyTargetable: true,
+    );
 
     // Deal damage to all enemies in beam
     for (final enemy in hitEnemies) {

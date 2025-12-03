@@ -6,7 +6,7 @@ import 'package:flame/game.dart';
 import 'package:flame/events.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
+import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode, defaultTargetPlatform, TargetPlatform;
 import '../components/player_ship.dart';
 import '../components/star_particle.dart';
 import '../components/debug_overlay.dart';
@@ -239,7 +239,7 @@ class SpaceShooterGame extends FlameGame
     // Only add debug manager in debug mode
     if (kDebugMode) {
       debugManager = DebugManager(player: player);
-      world.add(debugManager);
+      world.add(debugManager!);
     }
 
     enemyManager = EnemyManager(game: this, player: player);
