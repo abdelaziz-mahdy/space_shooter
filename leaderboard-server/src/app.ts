@@ -164,7 +164,7 @@ app.get('/migrate', async (c) => {
         wave INTEGER DEFAULT 0,
         kills INTEGER DEFAULT 0,
         time_alive DECIMAL(10,2) DEFAULT 0,
-        upgrades TEXT[] DEFAULT '{}',
+        upgrades JSONB DEFAULT '{}',
         weapon_used VARCHAR(50),
         platform VARCHAR(20),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -175,6 +175,36 @@ app.get('/migrate', async (c) => {
     await query(`
       ALTER TABLE leaderboard ADD COLUMN IF NOT EXISTS platform VARCHAR(20)
     `);
+
+    // Migrate upgrades column from TEXT[] to JSONB if needed
+    // First, check if the column is TEXT[] type
+    const columnCheck = await query(`
+      SELECT data_type FROM information_schema.columns 
+      WHERE table_name = 'leaderboard' AND column_name = 'upgrades'
+    `);
+    
+    if (columnCheck.rows.length > 0 && columnCheck.rows[0].data_type === 'ARRAY') {
+      // Convert existing TEXT[] data to JSONB
+      // For each row, convert array like ['speed', 'speed', 'damage'] to {'speed': 2, 'damage': 1}
+      await query(`
+        UPDATE leaderboard
+        SET upgrades = (
+          SELECT jsonb_object_agg(upgrade_id, upgrade_count)
+          FROM (
+            SELECT upgrade_id, COUNT(*) as upgrade_count
+            FROM unnest(upgrades) AS upgrade_id
+            GROUP BY upgrade_id
+          ) counts
+        )
+        WHERE upgrades IS NOT NULL AND array_length(upgrades, 1) > 0
+      `);
+      
+      // Change column type to JSONB
+      await query(`
+        ALTER TABLE leaderboard 
+        ALTER COLUMN upgrades TYPE JSONB USING upgrades::jsonb
+      `);
+    }
 
     // Create index if it doesn't exist
     await query(`
@@ -234,7 +264,7 @@ app.get('/scores', async (c) => {
       wave: row.wave,
       kills: row.kills,
       timeAlive: parseFloat(row.time_alive),
-      upgrades: row.upgrades || [],
+      upgrades: row.upgrades || {}, // JSONB object
       weaponUsed: row.weapon_used,
       platform: row.platform,
       createdAt: row.created_at,
@@ -359,10 +389,37 @@ app.post('/scores', async (c) => {
       }, 400);
     }
 
-    // Sanitize upgrades array
-    const sanitizedUpgrades = Array.isArray(upgrades)
-      ? upgrades.filter((u): u is string => typeof u === 'string').slice(0, 50)
-      : [];
+    // Sanitize upgrades - accept both array (old) and object (new) formats
+    // Store as JSONB object for efficiency
+    let sanitizedUpgrades: Record<string, number> = {};
+
+    // Limits to prevent abuse while allowing legitimate gameplay
+    const MAX_UNIQUE_UPGRADES = 200;  // Max different upgrade types
+    const MAX_COUNT_PER_UPGRADE = 200; // Max stacks of same upgrade
+
+    if (Array.isArray(upgrades)) {
+      // Old format: array of upgrade IDs like ['speed', 'speed', 'damage']
+      // Convert to object: {'speed': 2, 'damage': 1}
+      const filtered = upgrades.filter((u): u is string => typeof u === 'string');
+      for (const upgradeId of filtered) {
+        sanitizedUpgrades[upgradeId] = (sanitizedUpgrades[upgradeId] || 0) + 1;
+        // Stop if we hit unique upgrade limit
+        if (Object.keys(sanitizedUpgrades).length >= MAX_UNIQUE_UPGRADES) break;
+      }
+      // Cap counts at max per upgrade
+      for (const key in sanitizedUpgrades) {
+        sanitizedUpgrades[key] = Math.min(sanitizedUpgrades[key], MAX_COUNT_PER_UPGRADE);
+      }
+    } else if (typeof upgrades === 'object' && upgrades !== null) {
+      // New format: object like {'speed': 5, 'damage': 3}
+      const entries = Object.entries(upgrades).slice(0, MAX_UNIQUE_UPGRADES);
+      
+      for (const [key, count] of entries) {
+        if (typeof key === 'string' && typeof count === 'number' && count > 0) {
+          sanitizedUpgrades[key] = Math.min(count as number, MAX_COUNT_PER_UPGRADE);
+        }
+      }
+    }
 
     // Sanitize weapon
     const sanitizedWeapon = typeof weaponUsed === 'string' ? weaponUsed.slice(0, 50) : null;
