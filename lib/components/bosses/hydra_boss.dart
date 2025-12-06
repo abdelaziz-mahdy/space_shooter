@@ -489,7 +489,6 @@ class _HydraCore extends BaseEnemy {
     if (isDying) return;
     isDying = true;
 
-
     // Don't drop loot (parent boss handles loot)
     // Don't increment kill count (parent boss is the real enemy)
     // Just remove the core
@@ -525,7 +524,6 @@ class _HydraCore extends BaseEnemy {
       radius + 3,
       glowPaint,
     );
-
 
     // Draw status effects and health bar (provided by BaseEnemy)
     renderFreezeEffect(canvas);
