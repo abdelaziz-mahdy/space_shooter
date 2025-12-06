@@ -80,9 +80,8 @@ class HydraBoss extends BaseEnemy {
     // Spawn cores after the boss is fully mounted and positioned
     _spawnAllCores();
 
-    // Mark cores as initialized after spawning
-    // (they'll mount asynchronously but we can start checking them now)
-    Future.delayed(Duration.zero, () {
+    // Mark cores as initialized in next microtask to ensure all cores have started mounting
+    Future.microtask(() {
       _coresInitialized = true;
     });
   }
@@ -394,11 +393,8 @@ class _HydraCore extends BaseEnemy {
 
   @override
   Future<void> addHitbox() async {
-    // Use simple CircleHitbox with RELATIVE positioning
-    add(CircleHitbox.relative(
-      0.9, // 90% of component size
-      parentSize: size,
-    ));
+    // Use CircleHitbox with radius relative to component size
+    add(CircleHitbox(radius: size.x * 0.45)); // 0.9 means 90% diameter = 0.45 radius
   }
 
   @override
