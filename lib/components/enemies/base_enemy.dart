@@ -12,6 +12,9 @@ import '../loot.dart';
 import '../../factories/power_up_factory.dart';
 import '../player_ship.dart';
 
+/// Merge radius for smart loot collection (drops merge if another loot is within this range)
+const double _lootMergeRadius = 60.0;
+
 /// Abstract base class for all enemy types
 /// Provides common functionality like health, damage, loot drops, and collision handling
 abstract class BaseEnemy extends BaseRenderedComponent
@@ -189,6 +192,46 @@ abstract class BaseEnemy extends BaseRenderedComponent
     // Subclasses can override for custom death effects
   }
 
+  /// Find the closest loot within merge radius from position, or null if none exist
+  Loot? _findClosestLootNearby(Vector2 dropPosition) {
+    Loot? closestLoot;
+    double closestDistance = _lootMergeRadius;
+
+    // Find all nearby loot entities
+    final allLoot = gameRef.world.children.whereType<Loot>();
+    for (final loot in allLoot) {
+      final distance = PositionUtil.getDistance(
+        PositionComponent(position: dropPosition),
+        loot,
+      );
+      if (distance < closestDistance && distance <= _lootMergeRadius) {
+        closestDistance = distance;
+        closestLoot = loot;
+      }
+    }
+
+    return closestLoot;
+  }
+
+  /// Drop or merge a single loot value, preferring to merge with nearby loot
+  void _dropOrMergeLoot(Vector2 dropPosition, int xpValue) {
+    // Try to find existing loot to merge with
+    final closestLoot = _findClosestLootNearby(dropPosition);
+
+    if (closestLoot != null) {
+      // Merge with existing loot by increasing its XP value
+      // This is more efficient than creating a new entity
+      closestLoot.xpValue += xpValue;
+    } else {
+      // No nearby loot, create a new one
+      final loot = Loot(
+        position: dropPosition,
+        xpValue: xpValue,
+      );
+      gameRef.world.add(loot);
+    }
+  }
+
   /// Drop XP in merged cores to reduce entity count
   /// XP tiers: 1 XP (cyan), 5 XP (green), 10 XP (yellow), 25 XP (orange), 50 XP (pink), 100 XP (red), 250 XP (purple)
   void _dropMergedXP(int totalXP) {
@@ -200,71 +243,50 @@ abstract class BaseEnemy extends BaseRenderedComponent
 
     // Drop 250 XP cores (purple) - mega orbs
     while (remaining >= 250) {
-      final loot = Loot(
-        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
-        xpValue: 250,
-      );
-      gameRef.world.add(loot);
+      final dropPosition = position.clone() + Vector2.random() * 20 - Vector2.all(10);
+      _dropOrMergeLoot(dropPosition, 250);
       remaining -= 250;
     }
 
     // Drop 100 XP cores (red) - huge orbs
     while (remaining >= 100) {
-      final loot = Loot(
-        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
-        xpValue: 100,
-      );
-      gameRef.world.add(loot);
+      final dropPosition = position.clone() + Vector2.random() * 20 - Vector2.all(10);
+      _dropOrMergeLoot(dropPosition, 100);
       remaining -= 100;
     }
 
     // Drop 50 XP cores (pink) - very large orbs
     while (remaining >= 50) {
-      final loot = Loot(
-        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
-        xpValue: 50,
-      );
-      gameRef.world.add(loot);
+      final dropPosition = position.clone() + Vector2.random() * 20 - Vector2.all(10);
+      _dropOrMergeLoot(dropPosition, 50);
       remaining -= 50;
     }
 
     // Drop 25 XP cores (orange) - large orbs
     while (remaining >= 25) {
-      final loot = Loot(
-        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
-        xpValue: 25,
-      );
-      gameRef.world.add(loot);
+      final dropPosition = position.clone() + Vector2.random() * 20 - Vector2.all(10);
+      _dropOrMergeLoot(dropPosition, 25);
       remaining -= 25;
     }
 
     // Drop 10 XP cores (yellow) - medium orbs
     while (remaining >= 10) {
-      final loot = Loot(
-        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
-        xpValue: 10,
-      );
-      gameRef.world.add(loot);
+      final dropPosition = position.clone() + Vector2.random() * 20 - Vector2.all(10);
+      _dropOrMergeLoot(dropPosition, 10);
       remaining -= 10;
     }
 
     // Drop 5 XP cores (green) - small orbs
     while (remaining >= 5) {
-      final loot = Loot(
-        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
-        xpValue: 5,
-      );
-      gameRef.world.add(loot);
+      final dropPosition = position.clone() + Vector2.random() * 20 - Vector2.all(10);
+      _dropOrMergeLoot(dropPosition, 5);
       remaining -= 5;
     }
 
     // Drop remaining 1 XP cores (cyan) - tiny orbs
     for (int i = 0; i < remaining; i++) {
-      final loot = Loot(
-        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
-        xpValue: 1,
-      );
-      gameRef.world.add(loot);
+      final dropPosition = position.clone() + Vector2.random() * 20 - Vector2.all(10);
+      _dropOrMergeLoot(dropPosition, 1);
     }
   }
 
