@@ -29,7 +29,8 @@ class LaserBeam extends Weapon {
     Vector2 targetDirection,
     PositionComponent? targetEnemy,
   ) {
-    final game = (player.parent?.parent as SpaceShooterGame?);
+    // PlayerShip extends BaseRenderedComponent which has HasGameReference<SpaceShooterGame>
+    final game = player.game as SpaceShooterGame?;
     if (game == null) return;
 
     final bulletSpawnPosition = _getBulletSpawnPosition(player);
