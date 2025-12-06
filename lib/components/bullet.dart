@@ -4,6 +4,7 @@ import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import '../utils/visual_center_mixin.dart';
 import '../utils/targeting_system.dart';
+import '../config/balance_config.dart';
 import 'base_rendered_component.dart';
 import 'enemies/base_enemy.dart';
 import 'damage_number.dart'; // Still needed for healing numbers
@@ -211,12 +212,33 @@ class Bullet extends BaseRenderedComponent with CollisionCallbacks, HasVisualCen
       _damageEnemy(enemy, explosionDamage, isCrit: false);
     }
 
-    // Visual explosion effect (simple expanding circle)
-    final explosion = ExplosionEffect(
-      position: position.clone(),
-      radius: player.explosionRadius,
-    );
-    game.world.add(explosion);
+    // Check for nearby explosion effects to merge with instead of creating new ones
+    final nearbyExplosion = _findNearbyExplosionEffect(position);
+
+    if (nearbyExplosion != null) {
+      // Merge: expand existing effect instead of creating a new one
+      nearbyExplosion.mergeWith(player.explosionRadius);
+    } else {
+      // No nearby effect, create new visual effect
+      final explosion = ExplosionEffect(
+        position: position.clone(),
+        radius: player.explosionRadius,
+      );
+      game.world.add(explosion);
+    }
+  }
+
+  /// Find a nearby explosion effect to merge with
+  ExplosionEffect? _findNearbyExplosionEffect(Vector2 position) {
+    final allEffects = game.world.children.whereType<ExplosionEffect>();
+
+    for (final effect in allEffects) {
+      final distance = position.distanceTo(effect.position);
+      if (distance <= BalanceConfig.effectMergeRadius) {
+        return effect;
+      }
+    }
+    return null;
   }
 
   /// Find nearest enemies using centralized targeting system
@@ -304,9 +326,10 @@ class Bullet extends BaseRenderedComponent with CollisionCallbacks, HasVisualCen
 
 /// Visual explosion effect
 class ExplosionEffect extends PositionComponent with HasGameReference<SpaceShooterGame> {
-  final double radius;
+  double radius;
   double lifetime = 0;
   static const double maxLifetime = 0.3; // Short duration
+  int mergeCount = 1; // Track how many explosions merged into this one
 
   ExplosionEffect({
     required Vector2 position,
@@ -329,6 +352,36 @@ class ExplosionEffect extends PositionComponent with HasGameReference<SpaceShoot
     }
   }
 
+  /// Merge with another explosion - expand radius instead of creating new effect
+  void mergeWith(double newRadius) {
+    mergeCount++; // Track merge count for visual feedback
+
+    // Expand the radius if the incoming explosion is larger
+    if (newRadius > radius) {
+      radius = newRadius;
+    }
+
+    // Reset lifetime to show effect longer when merging
+    lifetime = 0;
+  }
+
+  /// Get color based on merge count for visual feedback
+  Color _getColorForMergeCount() {
+    // Colors progress from orange → red → white as more explosions merge
+    // White indicates massive bullet explosion cluster
+    if (mergeCount <= 1) {
+      return const Color(0xFFFF6600); // Orange - single explosion
+    } else if (mergeCount <= 3) {
+      return const Color(0xFFFF4400); // Dark orange - 2-3 merges
+    } else if (mergeCount <= 5) {
+      return const Color(0xFFFF2200); // Red - 4-5 merges
+    } else if (mergeCount <= 8) {
+      return const Color(0xFFFF0000); // Bright red - 6-8 merges
+    } else {
+      return const Color(0xFFFFFFFF); // White - 9+ merges (extreme!)
+    }
+  }
+
   @override
   void render(Canvas canvas) {
     super.render(canvas);
@@ -337,8 +390,9 @@ class ExplosionEffect extends PositionComponent with HasGameReference<SpaceShoot
     final currentRadius = radius; // Match visual to damage radius
     final alpha = (1 - progress) * 0.6;
 
+    final baseColor = _getColorForMergeCount();
     final paint = Paint()
-      ..color = const Color(0xFFFF6600).withValues(alpha: alpha)
+      ..color = baseColor.withValues(alpha: alpha)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0;
 
@@ -347,6 +401,24 @@ class ExplosionEffect extends PositionComponent with HasGameReference<SpaceShoot
       currentRadius,
       paint,
     );
+
+    // Draw merge count indicator rings if merged
+    if (mergeCount > 1) {
+      final indicatorPaint = Paint()
+        ..color = baseColor.withValues(alpha: alpha * 0.8)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5;
+
+      // Draw count indicator rings (1 ring per merge)
+      for (int i = 1; i <= mergeCount && i <= 5; i++) {
+        final ringRadius = currentRadius * (0.6 + (i * 0.08));
+        canvas.drawCircle(
+          Offset(size.x / 2, size.y / 2),
+          ringRadius,
+          indicatorPaint,
+        );
+      }
+    }
   }
 }
 

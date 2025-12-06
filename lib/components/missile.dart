@@ -125,12 +125,19 @@ class Missile extends BaseRenderedComponent
 
   void _explode() {
     // Find all enemies within explosion radius using cached active enemies
-    for (final enemy in game.activeEnemies) {
-      final distance = PositionUtil.getDistance(this, enemy);
-      if (distance <= explosionRadius) {
-        // Apply explosion damage
-        final damageAmount = damage * explosionDamage;
-        enemy.takeDamage(damageAmount);
+    // Consolidate damage: only damage if no nearby missile explosion was just handled
+    final nearbyMissileExplosion = _findNearbyMissileExplosion(position);
+
+    if (nearbyMissileExplosion == null) {
+      // Only apply damage if this is the first/primary explosion
+      // Subsequent merged explosions won't re-apply damage
+      for (final enemy in game.activeEnemies) {
+        final distance = PositionUtil.getDistance(this, enemy);
+        if (distance <= explosionRadius) {
+          // Apply explosion damage
+          final damageAmount = damage * explosionDamage;
+          enemy.takeDamage(damageAmount);
+        }
       }
     }
 
@@ -149,6 +156,20 @@ class Missile extends BaseRenderedComponent
       );
       game.world.add(waveEffect);
     }
+  }
+
+  /// Find a nearby missile that just exploded to avoid duplicate damage
+  BombWaveEffect? _findNearbyMissileExplosion(Vector2 position) {
+    final allEffects = game.world.children.whereType<BombWaveEffect>();
+
+    for (final effect in allEffects) {
+      final distance = position.distanceTo(effect.position);
+      // If effect is very close and just started (young), it's from a recent missile hit
+      if (distance <= explosionRadius * 1.5) {
+        return effect;
+      }
+    }
+    return null;
   }
 
   /// Find a nearby bomb effect to merge with
