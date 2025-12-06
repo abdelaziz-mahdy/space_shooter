@@ -172,7 +172,7 @@ abstract class BaseEnemy extends BaseRenderedComponent
     // Apply bleed effect if player has bleed damage
     // Scale bleed damage with current wave (1 + 0.3 per wave after wave 1)
     if (player.bleedDamage > 0) {
-      final waveMultiplier = 1.0 + ((game.enemyManager.getCurrentWave() - 1) * 0.3);
+      final waveMultiplier = 1.0 + ((game.enemyManager.getCurrentWave() - 1) * BalanceConfig.bleedDamageWaveMultiplier);
       final scaledBleedDamage = player.bleedDamage * waveMultiplier;
       applyBleed(scaledBleedDamage);
     }
