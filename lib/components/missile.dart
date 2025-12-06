@@ -7,6 +7,8 @@ import '../utils/position_util.dart';
 import 'base_rendered_component.dart';
 import 'enemies/base_enemy.dart';
 import '../game/space_shooter_game.dart';
+import 'power_ups/bomb_power_up.dart';
+import '../config/balance_config.dart';
 
 /// Homing missile component
 class Missile extends BaseRenderedComponent
@@ -133,8 +135,34 @@ class Missile extends BaseRenderedComponent
       }
     }
 
-    // TODO: Add visual explosion effect here
-    // For now, the explosion is just damage without visual
+    // Create visual bomb explosion effect
+    // Check for nearby bomb effects to merge with instead of creating new ones
+    final nearbyBombEffect = _findNearbyBombEffect(position);
+
+    if (nearbyBombEffect != null) {
+      // Merge: expand existing effect instead of creating a new one
+      nearbyBombEffect.mergeWith(explosionRadius);
+    } else {
+      // No nearby effect, create new visual wave effect
+      final waveEffect = BombWaveEffect(
+        position: position.clone(),
+        maxRadius: explosionRadius,
+      );
+      game.world.add(waveEffect);
+    }
+  }
+
+  /// Find a nearby bomb effect to merge with
+  BombWaveEffect? _findNearbyBombEffect(Vector2 position) {
+    final allEffects = game.world.children.whereType<BombWaveEffect>();
+
+    for (final effect in allEffects) {
+      final distance = position.distanceTo(effect.position);
+      if (distance <= BalanceConfig.effectMergeRadius) {
+        return effect;
+      }
+    }
+    return null;
   }
 
   @override
