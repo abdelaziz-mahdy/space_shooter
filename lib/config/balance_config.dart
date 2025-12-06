@@ -22,4 +22,9 @@ class BalanceConfig {
 
   // Loot Merging (Performance)
   static const double lootMergeRadius = 60.0; // Drops merge if another loot is within this range
+
+  // Effect Pooling (Performance) - Merge overlapping visual effects
+  // When multiple impacts happen in same location (e.g., 10 rockets at once),
+  // merge effects instead of creating duplicates
+  static const double effectMergeRadius = 350.0; // Merge visual effects within this radius
 }

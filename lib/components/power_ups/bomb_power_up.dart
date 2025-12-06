@@ -5,6 +5,7 @@ import '../player_ship.dart';
 import '../enemies/base_enemy.dart';
 import 'base_power_up.dart';
 import '../../utils/value_with_description.dart';
+import '../../config/balance_config.dart';
 
 /// Bomb Power-Up - Destroys all enemies in range
 class BombPowerUp extends BasePowerUp {
@@ -49,14 +50,35 @@ class BombPowerUp extends BasePowerUp {
       }
     }
 
-    // Create visual wave effect with same radius as damage range
-    final waveEffect = BombWaveEffect(
-      position: playerPosition.clone(),
-      maxRadius: bombRange,
-    );
-    game.world.add(waveEffect);
+    // Check for nearby bomb effects to merge with instead of creating new ones
+    final nearbyBombEffect = _findNearbyBombEffect(playerPosition);
+
+    if (nearbyBombEffect != null) {
+      // Merge: expand existing effect instead of creating a new one
+      nearbyBombEffect.mergeWith(bombRange);
+    } else {
+      // No nearby effect, create new visual wave effect
+      final waveEffect = BombWaveEffect(
+        position: playerPosition.clone(),
+        maxRadius: bombRange,
+      );
+      game.world.add(waveEffect);
+    }
 
     print('[PowerUp] Bomb activated: $enemiesDamaged/${allEnemies.length} enemies damaged (within ${bombRange.toInt()}px)');
+  }
+
+  /// Find a nearby bomb effect to merge with
+  BombWaveEffect? _findNearbyBombEffect(Vector2 position) {
+    final allEffects = game.world.children.whereType<BombWaveEffect>();
+
+    for (final effect in allEffects) {
+      final distance = position.distanceTo(effect.position);
+      if (distance <= BalanceConfig.effectMergeRadius) {
+        return effect;
+      }
+    }
+    return null;
   }
 
   @override
@@ -118,7 +140,7 @@ class BombPowerUp extends BasePowerUp {
 
 /// Visual effect for bomb power-up - expanding circular wave
 class BombWaveEffect extends PositionComponent {
-  final double maxRadius;
+  double maxRadius; // Non-final to allow merging
   final double duration;
 
   double _elapsedTime = 0.0;
@@ -150,6 +172,21 @@ class BombWaveEffect extends PositionComponent {
     if (_elapsedTime >= duration) {
       removeFromParent();
     }
+  }
+
+  /// Merge with another bomb explosion - expand radius instead of creating new effect
+  void mergeWith(double newMaxRadius) {
+    // Expand the max radius if the incoming bomb is larger
+    if (newMaxRadius > maxRadius) {
+      // Adjust current radius proportionally to new max
+      final radiusRatio = newMaxRadius / maxRadius;
+      maxRadius = newMaxRadius;
+      _currentRadius *= radiusRatio;
+    }
+
+    // Reset elapsed time to show the effect longer when merging
+    // This prevents multiple quick merges from instantly completing the effect
+    _elapsedTime = 0;
   }
 
   /// Ease out cubic function for smooth deceleration
