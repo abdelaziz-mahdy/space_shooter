@@ -178,9 +178,10 @@ class SplitterBoss extends BaseEnemy {
     _spawnClone(position + offset1, cloneHealth, newLevel);
     _spawnClone(position + offset2, cloneHealth, newLevel);
 
-    // Original dies without dropping loot (clones handle completion)
+    // Mark as dying to prevent double-death before removal
+    isDying = true;
     health = 0;
-    removeFromParent(); // Direct removal, no die() to avoid loot
+    removeFromParent(); // Direct removal, no die() to avoid loot/kill count
   }
 
   void _spawnClone(Vector2 spawnPos, double cloneHealth, SplitLevel level) {
@@ -198,6 +199,19 @@ class SplitterBoss extends BaseEnemy {
     gameRef.world.add(clone);
 
     print('[SplitterBoss] Spawned ${level} clone at $spawnPos with health $cloneHealth');
+  }
+
+  @override
+  void die() {
+    // Only small clones (that can't split anymore) should count as kills
+    // Medium and original bosses don't count because they split into more enemies
+    if (splitLevel == SplitLevel.small) {
+      super.die(); // Count as kill and drop loot
+    } else {
+      // Medium/original dying mid-split: just remove without counting
+      isDying = true;
+      removeFromParent();
+    }
   }
 
   @override

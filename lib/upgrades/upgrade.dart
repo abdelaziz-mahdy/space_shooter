@@ -1,6 +1,7 @@
 import 'dart:math';
 import '../components/player_ship.dart';
 import '../config/weapon_unlock_config.dart';
+import '../config/balance_config.dart';
 import 'weapon_upgrade.dart';
 
 /// Upgrade rarity levels
@@ -118,6 +119,11 @@ class MultiShotUpgrade extends Upgrade {
   @override
   void apply(PlayerShip player) {
     player.projectileCount += additionalProjectiles;
+  }
+
+  @override
+  bool isValidFor(PlayerShip player) {
+    return player.projectileCount < BalanceConfig.maxProjectileCount;
   }
 
   @override
@@ -337,7 +343,12 @@ class ArmorUpgrade extends Upgrade {
   @override
   void apply(PlayerShip player) {
     player.damageReduction += damageReduction;
-    player.damageReduction = player.damageReduction.clamp(0.0, 0.80);
+    player.damageReduction = player.damageReduction.clamp(0.0, BalanceConfig.maxDamageReduction);
+  }
+
+  @override
+  bool isValidFor(PlayerShip player) {
+    return player.damageReduction < BalanceConfig.maxDamageReduction;
   }
 
   @override
@@ -700,20 +711,25 @@ class TimeDilationUpgrade extends Upgrade {
   List<String> getStatusChanges() => ['Slow enemy speed by 30%'];
 }
 
-/// Bullet Storm - More projectiles with slight damage penalty
+/// Bullet Storm - More projectiles with increased damage
 class BulletStormUpgrade extends Upgrade {
   BulletStormUpgrade()
       : super(
           id: 'bullet_storm',
           name: 'Bullet Storm',
-          description: '+2 projectiles, -15% damage per shot',
+          description: '+2 projectiles, +20% damage',
           icon: '🌪️',
         );
 
   @override
   void apply(PlayerShip player) {
     player.projectileCount += 2;
-    player.damageMultiplier *= 0.85; // 15% damage reduction per bullet
+    player.damageMultiplier *= 1.20; // 20% damage increase
+  }
+
+  @override
+  bool isValidFor(PlayerShip player) {
+    return player.projectileCount < BalanceConfig.maxProjectileCount;
   }
 
   @override
@@ -722,7 +738,7 @@ class BulletStormUpgrade extends Upgrade {
   @override
   List<String> getStatusChanges() => [
     '+2 projectiles',
-    '-15% damage per shot'
+    '+20% damage'
   ];
 }
 
@@ -855,6 +871,11 @@ class ImmovableObjectUpgrade extends Upgrade {
   }
 
   @override
+  bool isValidFor(PlayerShip player) {
+    return player.damageReduction < BalanceConfig.maxDamageReduction;
+  }
+
+  @override
   UpgradeRarity get rarity => UpgradeRarity.legendary;
 
   @override
@@ -953,7 +974,6 @@ class UpgradeFactory {
     return [
       // Pulse Cannon upgrades
       PulseCannonDamageUpgrade(),
-      PulseCannonFireRateUpgrade(),
       PulseCannonMultiShotUpgrade(),
 
       // Plasma Spreader upgrades
@@ -963,7 +983,6 @@ class UpgradeFactory {
 
       // Railgun upgrades
       RailgunDamageUpgrade(),
-      RailgunFireRateUpgrade(),
       RailgunExplosiveUpgrade(),
 
       // Missile Launcher upgrades

@@ -1,8 +1,188 @@
 [
   {
+    "version": "0.3.11",
+    "title": "Hydra Boss Fix",
+    "date": "2025-12-01",
+    "sections": [
+      {
+        "title": "Bug Fixes",
+        "emoji": "🐛",
+        "items": [
+          "Hydra Boss cores now work with all weapon types",
+          "Fixed cores not affected by status effects like freeze and bleed",
+          "Fixed cores not showing damage numbers"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "0.3.10",
+    "title": "Wave & Combat Improvements",
+    "date": "2025-12-01",
+    "sections": [
+      {
+        "title": "Bug Fixes",
+        "emoji": "🐛",
+        "items": [
+          "Fixed enemies sometimes dying twice causing incorrect kill counts",
+          "Fixed wave completion detection for splitting bosses",
+          "Waves now progress correctly when bosses split into clones"
+        ]
+      },
+      {
+        "title": "Balance Changes",
+        "emoji": "⚖️",
+        "items": [
+          "Faster wave transitions for better pacing",
+          "Combo XP multiplier no longer capped (was 3x max)",
+          "Bullet Storm upgrade now gives damage bonus instead of penalty",
+          "Smoother player knockback animation"
+        ]
+      },
+      {
+        "title": "UI Improvements",
+        "emoji": "🎨",
+        "items": [
+          "Combo meter moved down for better visibility"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "0.3.9",
+    "title": "New Features & Quality of Life",
+    "date": "2025-12-01",
+    "sections": [
+      {
+        "title": "New Features",
+        "emoji": "✨",
+        "items": [
+          "Added surrender option in settings menu",
+          "See your predicted global rank before submitting score",
+          "Faster and more accurate rank predictions"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "0.3.8",
+    "title": "Performance & Balance Fixes",
+    "date": "2025-12-01",
+    "sections": [
+      {
+        "title": "Critical Performance Fixes",
+        "emoji": "⚡",
+        "items": [
+          "FIXED: Game crashes at high waves (12GB RAM → 2GB)",
+          "Damage numbers now merge together for cleaner display",
+          "Much smoother gameplay at Wave 100+",
+          "Significantly reduced lag during intense combat"
+        ]
+      },
+      {
+        "title": "Critical Balance Fixes",
+        "emoji": "⚖️",
+        "items": [
+          "FIXED: Invincibility exploit with armor upgrades",
+          "Damage reduction now capped at 60% max",
+          "Armor upgrades no longer appear when at cap",
+          "Game is now properly challenging at all levels"
+        ]
+      },
+      {
+        "title": "Projectile System",
+        "emoji": "🎯",
+        "items": [
+          "Projectile count now capped at 5 max",
+          "Projectile upgrades hidden when at cap",
+          "Better balance between firepower and performance"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "0.3.7",
+    "title": "Wave System & XP Improvements",
+    "date": "2025-12-01",
+    "sections": [
+      {
+        "title": "Critical Fixes",
+        "emoji": "🚨",
+        "items": [
+          "FIXED: Wave completion logic (waves no longer complete early)",
+          "FIXED: Enemy counting bug (bosses were double-counted)",
+          "FIXED: Multi-boss waves now spawn correct number of bosses",
+          "FIXED: Pushback flickering replaced with smooth 0.25s animation",
+          "REMOVED: Weapon-specific fire rate upgrades (confusing with cooldown)"
+        ]
+      },
+      {
+        "title": "XP System Improvements",
+        "emoji": "💎",
+        "items": [
+          "NEW: Larger XP orbs (50 XP pink, 100 XP red, 250 XP purple)",
+          "IMPROVED: More aggressive XP merging reduces orb spam at late levels",
+          "NEW: Auto-collect all XP at wave end with animated pull",
+          "Better performance and visibility in late game"
+        ]
+      },
+      {
+        "title": "New Features",
+        "emoji": "✨",
+        "items": [
+          "NEW: Enemy spawn indicators at screen edges",
+          "Arrows point to off-screen enemies (orange for normal, red for bosses)",
+          "Boss indicators show distance in screen units"
+        ]
+      },
+      {
+        "title": "Polish",
+        "emoji": "🎨",
+        "items": [
+          "Smooth pushback animation with cubic ease-out",
+          "Better debug logging for wave completion tracking",
+          "Improved player feedback during combat"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "0.3.6",
+    "title": "Fire Rate Clarity Fix",
+    "date": "2025-11-30",
+    "sections": [
+      {
+        "title": "UI Improvements",
+        "emoji": "✨",
+        "items": [
+          "Standardized fire rate terminology in upgrades",
+          "Changed confusing cooldown/charge time to fire rate"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "0.3.5",
+    "title": "Critical Collision Fixes",
+    "date": "2025-11-29",
+    "sections": [
+      {
+        "title": "Critical Fixes",
+        "emoji": "🚨",
+        "items": [
+          "FIXED: Kamikaze no longer deals double damage (contact + explosion)",
+          "FIXED: Added invulnerability frames (1 sec) to prevent rapid damage",
+          "FIXED: Added pushback when hit to prevent getting stuck in enemies",
+          "FIXED: Bosses no longer die instantly from player collision",
+          "FIXED: Score now displays in HUD (top-right corner)"
+        ]
+      }
+    ]
+  },
+  {
     "version": "0.3.4",
     "title": "Bullet Storm Fix",
-    "date": "2025-01-29",
+    "date": "2025-11-29",
     "sections": [
       {
         "title": "Critical Fixes",
@@ -17,7 +197,7 @@
   {
     "version": "0.3.3",
     "title": "Upgrade Balance",
-    "date": "2025-01-29",
+    "date": "2025-11-29",
     "sections": [
       {
         "title": "Balance",
@@ -32,7 +212,7 @@
   {
     "version": "0.3.2",
     "title": "Major Bug Fixes & Balance",
-    "date": "2025-01-28",
+    "date": "2025-11-29",
     "sections": [
       {
         "title": "Critical Fixes",
@@ -78,7 +258,7 @@
   {
     "version": "0.3.1",
     "title": "Critical Bug Fixes",
-    "date": "2025-01-28",
+    "date": "2025-11-29",
     "sections": [
       {
         "title": "Critical Fixes",
@@ -111,7 +291,7 @@
   {
     "version": "0.3.0",
     "title": "Weapon System Expansion",
-    "date": "2025-01-28",
+    "date": "2025-11-29",
     "sections": [
       {
         "title": "New Weapons",
@@ -146,7 +326,7 @@
   {
     "version": "0.2.0",
     "title": "Balance & Bug Fixes",
-    "date": "2025-01-28",
+    "date": "2025-11-29",
     "sections": [
       {
         "title": "Bug Fixes",

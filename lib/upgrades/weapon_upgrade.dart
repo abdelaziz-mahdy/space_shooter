@@ -1,5 +1,6 @@
 import 'package:space_shooter/components/player_ship.dart';
 import 'package:space_shooter/upgrades/upgrade.dart';
+import '../config/balance_config.dart';
 
 /// Base class for weapon-specific upgrades
 /// These upgrades only appear when the player has the specific weapon equipped
@@ -47,28 +48,6 @@ class PulseCannonDamageUpgrade extends WeaponUpgrade {
   List<String> getStatusChanges() => ['+${damageIncrease.toInt()} damage (Pulse Cannon)'];
 }
 
-/// Pulse Cannon: Faster fire rate
-class PulseCannonFireRateUpgrade extends WeaponUpgrade {
-  final double fireRateIncrease;
-
-  PulseCannonFireRateUpgrade({this.fireRateIncrease = 0.15})
-      : super(
-          weaponId: 'pulse_cannon',
-          id: 'pulse_cannon_fire_rate',
-          name: 'Rapid Pulse',
-          description: '-${(fireRateIncrease * 100).toInt()}% cooldown',
-          icon: '⚡',
-        );
-
-  @override
-  void apply(PlayerShip player) {
-    player.shootInterval = (player.shootInterval * (1 - fireRateIncrease)).clamp(0.1, 10.0);
-  }
-
-  @override
-  List<String> getStatusChanges() => ['-${(fireRateIncrease * 100).toInt()}% cooldown (Pulse Cannon)'];
-}
-
 /// Pulse Cannon: Extra projectiles
 class PulseCannonMultiShotUpgrade extends WeaponUpgrade {
   final int projectileIncrease;
@@ -85,6 +64,12 @@ class PulseCannonMultiShotUpgrade extends WeaponUpgrade {
   @override
   void apply(PlayerShip player) {
     player.projectileCount += projectileIncrease;
+  }
+
+  @override
+  bool isValidFor(PlayerShip player) {
+    return player.projectileCount < BalanceConfig.maxProjectileCount &&
+           player.weaponManager.currentWeapon?.id == weaponId;
   }
 
   @override
@@ -199,31 +184,6 @@ class RailgunDamageUpgrade extends WeaponUpgrade {
   List<String> getStatusChanges() => ['+${damageIncrease.toInt()} damage (Railgun)'];
 }
 
-/// Railgun: Faster charge time
-class RailgunFireRateUpgrade extends WeaponUpgrade {
-  final double fireRateIncrease;
-
-  RailgunFireRateUpgrade({this.fireRateIncrease = 0.2})
-      : super(
-          weaponId: 'railgun',
-          id: 'railgun_fire_rate',
-          name: 'Rapid Charge',
-          description: '-${(fireRateIncrease * 100).toInt()}% charge time',
-          icon: '🔫',
-        );
-
-  @override
-  void apply(PlayerShip player) {
-    player.shootInterval = (player.shootInterval * (1 - fireRateIncrease)).clamp(0.1, 10.0);
-  }
-
-  @override
-  UpgradeRarity get rarity => UpgradeRarity.rare;
-
-  @override
-  List<String> getStatusChanges() => ['-${(fireRateIncrease * 100).toInt()}% charge time (Railgun)'];
-}
-
 /// Railgun: Explosive impact
 class RailgunExplosiveUpgrade extends WeaponUpgrade {
   final double explosionIncrease;
@@ -294,6 +254,12 @@ class MissileLauncherMultiShotUpgrade extends WeaponUpgrade {
   @override
   void apply(PlayerShip player) {
     player.projectileCount += projectileIncrease;
+  }
+
+  @override
+  bool isValidFor(PlayerShip player) {
+    return player.projectileCount < BalanceConfig.maxProjectileCount &&
+           player.weaponManager.currentWeapon?.id == weaponId;
   }
 
   @override

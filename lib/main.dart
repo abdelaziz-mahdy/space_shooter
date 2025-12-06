@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'ui/main_menu.dart';
 import 'ui/game_screen.dart';
+import 'ui/leaderboard_screen.dart';
 import 'config/env_config.dart';
 
 void main() async {
@@ -21,6 +22,7 @@ class GameApp extends StatelessWidget {
       routes: {
         '/': (context) => const MainMenu(),
         '/game': (context) => const GameScreen(),
+        '/leaderboard': (context) => const LeaderboardScreen(),
       },
     );
   }

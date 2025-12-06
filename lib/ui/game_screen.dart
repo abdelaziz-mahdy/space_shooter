@@ -106,7 +106,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
         game.enemyManager.stopSpawning();
       } else {
         game.isPaused = false;
-        game.enemyManager.startSpawning();
+        game.enemyManager.resumeSpawning(); // Resume without starting new wave
       }
     });
   }
@@ -140,6 +140,16 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
 
     // Navigate back to main menu, replacing the current route
     Navigator.of(context).pushReplacementNamed('/');
+  }
+
+  void _surrender() {
+    // Close settings dialog
+    setState(() {
+      _showSettingsDialog = false;
+    });
+
+    // Trigger game over
+    game.gameOver();
   }
 
   void _restartGame() {
@@ -195,16 +205,16 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                 ),
               ),
 
-            // HUD overlay (always visible during gameplay)
+            // Combo Meter (shows during gameplay) - BEFORE HUD so it's behind
+            if (!_showGameOver && !_showUpgradeDialog && game.hasLoaded)
+              ComboMeter(game: game),
+
+            // HUD overlay (always visible during gameplay) - AFTER ComboMeter so it's on top
             if (!_showGameOver && game.hasLoaded)
               FlutterHUD(
                 game: game,
                 onSettingsPressed: _toggleSettingsDialog,
               ),
-
-            // Combo Meter (shows during gameplay)
-            if (!_showGameOver && !_showUpgradeDialog && game.hasLoaded)
-              ComboMeter(game: game),
 
             // Stats Panel (toggleable with TAB key or from settings)
             if (!_showGameOver && !_showUpgradeDialog && !_showSettingsDialog && game.hasLoaded)
@@ -221,6 +231,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                 onClose: _toggleSettingsDialog,
                 onBackToMenu: _returnToMainMenu,
                 onViewStats: _openStatsFromSettings,
+                onSurrender: _surrender,
                 isAudioMuted: game.audioManager.isMuted,
                 onAudioMuteChanged: _toggleAudioMute,
               ),

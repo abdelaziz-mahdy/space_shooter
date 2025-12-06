@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
 import '../utils/position_util.dart';
 import '../utils/visual_center_mixin.dart';
+import '../utils/game_logger.dart';
 import 'base_rendered_component.dart';
 import 'enemies/base_enemy.dart';
 import 'damage_number.dart';
@@ -65,6 +66,23 @@ class PlayerShip extends BaseRenderedComponent
   double damageMultiplier = 1.0;
   double attackSizeMultiplier = 1.0;
   double cooldownReduction = 0;
+
+  // Invulnerability frames (prevent multiple collision damage)
+  bool isInvulnerable = false;
+  double invulnerabilityTimer = 0;
+  static const double invulnerabilityDuration = 1.0; // 1 second of immunity after hit
+
+  // Damage number rate limiting (for performance at high levels)
+  double _lastDamageNumberTime = 0;
+  double _accumulatedDamage = 0;
+  static const double damageNumberCooldown = 0.05; // Show damage every 50ms
+
+  // Pushback animation state
+  bool isPushingBack = false;
+  double pushbackProgress = 0.0;
+  Vector2 pushbackStartPos = Vector2.zero();
+  Vector2 pushbackEndPos = Vector2.zero();
+  static const double pushbackDuration = 0.5; // 0.5 seconds smooth animation (doubled from 0.25s)
 
   // Time/Wave mechanics
   double berserkThreshold = 0.3;
@@ -160,6 +178,33 @@ class PlayerShip extends BaseRenderedComponent
     // Don't update if game is paused
     if (gameRef.isPaused) return;
 
+    // Update invulnerability timer
+    if (isInvulnerable) {
+      invulnerabilityTimer -= dt;
+      if (invulnerabilityTimer <= 0) {
+        isInvulnerable = false;
+        invulnerabilityTimer = 0;
+      }
+    }
+
+    // Update pushback animation
+    if (isPushingBack) {
+      pushbackProgress += dt / pushbackDuration;
+
+      if (pushbackProgress >= 1.0) {
+        // Animation complete
+        isPushingBack = false;
+        pushbackProgress = 0.0;
+        position = pushbackEndPos.clone();
+      } else {
+        // Cubic ease-out interpolation for smooth deceleration
+        final t = pushbackProgress;
+        final easeOut = (1 - pow(1 - t, 3)).toDouble();
+
+        position = pushbackStartPos + (pushbackEndPos - pushbackStartPos) * easeOut;
+      }
+    }
+
     // Update orbital drones when count changes
     _updateOrbitals();
 
@@ -194,8 +239,8 @@ class PlayerShip extends BaseRenderedComponent
       );
     }
 
-    // Normalize and apply velocity
-    if (velocity.length > 0) {
+    // Normalize and apply velocity (don't move during pushback)
+    if (velocity.length > 0 && !isPushingBack) {
       velocity.normalize();
       position += velocity * moveSpeed * dt;
       // No bounds clamping - infinite world with camera following player
@@ -240,8 +285,8 @@ class PlayerShip extends BaseRenderedComponent
     PositionComponent? nearest;
     double nearestDistance = double.infinity;
 
-    // Get all enemies (BaseEnemy includes BossShip and all enemy types)
-    final allEnemies = gameRef.world.children.whereType<BaseEnemy>();
+    // Use cached enemy list from game (refreshed once per frame)
+    final allEnemies = gameRef.activeEnemies;
 
     for (final enemy in allEnemies) {
       // Use PositionUtil for consistent distance calculation
@@ -268,7 +313,25 @@ class PlayerShip extends BaseRenderedComponent
     gameRef.audioManager.playShoot();
   }
 
-  void takeDamage(double damage) {
+  /// Apply knockback force to push player away from enemy with smooth animation
+  void _applyPushback(Vector2 direction) {
+    // Don't start new pushback if already pushing back
+    if (isPushingBack) return;
+
+    // Use percentage-based pushback (15% of screen width) for responsive design
+    final pushbackDistance = gameRef.size.x * 0.15;
+
+    // Set up animation
+    isPushingBack = true;
+    pushbackProgress = 0.0;
+    pushbackStartPos = position.clone();
+    pushbackEndPos = position + (direction * pushbackDistance);
+  }
+
+  void takeDamage(double damage, {Vector2? pushbackDirection}) {
+    // Invulnerability frames prevent multiple hits
+    if (isInvulnerable) return;
+
     // Shield blocks damage
     if (shieldLayers > 0) {
       shieldLayers--;
@@ -279,22 +342,46 @@ class PlayerShip extends BaseRenderedComponent
         isPlayerDamage: false,
       );
       gameRef.world.add(blockedText);
+
+      // Apply pushback even when shield absorbs damage
+      if (pushbackDirection != null) {
+        _applyPushback(pushbackDirection);
+      }
+
+      // Start invulnerability frames
+      isInvulnerable = true;
+      invulnerabilityTimer = invulnerabilityDuration;
+
       return; // Shield absorbed hit
     }
 
-    // Apply damage reduction
-    final actualDamage = damage * (1.0 - damageReduction);
+    // Apply damage reduction with global 60% cap
+    final cappedReduction = damageReduction.clamp(0.0, 0.60);
+    final actualDamage = damage * (1.0 - cappedReduction);
 
-    // Spawn damage number showing player damage
-    final damageNumber = DamageNumber(
-      position: position.clone(),
-      damage: actualDamage,
-      isPlayerDamage: true,
-    );
-    gameRef.world.add(damageNumber);
+    // Accumulate damage and show merged numbers every 50ms
+    final now = gameRef.gameTime;
+    _accumulatedDamage += actualDamage;
 
-    // Thorns - reflect damage back to attacker (if applicable)
-    // Note: This is a placeholder - actual implementation would need enemy reference
+    if (now - _lastDamageNumberTime >= damageNumberCooldown) {
+      final damageNumber = DamageNumber(
+        position: position.clone(),
+        damage: _accumulatedDamage,
+        isPlayerDamage: true,
+      );
+      gameRef.world.add(damageNumber);
+      _lastDamageNumberTime = now;
+      _accumulatedDamage = 0;
+    }
+
+    // Apply pushback
+    if (pushbackDirection != null) {
+      _applyPushback(pushbackDirection);
+    }
+
+    // Start invulnerability frames
+    isInvulnerable = true;
+    invulnerabilityTimer = invulnerabilityDuration;
 
     health -= actualDamage;
 
@@ -497,7 +584,7 @@ class PlayerShip extends BaseRenderedComponent
     }
 
     _lastOrbitalCount = orbitalCount;
-    print('[PlayerShip] Updated orbitals: $orbitalCount drones');
+    GameLogger.debug('Updated orbitals: $orbitalCount drones', tag: 'PlayerShip');
   }
 
 }
