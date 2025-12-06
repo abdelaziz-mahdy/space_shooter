@@ -5,6 +5,7 @@ import 'package:flame/components.dart';
 import '../../utils/position_util.dart';
 import '../../factories/enemy_factory.dart';
 import '../../config/enemy_spawn_config.dart';
+import '../../config/balance_config.dart';
 import '../../game/space_shooter_game.dart';
 import '../enemies/base_enemy.dart';
 import '../player_ship.dart';
@@ -473,7 +474,10 @@ class _HydraCore extends BaseEnemy {
 
     // Apply bleed effect if player has bleed damage
     if (player.bleedDamage > 0) {
-      applyBleed(player.bleedDamage);
+      // Scale bleed damage with current wave (1 + 0.3 per wave after wave 1)
+      final waveMultiplier = 1.0 + ((game.enemyManager.getCurrentWave() - 1) * BalanceConfig.bleedDamageWaveMultiplier);
+      final scaledBleedDamage = player.bleedDamage * waveMultiplier;
+      applyBleed(scaledBleedDamage);
     }
 
     if (health <= 0) {

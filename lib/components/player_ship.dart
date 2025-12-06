@@ -390,6 +390,31 @@ class PlayerShip extends BaseRenderedComponent
 
   @override
   void renderShape(Canvas canvas) {
+    // Draw invincibility effect (flashing when invulnerable)
+    if (isInvulnerable) {
+      final invincibilityFlash = (invulnerabilityTimer % 0.2) / 0.2; // 0.2s flash cycle
+      final isFadingOut = invincibilityFlash < 0.5;
+      final flashAlpha = isFadingOut ? invincibilityFlash * 2 : (1 - invincibilityFlash) * 2;
+
+      final center = Offset(size.x / 2, size.y / 2);
+
+      // Draw invincibility aura (golden glow)
+      final invincibilityPaint = Paint()
+        ..color = const Color(0xFFFFD700).withValues(alpha: flashAlpha * 0.4)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4.0;
+
+      canvas.drawCircle(center, (size.x / 2) + 12, invincibilityPaint);
+
+      // Draw pulsing shield indicator
+      final pulsePaint = Paint()
+        ..color = const Color(0xFFFFD700).withValues(alpha: flashAlpha * 0.6)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0;
+
+      canvas.drawCircle(center, (size.x / 2) + 18, pulsePaint);
+    }
+
     // Draw shield layers first (behind ship)
     if (shieldLayers > 0) {
       final center = Offset(size.x / 2, size.y / 2);

@@ -11,7 +11,7 @@ class GameOverOverlay extends PositionComponent
   final String timeAlive;
   final double timeAliveSeconds;
   final int wavesCompleted;
-  final List<String> upgrades;
+  final Map<String, int> upgrades;
   final String? weaponUsed;
   final VoidCallback onRestart;
   final VoidCallback onMainMenu;

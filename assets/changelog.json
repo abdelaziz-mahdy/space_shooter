@@ -1,5 +1,29 @@
 [
   {
+    "version": "0.3.13",
+    "title": "Upgrade Stacking & Visual Effects",
+    "date": "2025-12-06",
+    "sections": [
+      {
+        "title": "Gameplay Fixes",
+        "emoji": "🎯",
+        "items": [
+          "Fixed upgrade stacking logic - non-stackable upgrades now properly blocked",
+          "Bleed damage now scales with wave progression for better balance"
+        ]
+      },
+      {
+        "title": "Visual Improvements",
+        "emoji": "✨",
+        "items": [
+          "Merged explosion effects show color progression (orange → red → white)",
+          "Added merge count indicator rings to show effect intensity",
+          "Invincibility aura now pulses with golden glow when active"
+        ]
+      }
+    ]
+  },
+  {
     "version": "0.3.12",
     "title": "Stability & Balance Fixes",
     "date": "2025-12-06",

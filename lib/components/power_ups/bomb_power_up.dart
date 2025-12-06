@@ -142,6 +142,7 @@ class BombPowerUp extends BasePowerUp {
 class BombWaveEffect extends PositionComponent {
   double maxRadius; // Non-final to allow merging
   final double duration;
+  int mergeCount = 1; // Track how many explosions merged into this one
 
   double _elapsedTime = 0.0;
   double _currentRadius = 0.0;
@@ -176,6 +177,8 @@ class BombWaveEffect extends PositionComponent {
 
   /// Merge with another bomb explosion - expand radius instead of creating new effect
   void mergeWith(double newMaxRadius) {
+    mergeCount++; // Track merge count for visual feedback
+
     // Expand the max radius if the incoming bomb is larger
     if (newMaxRadius > maxRadius) {
       // Adjust current radius proportionally to new max
@@ -189,6 +192,23 @@ class BombWaveEffect extends PositionComponent {
     _elapsedTime = 0;
   }
 
+  /// Get color based on merge count for visual feedback
+  Color _getColorForMergeCount() {
+    // Colors progress from cyan → purple → magenta as more explosions merge
+    // Distinctly different from bullet explosions (orange → white)
+    if (mergeCount <= 1) {
+      return const Color(0xFF00FFFF); // Cyan - single explosion
+    } else if (mergeCount <= 3) {
+      return const Color(0xFF00AAFF); // Light blue - 2-3 merges
+    } else if (mergeCount <= 5) {
+      return const Color(0xFF6666FF); // Blue-purple - 4-5 merges
+    } else if (mergeCount <= 8) {
+      return const Color(0xFF9933FF); // Purple - 6-8 merges
+    } else {
+      return const Color(0xFFFF00FF); // Magenta - 9+ merges (massive!)
+    }
+  }
+
   /// Ease out cubic function for smooth deceleration
   double _easeOutCubic(double t) {
     final t1 = t - 1.0;
@@ -199,9 +219,11 @@ class BombWaveEffect extends PositionComponent {
   void render(Canvas canvas) {
     super.render(canvas);
 
-    // Draw expanding ring/wave effect with cyan/blue color
+    final baseColor = _getColorForMergeCount();
+
+    // Draw expanding ring/wave effect with color based on merge count
     final paint = Paint()
-      ..color = const Color(0xFF00FFFF).withValues(alpha: _opacity * 0.6)
+      ..color = baseColor.withValues(alpha: _opacity * 0.6)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 6.0;
 
@@ -213,8 +235,10 @@ class BombWaveEffect extends PositionComponent {
     );
 
     // Draw inner wave (slightly smaller, for depth effect)
+    // Use darker version of base color for inner wave
+    final innerColor = Color.lerp(baseColor, const Color(0xFF000000), 0.3) ?? baseColor;
     final innerPaint = Paint()
-      ..color = const Color(0xFF00AAFF).withValues(alpha: _opacity * 0.4)
+      ..color = innerColor!.withValues(alpha: _opacity * 0.4)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4.0;
 
@@ -226,7 +250,7 @@ class BombWaveEffect extends PositionComponent {
 
     // Draw fill with gradient effect (very transparent)
     final fillPaint = Paint()
-      ..color = const Color(0xFF00FFFF).withValues(alpha: _opacity * 0.1)
+      ..color = baseColor.withValues(alpha: _opacity * 0.1)
       ..style = PaintingStyle.fill;
 
     canvas.drawCircle(
@@ -234,5 +258,19 @@ class BombWaveEffect extends PositionComponent {
       _currentRadius,
       fillPaint,
     );
+
+    // Draw merge count indicator if merged (show as rings or glow)
+    if (mergeCount > 1) {
+      final indicatorPaint = Paint()
+        ..color = baseColor.withValues(alpha: _opacity * 0.8)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0;
+
+      // Draw count indicator rings (1 ring per 2 merges)
+      for (int i = 1; i <= (mergeCount / 2).ceil(); i++) {
+        final ringRadius = _currentRadius * (0.5 + (i * 0.15));
+        canvas.drawCircle(Offset.zero, ringRadius, indicatorPaint);
+      }
+    }
   }
 }
