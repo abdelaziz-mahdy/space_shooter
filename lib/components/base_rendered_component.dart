@@ -41,7 +41,7 @@ abstract class BaseRenderedComponent extends PositionComponent with HasGameRefer
         if (child is CircleHitbox) {
           // Draw circle hitbox
           canvas.drawCircle(
-            Offset(child.position.x + child.radius, child.position.y + child.radius),
+            Offset(child.position.x, child.position.y),
             child.radius,
             hitboxPaint,
           );
