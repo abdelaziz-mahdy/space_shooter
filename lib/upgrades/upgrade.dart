@@ -36,6 +36,10 @@ abstract class Upgrade {
   /// Override this to prevent showing upgrades that don't make sense
   bool isValidFor(PlayerShip player) => true;
 
+  /// Check if this upgrade can be taken multiple times
+  /// Override to return false for unique/non-stackable upgrades
+  bool get isStackable => true;
+
   /// Get a list of status changes this upgrade provides
   /// Returns a list of strings describing each stat modification
   List<String> getStatusChanges() => [];
@@ -304,6 +308,9 @@ class LifestealUpgrade extends Upgrade {
   }
 
   @override
+  bool get isStackable => false; // Don't show lifesteal more than once
+
+  @override
   List<String> getStatusChanges() => ['+${(lifestealPercent * 100).toInt()}% lifesteal'];
 }
 
@@ -505,6 +512,9 @@ class WeaponUnlockUpgrade extends Upgrade {
   }
 
   @override
+  bool get isStackable => false; // Each weapon can only be unlocked once
+
+  @override
   List<String> getStatusChanges() => ['Unlock and equip new weapon'];
 }
 
@@ -676,6 +686,9 @@ class VampiricAuraUpgrade extends Upgrade {
     player.lifesteal += 0.2;
     player.magnetRadius += 100; // Also increase magnet radius
   }
+
+  @override
+  bool get isStackable => false; // Don't show vampiric aura more than once
 
   @override
   UpgradeRarity get rarity => UpgradeRarity.epic;
@@ -1025,7 +1038,7 @@ class UpgradeFactory {
           .where((u) =>
             u.rarity == targetRarity &&
             !selected.contains(u) &&
-            (player == null || u.isValidFor(player)))
+            (player == null || (u.isValidFor(player) && _canSelectUpgrade(u, player))))
           .toList();
 
       if (availableUpgrades.isNotEmpty) {
@@ -1036,7 +1049,7 @@ class UpgradeFactory {
         final anyAvailable = allUpgrades
             .where((u) =>
               !selected.contains(u) &&
-              (player == null || u.isValidFor(player)))
+              (player == null || (u.isValidFor(player) && _canSelectUpgrade(u, player))))
             .toList();
         if (anyAvailable.isNotEmpty) {
           selected.add(anyAvailable[random.nextInt(anyAvailable.length)]);
@@ -1045,5 +1058,16 @@ class UpgradeFactory {
     }
 
     return selected;
+  }
+
+  /// Helper method to check if an upgrade can be selected
+  /// Handles both stackable and non-stackable upgrades
+  static bool _canSelectUpgrade(Upgrade upgrade, PlayerShip player) {
+    // If upgrade is already applied and NOT stackable, don't allow it
+    if (player.appliedUpgrades.containsKey(upgrade.id) && !upgrade.isStackable) {
+      return false;
+    }
+    // Otherwise, allow it (stackable upgrades or new non-stackable upgrades)
+    return true;
   }
 }

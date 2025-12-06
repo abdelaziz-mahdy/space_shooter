@@ -477,7 +477,10 @@ class _HydraCore extends BaseEnemy {
 
     // Apply bleed effect if player has bleed damage
     if (player.bleedDamage > 0) {
-      applyBleed(player.bleedDamage);
+      // Scale bleed damage with current wave (1 + 0.3 per wave after wave 1)
+      final waveMultiplier = 1.0 + ((game.enemyManager.getCurrentWave() - 1) * 0.3);
+      final scaledBleedDamage = player.bleedDamage * waveMultiplier;
+      applyBleed(scaledBleedDamage);
     }
 
     if (health <= 0) {
