@@ -107,10 +107,9 @@ class HydraBoss extends BaseEnemy {
   }
 
   int get aliveCoresCount {
-    // Only remove cores that were mounted and then removed (died)
-    // Don't remove cores that haven't mounted yet (just spawned)
-    cores.removeWhere((core) => core.isRemoved);
-    return cores.length;
+    // Pure getter - count alive cores without side effects
+    // Dead cores are cleaned up in updateMovement() once per frame
+    return cores.where((core) => !core.isRemoved).length;
   }
 
   @override
@@ -129,6 +128,9 @@ class HydraBoss extends BaseEnemy {
 
   @override
   void updateMovement(double dt) {
+    // Clean up dead cores once per update (to keep aliveCoresCount getter pure)
+    cores.removeWhere((core) => core.isRemoved);
+
     // Update orbit angle
     orbitAngle += coreOrbitSpeed * dt;
     if (orbitAngle > 2 * pi) {

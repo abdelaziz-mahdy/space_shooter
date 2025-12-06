@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flame/components.dart';
 import '../components/enemies/base_enemy.dart';
 import '../game/space_shooter_game.dart';
@@ -148,8 +149,9 @@ class TargetingSystem {
       final angleToEnemy = dotProduct; // cos(angle)
 
       // Check if enemy is within cone angle
-      // cos(coneAngle) gives us the threshold for the dot product
-      if (angleToEnemy >= (1.0 - coneAngle * 2)) {
+      // For a cone with half-angle θ in radians, the dot product threshold is cos(θ)
+      final cosThreshold = cos(coneAngle);
+      if (angleToEnemy >= cosThreshold) {
         enemiesInCone.add(enemy);
       }
     }
