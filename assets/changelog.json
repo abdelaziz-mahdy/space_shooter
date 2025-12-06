@@ -1,25 +1,16 @@
 [
   {
     "version": "0.3.12",
-    "title": "Testing & Debug Tools",
+    "title": "Stability & Balance Fixes",
     "date": "2025-12-06",
     "sections": [
       {
-        "title": "Development Tools",
-        "emoji": "🛠️",
+        "title": "Bug Fixes",
+        "emoji": "🐛",
         "items": [
-          "Added testing ground for developers",
-          "Debug tools for in-game testing (debug builds only)",
-          "Hitbox visualization for debugging collisions"
-        ]
-      },
-      {
-        "title": "Technical Improvements",
-        "emoji": "⚙️",
-        "items": [
-          "Improved enemy targeting for nested boss structures",
-          "Better weapon targeting system",
-          "Temporarily disabled Hydra Boss (wave 45)"
+          "Fixed enemy targeting system for complex boss patterns",
+          "Improved weapon accuracy and consistency",
+          "Temporarily disabled Hydra Boss while fixing spawning issues"
         ]
       }
     ]
