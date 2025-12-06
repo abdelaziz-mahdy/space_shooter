@@ -179,30 +179,47 @@ app.get('/migrate', async (c) => {
     // Migrate upgrades column from TEXT[] to JSONB if needed
     // First, check if the column is TEXT[] type
     const columnCheck = await query(`
-      SELECT data_type FROM information_schema.columns 
+      SELECT data_type FROM information_schema.columns
       WHERE table_name = 'leaderboard' AND column_name = 'upgrades'
     `);
-    
+
     if (columnCheck.rows.length > 0 && columnCheck.rows[0].data_type === 'ARRAY') {
-      // Convert existing TEXT[] data to JSONB
+      // Convert existing TEXT[] data to JSONB using a temporary column
+      // This approach safely converts while maintaining data integrity
+
+      // Step 1: Create temporary JSONB column with converted data
+      await query(`
+        ALTER TABLE leaderboard
+        ADD COLUMN upgrades_jsonb JSONB DEFAULT '{}'
+      `);
+
+      // Step 2: Convert data from TEXT[] to JSONB
       // For each row, convert array like ['speed', 'speed', 'damage'] to {'speed': 2, 'damage': 1}
       await query(`
         UPDATE leaderboard
-        SET upgrades = (
-          SELECT jsonb_object_agg(upgrade_id, upgrade_count)
-          FROM (
-            SELECT upgrade_id, COUNT(*) as upgrade_count
-            FROM unnest(upgrades) AS upgrade_id
-            GROUP BY upgrade_id
-          ) counts
+        SET upgrades_jsonb = (
+          CASE
+            WHEN upgrades IS NULL OR array_length(upgrades, 1) IS NULL THEN '{}'::jsonb
+            ELSE (
+              SELECT jsonb_object_agg(upgrade_id, upgrade_count)
+              FROM (
+                SELECT upgrade_id, COUNT(*) as upgrade_count
+                FROM unnest(upgrades) AS upgrade_id
+                GROUP BY upgrade_id
+              ) counts
+            )
+          END
         )
-        WHERE upgrades IS NOT NULL AND array_length(upgrades, 1) > 0
       `);
-      
-      // Change column type to JSONB
+
+      // Step 3: Drop old column and rename new column
       await query(`
-        ALTER TABLE leaderboard 
-        ALTER COLUMN upgrades TYPE JSONB USING upgrades::jsonb
+        ALTER TABLE leaderboard DROP COLUMN upgrades
+      `);
+
+      await query(`
+        ALTER TABLE leaderboard
+        RENAME COLUMN upgrades_jsonb TO upgrades
       `);
     }
 
