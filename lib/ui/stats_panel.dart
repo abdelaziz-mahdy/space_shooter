@@ -55,12 +55,12 @@ class StatsPanel extends StatelessWidget {
             ),
             padding: EdgeInsets.all(16 * scale),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.85),
+              color: Colors.black.withValues(alpha: 0.85),
               borderRadius: BorderRadius.circular(12 * scale),
               border: Border.all(color: const Color(0xFF00FFFF), width: 2 * scale),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF00FFFF).withOpacity(0.3),
+                  color: const Color(0xFF00FFFF).withValues(alpha: 0.3),
                   blurRadius: 10 * scale,
                   spreadRadius: 2 * scale,
                 ),

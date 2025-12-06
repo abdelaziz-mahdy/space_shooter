@@ -5,7 +5,7 @@ import '../game/space_shooter_game.dart';
 
 /// Floating damage number that appears when damage is dealt
 /// Animates upward and fades out over its lifetime
-class DamageNumber extends PositionComponent with HasGameRef<SpaceShooterGame> {
+class DamageNumber extends PositionComponent with HasGameReference<SpaceShooterGame> {
   final double damage;
   final bool isCrit;
   final bool isHealing;
@@ -38,7 +38,7 @@ class DamageNumber extends PositionComponent with HasGameRef<SpaceShooterGame> {
         fontWeight: FontWeight.bold,
         shadows: [
           Shadow(
-            color: Colors.black.withOpacity(0.8),
+            color: Colors.black.withValues(alpha: 0.8),
             offset: const Offset(1, 1),
             blurRadius: 2,
           ),
@@ -92,7 +92,7 @@ class DamageNumber extends PositionComponent with HasGameRef<SpaceShooterGame> {
         fontWeight: FontWeight.bold,
         shadows: [
           Shadow(
-            color: Colors.black.withOpacity(0.8 * opacity),
+            color: Colors.black.withValues(alpha: 0.8 * opacity),
             offset: const Offset(1, 1),
             blurRadius: 2,
           ),
@@ -123,12 +123,12 @@ class DamageNumber extends PositionComponent with HasGameRef<SpaceShooterGame> {
     if (isCrit) {
       final critText = TextPaint(
         style: TextStyle(
-          color: const Color(0xFFFFFF00).withOpacity(opacity),
+          color: const Color(0xFFFFFF00).withValues(alpha: opacity),
           fontSize: 10.0,
           fontWeight: FontWeight.bold,
           shadows: [
             Shadow(
-              color: Colors.black.withOpacity(0.8 * opacity),
+              color: Colors.black.withValues(alpha: 0.8 * opacity),
               offset: const Offset(1, 1),
               blurRadius: 2,
             ),
@@ -148,12 +148,12 @@ class DamageNumber extends PositionComponent with HasGameRef<SpaceShooterGame> {
     if (isThorns) {
       final thornsText = TextPaint(
         style: TextStyle(
-          color: const Color(0xFFFF00FF).withOpacity(opacity),
+          color: const Color(0xFFFF00FF).withValues(alpha: opacity),
           fontSize: 10.0,
           fontWeight: FontWeight.bold,
           shadows: [
             Shadow(
-              color: Colors.black.withOpacity(0.8 * opacity),
+              color: Colors.black.withValues(alpha: 0.8 * opacity),
               offset: const Offset(1, 1),
               blurRadius: 2,
             ),

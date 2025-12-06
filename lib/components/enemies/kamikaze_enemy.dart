@@ -97,7 +97,7 @@ class KamikazeEnemy extends BaseEnemy {
 
     // Draw pulsing warning circle
     final warningPaint = Paint()
-      ..color = const Color(0xFFFFFF00).withOpacity(0.3 + pulsePhase * 0.2)
+      ..color = const Color(0xFFFFFF00).withValues(alpha: 0.3 + pulsePhase * 0.2)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 

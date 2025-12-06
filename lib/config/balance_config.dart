@@ -19,4 +19,7 @@ class BalanceConfig {
   // XP Collection
   static const double waveEndCollectionSpeed = 800; // Speed for wave-end XP pull
   static const double normalAttractionSpeed = 200; // Normal magnet speed
+
+  // Loot Merging (Performance)
+  static const double lootMergeRadius = 60.0; // Drops merge if another loot is within this range
 }

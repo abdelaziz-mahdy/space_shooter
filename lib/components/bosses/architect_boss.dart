@@ -216,7 +216,7 @@ class ArchitectBoss extends BaseEnemy {
         speed: bulletSpeed,
       );
 
-      gameRef.world.add(bullet);
+      game.world.add(bullet);
     }
 
     print('[ArchitectBoss] Fired $rotatingBulletCount-way rotating pattern');
@@ -338,7 +338,7 @@ class ArchitectBoss extends BaseEnemy {
       final ringOpacity = (1.0 - ringProgress) * opacity;
 
       final ringPaint = Paint()
-        ..color = const Color(0xFFFFD700).withOpacity(ringOpacity * 0.5)
+        ..color = const Color(0xFFFFD700).withValues(alpha: ringOpacity * 0.5)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2;
 
@@ -377,7 +377,7 @@ class ArchitectBoss extends BaseEnemy {
 
 /// Barrier component for the Architect Boss
 class _ArchitectBarrier extends PositionComponent
-    with HasGameRef<SpaceShooterGame>, CollisionCallbacks {
+    with HasGameReference<SpaceShooterGame>, CollisionCallbacks {
   final ArchitectBoss parent;
   final int orbitIndex;
 
@@ -406,7 +406,7 @@ class _ArchitectBarrier extends PositionComponent
   void update(double dt) {
     super.update(dt);
 
-    if (gameRef.isPaused) return;
+    if (game.isPaused) return;
 
     // Update position to orbit around parent
     final angle = (orbitIndex * 2 * pi / ArchitectBoss.maxBarriers);
@@ -446,7 +446,7 @@ class _ArchitectBarrier extends PositionComponent
       speed: 140.0,
     );
 
-    gameRef.world.add(bullet);
+    game.world.add(bullet);
   }
 
   void takeDamage(double damage) {

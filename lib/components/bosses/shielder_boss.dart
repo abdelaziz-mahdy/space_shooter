@@ -187,7 +187,7 @@ class ShielderBoss extends BaseEnemy {
       // Make bullets larger
       bullet.size = Vector2(bulletSize, bulletSize);
 
-      gameRef.world.add(bullet);
+      game.world.add(bullet);
     }
 
     print('[ShielderBoss] Fired 8-way spread (shields: $shieldLayers, health: ${currentShieldHealth.toStringAsFixed(0)})');
@@ -297,7 +297,7 @@ class ShielderBoss extends BaseEnemy {
 
   void renderShields(Canvas canvas, double centerX, double centerY) {
     final shieldPaint = Paint()
-      ..color = const Color(0xFF00FFFF).withOpacity(0.4) // Cyan
+      ..color = const Color(0xFF00FFFF).withValues(alpha: 0.4) // Cyan
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
 
@@ -327,7 +327,7 @@ class ShielderBoss extends BaseEnemy {
     // If current layer is damaged, show it with reduced opacity
     if (currentShieldHealth < shieldHealthPerLayer && shieldLayers > 0) {
       final damagedPaint = Paint()
-        ..color = const Color(0xFF00FFFF).withOpacity(0.2)
+        ..color = const Color(0xFF00FFFF).withValues(alpha: 0.2)
         ..style = PaintingStyle.fill;
 
       final layer = shieldLayers - 1;

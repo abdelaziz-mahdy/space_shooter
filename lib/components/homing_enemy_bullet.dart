@@ -9,7 +9,7 @@ import '../game/space_shooter_game.dart';
 
 /// Bullet with homing capability fired by enemies
 class HomingEnemyBullet extends BaseRenderedComponent
-    with HasGameRef<SpaceShooterGame>, CollisionCallbacks, HasVisualCenter {
+    with CollisionCallbacks, HasVisualCenter {
   Vector2 direction;
   final double damage;
   final double speed;
@@ -42,7 +42,7 @@ class HomingEnemyBullet extends BaseRenderedComponent
     super.update(dt);
 
     // Don't update if game is paused
-    if (gameRef.isPaused) return;
+    if (game.isPaused) return;
 
     // Apply slight homing toward player
     _applyHoming(dt);
@@ -58,7 +58,7 @@ class HomingEnemyBullet extends BaseRenderedComponent
 
   void _applyHoming(double dt) {
     // Calculate direction to player
-    final toPlayer = PositionUtil.getDirectionTo(this, gameRef.player);
+    final toPlayer = PositionUtil.getDirectionTo(this, game.player);
 
     // Smoothly turn towards player (weaker than missiles)
     direction = (direction + (toPlayer * homingStrength * dt)).normalized();

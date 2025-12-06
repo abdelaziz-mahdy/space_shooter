@@ -6,7 +6,7 @@ import '../game/space_shooter_game.dart';
 import '../services/score_service.dart';
 
 class GameOverOverlay extends PositionComponent
-    with HasGameRef<SpaceShooterGame>, TapCallbacks {
+    with TapCallbacks, HasGameReference<SpaceShooterGame> {
   final int enemiesKilled;
   final String timeAlive;
   final double timeAliveSeconds;
@@ -33,7 +33,7 @@ class GameOverOverlay extends PositionComponent
     await super.onLoad();
 
     anchor = Anchor.topLeft;
-    size = gameRef.camera.viewport.size;
+    size = game.camera.viewport.size;
     position = Vector2.zero();
 
     // Save score once when overlay loads
@@ -95,7 +95,7 @@ class GameOverOverlay extends PositionComponent
   void update(double dt) {
     super.update(dt);
     // Continuously sync size with viewport for window resizing
-    size = gameRef.camera.viewport.size;
+    size = game.camera.viewport.size;
   }
 
   @override

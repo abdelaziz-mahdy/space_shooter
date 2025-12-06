@@ -27,7 +27,7 @@ class ShotgunBlaster extends Weapon {
     Vector2 targetDirection,
     PositionComponent? targetEnemy,
   ) {
-    final gameRef = player.gameRef;
+    final game = player.game;
     final bulletSpawnPosition = _getBulletSpawnPosition(player);
     final baseSpeed = getProjectileSpeed(player);
     final baseDamage = getDamage(player);
@@ -67,7 +67,7 @@ class ShotgunBlaster extends Weapon {
         forceCrit: shotIsCrit, // All pellets share same crit result
       );
 
-      gameRef.world.add(bullet);
+      game.world.add(bullet);
     }
   }
 

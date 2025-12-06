@@ -9,7 +9,7 @@ import '../../utils/visual_center_mixin.dart';
 /// Abstract base class for all power-ups
 /// Each power-up type extends this and provides its own implementation
 abstract class BasePowerUp extends BaseRenderedComponent
-    with HasGameRef<SpaceShooterGame>, CollisionCallbacks, HasVisualCenter {
+    with CollisionCallbacks, HasVisualCenter {
 
   final double lifespan; // Time before it disappears
   double lifetime = 0;
@@ -49,7 +49,7 @@ abstract class BasePowerUp extends BaseRenderedComponent
   void update(double dt) {
     super.update(dt);
 
-    if (gameRef.isPaused) return;
+    if (game.isPaused) return;
 
     lifetime += dt;
     if (lifetime >= lifespan) {
@@ -66,7 +66,7 @@ abstract class BasePowerUp extends BaseRenderedComponent
 
     if (other is PlayerShip) {
       // Play power-up sound
-      gameRef.audioManager.playPowerUp();
+      game.audioManager.playPowerUp();
 
       applyEffect(other);
       removeFromParent();
@@ -82,7 +82,7 @@ abstract class BasePowerUp extends BaseRenderedComponent
 
     // Draw background circle
     final bgPaint = Paint()
-      ..color = color.withOpacity(0.3)
+      ..color = color.withValues(alpha: 0.3)
       ..style = PaintingStyle.fill;
 
     canvas.drawCircle(

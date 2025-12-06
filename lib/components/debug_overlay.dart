@@ -7,15 +7,15 @@ import 'enemies/triangle_enemy.dart';
 import '../utils/visual_center_mixin.dart';
 import '../game/space_shooter_game.dart';
 
-class DebugOverlay extends Component with HasGameRef<SpaceShooterGame> {
+class DebugOverlay extends Component with HasGameReference<SpaceShooterGame> {
   @override
   void render(Canvas canvas) {
     super.render(canvas);
 
-    final player = gameRef.player;
+    final player = game.player;
     _drawComponentDebug(canvas, player, 'Player');
 
-    final enemies = gameRef.world.children.whereType<BaseEnemy>();
+    final enemies = game.world.children.whereType<BaseEnemy>();
     for (final enemy in enemies) {
       _drawComponentDebug(canvas, enemy, 'Enemy');
 

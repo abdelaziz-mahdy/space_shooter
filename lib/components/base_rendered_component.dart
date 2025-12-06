@@ -9,7 +9,7 @@ import '../game/space_shooter_game.dart';
 /// Instead of overriding `render()`, subclasses should override `renderShape()`.
 /// The canvas is already transformed by Flame to the component's position and rotation,
 /// so hitboxes and rendering will align correctly.
-abstract class BaseRenderedComponent extends PositionComponent with HasGameRef<SpaceShooterGame> {
+abstract class BaseRenderedComponent extends PositionComponent with HasGameReference<SpaceShooterGame> {
   BaseRenderedComponent({
     required super.position,
     required super.size,
@@ -22,7 +22,7 @@ abstract class BaseRenderedComponent extends PositionComponent with HasGameRef<S
     renderShape(canvas);
 
     // Render hitbox debug visualization if enabled
-    if (gameRef.debugManager?.showHitboxes ?? false) {
+    if (game.debugManager?.showHitboxes ?? false) {
       _renderHitboxDebug(canvas);
     }
 
@@ -32,7 +32,7 @@ abstract class BaseRenderedComponent extends PositionComponent with HasGameRef<S
   /// Render hitbox outlines for debugging
   void _renderHitboxDebug(Canvas canvas) {
     final hitboxPaint = Paint()
-      ..color = const Color(0xFF00FF00).withOpacity(0.7)
+      ..color = const Color(0xFF00FF00).withValues(alpha: 0.7)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
 

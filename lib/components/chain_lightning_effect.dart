@@ -6,7 +6,7 @@ import '../game/space_shooter_game.dart';
 
 /// Visual chain lightning effect
 class ChainLightningEffect extends BaseRenderedComponent
-    with HasGameRef<SpaceShooterGame>, HasVisualCenter {
+    with HasVisualCenter {
   final List<Vector2> path; // Chain path from start to all targets
   final Color lightningColor;
   double lifetime = 0;
@@ -35,7 +35,7 @@ class ChainLightningEffect extends BaseRenderedComponent
   void update(double dt) {
     super.update(dt);
 
-    if (gameRef.isPaused) return;
+    if (game.isPaused) return;
 
     lifetime += dt;
     if (lifetime >= maxLifetime) {
@@ -53,14 +53,14 @@ class ChainLightningEffect extends BaseRenderedComponent
 
     // Draw main lightning bolt
     final mainPaint = Paint()
-      ..color = lightningColor.withOpacity(opacity * 0.8)
+      ..color = lightningColor.withValues(alpha: opacity * 0.8)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0
       ..strokeCap = StrokeCap.round;
 
     // Draw glow
     final glowPaint = Paint()
-      ..color = lightningColor.withOpacity(opacity * 0.3)
+      ..color = lightningColor.withValues(alpha: opacity * 0.3)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8.0
       ..strokeCap = StrokeCap.round;
@@ -86,7 +86,7 @@ class ChainLightningEffect extends BaseRenderedComponent
 
     // Draw arc points (energy nodes at each chain point)
     final nodePaint = Paint()
-      ..color = lightningColor.withOpacity(opacity)
+      ..color = lightningColor.withValues(alpha: opacity)
       ..style = PaintingStyle.fill;
 
     for (final worldPos in path) {

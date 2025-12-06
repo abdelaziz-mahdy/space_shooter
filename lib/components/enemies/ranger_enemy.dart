@@ -105,7 +105,7 @@ class RangerEnemy extends BaseEnemy {
       speed: bulletSpeed,
     );
 
-    gameRef.world.add(bullet);
+    game.world.add(bullet);
     print('[RangerEnemy] Fired bullet at player');
   }
 
@@ -145,7 +145,7 @@ class RangerEnemy extends BaseEnemy {
     // Draw shoot indicator (charging effect)
     if (shootTimer > shootInterval * 0.8) {
       final chargePaint = Paint()
-        ..color = const Color(0xFFFFFF00).withOpacity(0.6)
+        ..color = const Color(0xFFFFFF00).withValues(alpha: 0.6)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2;
 

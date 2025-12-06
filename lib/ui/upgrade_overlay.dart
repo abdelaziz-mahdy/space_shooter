@@ -6,7 +6,7 @@ import '../game/space_shooter_game.dart';
 import '../upgrades/upgrade.dart';
 
 class UpgradeOverlay extends PositionComponent
-    with HasGameRef<SpaceShooterGame>, TapCallbacks {
+    with HasGameReference<SpaceShooterGame>, TapCallbacks {
   final Function(Upgrade) onUpgradeSelected;
   final List<Upgrade> availableUpgrades;
   final List<UpgradeCard> cards = [];
@@ -24,7 +24,7 @@ class UpgradeOverlay extends PositionComponent
     await super.onLoad();
 
     // Get viewport size from camera viewport
-    size = gameRef.camera.viewport.size.clone();
+    size = game.camera.viewport.size.clone();
     position = Vector2.zero();
 
     print('[UpgradeOverlay] Size set to: $size');
@@ -95,7 +95,7 @@ class UpgradeOverlay extends PositionComponent
   void update(double dt) {
     super.update(dt);
     // Continuously sync size with viewport and reposition cards
-    size = gameRef.camera.viewport.size.clone();
+    size = game.camera.viewport.size.clone();
     _repositionCards();
   }
 
@@ -148,7 +148,7 @@ class UpgradeOverlay extends PositionComponent
   }
 }
 
-class UpgradeCard extends PositionComponent with TapCallbacks {
+class UpgradeCard extends PositionComponent with TapCallbacks, HasGameReference<SpaceShooterGame> {
   final Upgrade upgrade;
   final VoidCallback onSelected;
   bool isHovered = false;

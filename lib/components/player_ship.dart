@@ -16,7 +16,7 @@ import '../weapons/weapon_manager.dart';
 import 'orbital_drone.dart';
 
 class PlayerShip extends BaseRenderedComponent
-    with HasGameRef<SpaceShooterGame>, CollisionCallbacks, HasVisualCenter {
+    with CollisionCallbacks, HasVisualCenter {
   static const double baseShootInterval = 0.5;
   double shootTimer = 0;
   double shootInterval = baseShootInterval;
@@ -177,7 +177,7 @@ class PlayerShip extends BaseRenderedComponent
     super.update(dt);
 
     // Don't update if game is paused
-    if (gameRef.isPaused) return;
+    if (game.isPaused) return;
 
     // Update invulnerability timer
     if (isInvulnerable) {
@@ -285,7 +285,7 @@ class PlayerShip extends BaseRenderedComponent
   void findNearestEnemy() {
     // Use centralized targeting system for consistent behavior
     targetEnemy = TargetingSystem.findNearestEnemy(
-      game: gameRef,
+      game: game,
       fromPosition: position,
       maxRange: targetRange,
       onlyTargetable: true,
@@ -302,7 +302,7 @@ class PlayerShip extends BaseRenderedComponent
     weaponManager.fireCurrentWeapon(this, direction, targetEnemy);
 
     // Play shoot sound effect
-    gameRef.audioManager.playShoot();
+    game.audioManager.playShoot();
   }
 
   /// Apply knockback force to push player away from enemy with smooth animation
@@ -311,7 +311,7 @@ class PlayerShip extends BaseRenderedComponent
     if (isPushingBack) return;
 
     // Use percentage-based pushback (15% of screen width) for responsive design
-    final pushbackDistance = gameRef.size.x * 0.15;
+    final pushbackDistance = game.size.x * 0.15;
 
     // Set up animation
     isPushingBack = true;
@@ -327,7 +327,7 @@ class PlayerShip extends BaseRenderedComponent
     }
 
     // Debug invincibility (testing ground) - blocks damage but not pushback
-    if (gameRef.debugManager?.isInvincible ?? false) return;
+    if (game.debugManager?.isInvincible ?? false) return;
 
     // Invulnerability frames prevent multiple hits
     if (isInvulnerable) return;
@@ -341,7 +341,7 @@ class PlayerShip extends BaseRenderedComponent
         damage: 0,
         isPlayerDamage: false,
       );
-      gameRef.world.add(blockedText);
+      game.world.add(blockedText);
 
       // Start invulnerability frames
       isInvulnerable = true;
@@ -355,7 +355,7 @@ class PlayerShip extends BaseRenderedComponent
     final actualDamage = damage * (1.0 - cappedReduction);
 
     // Accumulate damage and show merged numbers every 50ms
-    final now = gameRef.gameTime;
+    final now = game.gameTime;
     _accumulatedDamage += actualDamage;
 
     if (now - _lastDamageNumberTime >= damageNumberCooldown) {
@@ -364,7 +364,7 @@ class PlayerShip extends BaseRenderedComponent
         damage: _accumulatedDamage,
         isPlayerDamage: true,
       );
-      gameRef.world.add(damageNumber);
+      game.world.add(damageNumber);
       _lastDamageNumberTime = now;
       _accumulatedDamage = 0;
     }
@@ -384,7 +384,7 @@ class PlayerShip extends BaseRenderedComponent
       }
 
       health = 0;
-      gameRef.gameOver();
+      game.gameOver();
     }
   }
 
@@ -397,7 +397,7 @@ class PlayerShip extends BaseRenderedComponent
       for (int i = 0; i < shieldLayers; i++) {
         final shieldRadius = (size.x / 2) + 8 + (i * 6);
         final shieldPaint = Paint()
-          ..color = const Color(0xFF00FFFF).withOpacity(0.3)
+          ..color = const Color(0xFF00FFFF).withValues(alpha: 0.3)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 3.0;
 
@@ -405,7 +405,7 @@ class PlayerShip extends BaseRenderedComponent
 
         // Add glow effect
         final glowPaint = Paint()
-          ..color = const Color(0xFF00FFFF).withOpacity(0.1)
+          ..color = const Color(0xFF00FFFF).withValues(alpha: 0.1)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 6.0;
 
@@ -484,7 +484,7 @@ class PlayerShip extends BaseRenderedComponent
       xpBgPaint,
     );
 
-    final xpPercent = gameRef.levelManager.getXPProgress();
+    final xpPercent = game.levelManager.getXPProgress();
     final xpPaint = Paint()..color = const Color(0xFF00FFFF); // Cyan
     canvas.drawRect(
       Rect.fromLTWH(
@@ -497,7 +497,7 @@ class PlayerShip extends BaseRenderedComponent
     );
 
     // Draw level text above health bar
-    final levelText = 'Lv${gameRef.levelManager.getLevel()}';
+    final levelText = 'Lv${game.levelManager.getLevel()}';
     final levelTextPainter = TextPainter(
       text: TextSpan(
         text: levelText,
@@ -569,7 +569,7 @@ class PlayerShip extends BaseRenderedComponent
         index: i,
         totalOrbitals: orbitalCount,
       );
-      gameRef.world.add(orbital);
+      game.world.add(orbital);
       _orbitals.add(orbital);
     }
 

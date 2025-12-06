@@ -287,7 +287,7 @@ class HydraBoss extends BaseEnemy {
     // Draw vulnerability indicator
     if (isVulnerable) {
       final vulnPaint = Paint()
-        ..color = const Color(0xFFFF0000).withOpacity(0.6)
+        ..color = const Color(0xFFFF0000).withValues(alpha: 0.6)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 4;
 
@@ -312,7 +312,7 @@ class HydraBoss extends BaseEnemy {
     // Draw invulnerability shield if cores are alive
     if (aliveCoresCount > 0) {
       final shieldPaint = Paint()
-        ..color = const Color(0xFF8A2BE2).withOpacity(0.3)
+        ..color = const Color(0xFF8A2BE2).withValues(alpha: 0.3)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 3;
 
@@ -454,7 +454,7 @@ class _HydraCore extends BaseEnemy {
       speed: 160.0,
     );
 
-    gameRef.world.add(bullet);
+    game.world.add(bullet);
   }
 
   @override
@@ -470,7 +470,7 @@ class _HydraCore extends BaseEnemy {
         damage: actualDamage,
         isCrit: isCrit,
       );
-      gameRef.world.add(damageNumber);
+      game.world.add(damageNumber);
     }
 
     // Apply bleed effect if player has bleed damage
@@ -515,7 +515,7 @@ class _HydraCore extends BaseEnemy {
 
     // Draw energy glow
     final glowPaint = Paint()
-      ..color = const Color(0xFF9370DB).withOpacity(0.6)
+      ..color = const Color(0xFF9370DB).withValues(alpha: 0.6)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);

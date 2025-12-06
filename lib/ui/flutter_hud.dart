@@ -97,10 +97,10 @@ class _FlutterHUDState extends State<FlutterHUD> with SingleTickerProviderStateM
                         width: constraints.maxWidth * 0.25,
                         height: constraints.maxWidth * 0.01,
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.6),
+                          color: Colors.black.withValues(alpha: 0.6),
                           borderRadius: BorderRadius.circular(constraints.maxWidth * 0.005),
                           border: Border.all(
-                            color: const Color(0xFF00FFFF).withOpacity(0.5),
+                            color: const Color(0xFF00FFFF).withValues(alpha: 0.5),
                             width: 1,
                           ),
                         ),
@@ -160,10 +160,10 @@ class _FlutterHUDState extends State<FlutterHUD> with SingleTickerProviderStateM
                           padding: EdgeInsets.all(padding * 0.3),
                           icon: Container(
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.6),
+                              color: Colors.black.withValues(alpha: 0.6),
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: const Color(0xFF00FFFF).withOpacity(0.5),
+                                color: const Color(0xFF00FFFF).withValues(alpha: 0.5),
                                 width: 2,
                               ),
                             ),

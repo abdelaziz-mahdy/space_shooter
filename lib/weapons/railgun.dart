@@ -33,7 +33,7 @@ class Railgun extends Weapon {
     final bulletSpawnPosition = _getBulletSpawnPosition(player);
 
     // Get the game reference
-    final game = player.gameRef;
+    final game = player.game;
 
     // Calculate beam end position (max range or screen edge)
     final maxRange = 1000.0;
