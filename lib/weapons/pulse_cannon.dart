@@ -31,7 +31,7 @@ class PulseCannon extends Weapon {
     final bulletSpawnPosition = _getBulletSpawnPosition(player);
 
     // Get the game reference
-    final game = player.gameRef;
+    final game = player.game;
 
     if (player.projectileCount == 1) {
       // Single shot

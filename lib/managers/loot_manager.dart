@@ -1,7 +1,7 @@
 import 'package:flame/components.dart';
 import '../game/space_shooter_game.dart';
 
-class LootManager extends Component with HasGameRef<SpaceShooterGame> {
+class LootManager extends Component with HasGameReference<SpaceShooterGame> {
   LootManager({required SpaceShooterGame game});
 
   @override

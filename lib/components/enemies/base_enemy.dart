@@ -15,7 +15,7 @@ import '../player_ship.dart';
 /// Abstract base class for all enemy types
 /// Provides common functionality like health, damage, loot drops, and collision handling
 abstract class BaseEnemy extends BaseRenderedComponent
-    with HasGameRef<SpaceShooterGame>, CollisionCallbacks, HasVisualCenter {
+    with CollisionCallbacks, HasVisualCenter {
   final PlayerShip player;
   final int wave;
 
@@ -79,6 +79,10 @@ abstract class BaseEnemy extends BaseRenderedComponent
   /// Override this for custom movement behavior
   void updateMovement(double dt);
 
+  /// Override this to make enemy non-targetable (e.g., invulnerable bosses)
+  /// When false, weapons and auto-targeting will skip this enemy
+  bool get isTargetable => true;
+
   /// Apply freeze effect to this enemy
   void applyFreeze(double duration) {
     isFrozen = true;
@@ -96,7 +100,7 @@ abstract class BaseEnemy extends BaseRenderedComponent
 
   /// Get current effective speed (accounting for freeze and global time scale)
   double getEffectiveSpeed() {
-    final globalTimeScale = gameRef.player.globalTimeScale ?? 1.0;
+    final globalTimeScale = game.player.globalTimeScale ?? 1.0;
     return speed * freezeSlowMultiplier * globalTimeScale;
   }
 
@@ -105,7 +109,7 @@ abstract class BaseEnemy extends BaseRenderedComponent
     super.update(dt);
 
     // Don't update if game is paused
-    if (gameRef.isPaused) return;
+    if (game.isPaused) return;
 
     // Update freeze timer
     if (isFrozen) {
@@ -148,7 +152,7 @@ abstract class BaseEnemy extends BaseRenderedComponent
 
     // Accumulate damage and show merged numbers every 50ms
     if (showDamageNumber && actualDamage > 0) {
-      final now = gameRef.gameTime;
+      final now = game.gameTime;
       _accumulatedDamage += actualDamage;
       _wasLastCrit = _wasLastCrit || isCrit; // Track if any hit was a crit
 
@@ -158,7 +162,7 @@ abstract class BaseEnemy extends BaseRenderedComponent
           damage: _accumulatedDamage,
           isCrit: _wasLastCrit,
         );
-        gameRef.world.add(damageNumber);
+        game.world.add(damageNumber);
         _lastDamageNumberTime = now;
         _accumulatedDamage = 0;
         _wasLastCrit = false;
@@ -185,6 +189,46 @@ abstract class BaseEnemy extends BaseRenderedComponent
     // Subclasses can override for custom death effects
   }
 
+  /// Find the closest loot within merge radius from position, or null if none exist
+  Loot? _findClosestLootNearby(Vector2 dropPosition) {
+    Loot? closestLoot;
+    double closestDistance = BalanceConfig.lootMergeRadius;
+
+    // Find all nearby loot entities
+    final allLoot = game.world.children.whereType<Loot>();
+    for (final loot in allLoot) {
+      final distance = PositionUtil.getDistance(
+        PositionComponent(position: dropPosition),
+        loot,
+      );
+      if (distance < closestDistance && distance <= BalanceConfig.lootMergeRadius) {
+        closestDistance = distance;
+        closestLoot = loot;
+      }
+    }
+
+    return closestLoot;
+  }
+
+  /// Drop or merge a single loot value, preferring to merge with nearby loot
+  void _dropOrMergeLoot(Vector2 dropPosition, int xpValue) {
+    // Try to find existing loot to merge with
+    final closestLoot = _findClosestLootNearby(dropPosition);
+
+    if (closestLoot != null) {
+      // Merge with existing loot by increasing its XP value
+      // This is more efficient than creating a new entity
+      closestLoot.xpValue += xpValue;
+    } else {
+      // No nearby loot, create a new one
+      final loot = Loot(
+        position: dropPosition,
+        xpValue: xpValue,
+      );
+      game.world.add(loot);
+    }
+  }
+
   /// Drop XP in merged cores to reduce entity count
   /// XP tiers: 1 XP (cyan), 5 XP (green), 10 XP (yellow), 25 XP (orange), 50 XP (pink), 100 XP (red), 250 XP (purple)
   void _dropMergedXP(int totalXP) {
@@ -196,71 +240,50 @@ abstract class BaseEnemy extends BaseRenderedComponent
 
     // Drop 250 XP cores (purple) - mega orbs
     while (remaining >= 250) {
-      final loot = Loot(
-        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
-        xpValue: 250,
-      );
-      gameRef.world.add(loot);
+      final dropPosition = position.clone() + Vector2.random() * 20 - Vector2.all(10);
+      _dropOrMergeLoot(dropPosition, 250);
       remaining -= 250;
     }
 
     // Drop 100 XP cores (red) - huge orbs
     while (remaining >= 100) {
-      final loot = Loot(
-        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
-        xpValue: 100,
-      );
-      gameRef.world.add(loot);
+      final dropPosition = position.clone() + Vector2.random() * 20 - Vector2.all(10);
+      _dropOrMergeLoot(dropPosition, 100);
       remaining -= 100;
     }
 
     // Drop 50 XP cores (pink) - very large orbs
     while (remaining >= 50) {
-      final loot = Loot(
-        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
-        xpValue: 50,
-      );
-      gameRef.world.add(loot);
+      final dropPosition = position.clone() + Vector2.random() * 20 - Vector2.all(10);
+      _dropOrMergeLoot(dropPosition, 50);
       remaining -= 50;
     }
 
     // Drop 25 XP cores (orange) - large orbs
     while (remaining >= 25) {
-      final loot = Loot(
-        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
-        xpValue: 25,
-      );
-      gameRef.world.add(loot);
+      final dropPosition = position.clone() + Vector2.random() * 20 - Vector2.all(10);
+      _dropOrMergeLoot(dropPosition, 25);
       remaining -= 25;
     }
 
     // Drop 10 XP cores (yellow) - medium orbs
     while (remaining >= 10) {
-      final loot = Loot(
-        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
-        xpValue: 10,
-      );
-      gameRef.world.add(loot);
+      final dropPosition = position.clone() + Vector2.random() * 20 - Vector2.all(10);
+      _dropOrMergeLoot(dropPosition, 10);
       remaining -= 10;
     }
 
     // Drop 5 XP cores (green) - small orbs
     while (remaining >= 5) {
-      final loot = Loot(
-        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
-        xpValue: 5,
-      );
-      gameRef.world.add(loot);
+      final dropPosition = position.clone() + Vector2.random() * 20 - Vector2.all(10);
+      _dropOrMergeLoot(dropPosition, 5);
       remaining -= 5;
     }
 
     // Drop remaining 1 XP cores (cyan) - tiny orbs
     for (int i = 0; i < remaining; i++) {
-      final loot = Loot(
-        position: position.clone() + Vector2.random() * 20 - Vector2.all(10),
-        xpValue: 1,
-      );
-      gameRef.world.add(loot);
+      final dropPosition = position.clone() + Vector2.random() * 20 - Vector2.all(10);
+      _dropOrMergeLoot(dropPosition, 1);
     }
   }
 
@@ -273,10 +296,10 @@ abstract class BaseEnemy extends BaseRenderedComponent
     }
     isDying = true;
 
-    print('[BaseEnemy] die() called for ${runtimeType} - wave=${gameRef.enemyManager.getCurrentWave()}, isMounted=$isMounted');
+    print('[BaseEnemy] die() called for ${runtimeType} - wave=${game.enemyManager.getCurrentWave()}, isMounted=$isMounted');
 
     // Play explosion sound
-    gameRef.audioManager.playExplosion();
+    game.audioManager.playExplosion();
 
     // Call custom death behavior first
     onDeath();
@@ -291,18 +314,18 @@ abstract class BaseEnemy extends BaseRenderedComponent
     if (random.nextDouble() < dropChance) {
       // Create random power-up using factory
       final powerUp = PowerUpFactory.createRandom(position.clone());
-      gameRef.world.add(powerUp);
+      game.world.add(powerUp);
       print('[${runtimeType}] Dropped power-up: ${powerUp.runtimeType}');
     }
 
     // Increment kill count
-    final beforeKills = gameRef.statsManager.enemiesKilledInWave;
-    gameRef.statsManager.incrementKills();
-    final afterKills = gameRef.statsManager.enemiesKilledInWave;
+    final beforeKills = game.statsManager.enemiesKilledInWave;
+    game.statsManager.incrementKills();
+    final afterKills = game.statsManager.enemiesKilledInWave;
     print('[BaseEnemy] Kill count incremented: ${beforeKills} -> ${afterKills} (total in wave)');
 
     // Add kill to combo meter
-    gameRef.comboManager.addKill();
+    game.comboManager.addKill();
 
     print('[BaseEnemy] Calling removeFromParent() for ${runtimeType}');
     removeFromParent();
@@ -332,7 +355,7 @@ abstract class BaseEnemy extends BaseRenderedComponent
           damage: thornsDamage,
           isThorns: true,
         );
-        gameRef.world.add(thornsDamageNumber);
+        game.world.add(thornsDamageNumber);
 
         // Apply the damage (without showing duplicate damage number)
         takeDamage(thornsDamage, showDamageNumber: false);
@@ -383,7 +406,7 @@ abstract class BaseEnemy extends BaseRenderedComponent
 
     // Blue overlay to indicate frozen state
     final freezePaint = Paint()
-      ..color = const Color(0xFF00FFFF).withOpacity(0.3)
+      ..color = const Color(0xFF00FFFF).withValues(alpha: 0.3)
       ..style = PaintingStyle.fill;
 
     // Draw freeze overlay over the enemy
@@ -410,7 +433,7 @@ abstract class BaseEnemy extends BaseRenderedComponent
 
     // Red pulsing border to indicate bleeding
     final borderPaint = Paint()
-      ..color = const Color(0xFFFF0000).withOpacity(0.7)
+      ..color = const Color(0xFFFF0000).withValues(alpha: 0.7)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
 

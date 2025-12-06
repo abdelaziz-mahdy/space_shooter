@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import '../utils/visual_center_mixin.dart';
-import '../utils/position_util.dart';
+import '../utils/targeting_system.dart';
 import 'base_rendered_component.dart';
 import 'enemies/base_enemy.dart';
 import 'damage_number.dart'; // Still needed for healing numbers
@@ -15,7 +15,7 @@ enum BulletType {
   missile,
 }
 
-class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, CollisionCallbacks, HasVisualCenter {
+class Bullet extends BaseRenderedComponent with CollisionCallbacks, HasVisualCenter {
   Vector2 direction; // Changed from final to allow homing modification
   final double baseDamage;
   final double speed;
@@ -56,8 +56,8 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
     await super.onLoad();
     anchor = Anchor.center;
 
-    // Calculate critical hit AFTER component is added to tree (gameRef available)
-    final player = gameRef.player;
+    // Calculate critical hit AFTER component is added to tree (game available)
+    final player = game.player;
     // Use forceCrit if provided (for multi-shot consistency), otherwise roll
     isCrit = forceCrit ?? (Random().nextDouble() < player.critChance);
     actualDamage = isCrit ? baseDamage * player.critDamage : baseDamage;
@@ -71,7 +71,7 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
       renderSize = size.clone();
     }
 
-    add(CircleHitbox());
+    add(CircleHitbox(anchor: Anchor.center));
   }
 
   @override
@@ -82,7 +82,7 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
     super.update(dt);
 
     // Don't update if game is paused
-    if (gameRef.isPaused) return;
+    if (game.isPaused) return;
 
     // Apply homing behavior if homingStrength > 0
     if (homingStrength > 0) {
@@ -144,10 +144,10 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
 
     // Handle enemy collisions
     if (other is BaseEnemy) {
-      final player = gameRef.player;
+      final player = game.player;
 
       // Play hit sound effect
-      gameRef.audioManager.playHit();
+      game.audioManager.playHit();
 
       // Deal damage to the hit enemy (damage number is shown by base_enemy.takeDamage)
       // Note: Berserk multiplier already applied in weapon.getDamage()
@@ -161,7 +161,8 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
       }
 
       // Chain Lightning - jump to nearby enemies
-      if (player.chainCount > 0) {
+      // Only trigger chain if enemy actually took damage (not invulnerable)
+      if (player.chainCount > 0 && other.modifyIncomingDamage(actualDamage) > 0) {
         _createChainLightning(other, player.chainCount);
       }
 
@@ -176,7 +177,7 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
           damage: healAmount,
           isHealing: true,
         );
-        gameRef.world.add(healNumber);
+        game.world.add(healNumber);
       }
 
       // Explosion on hit - damage nearby enemies
@@ -195,7 +196,7 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
   }
 
   void _createExplosion(BaseEnemy hitEnemy) {
-    final player = gameRef.player;
+    final player = game.player;
     final explosionDamage = actualDamage * 0.5; // 50% of bullet damage
 
     // Find all enemies within explosion radius (excluding the directly hit enemy)
@@ -215,65 +216,24 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
       position: position.clone(),
       radius: player.explosionRadius,
     );
-    gameRef.world.add(explosion);
+    game.world.add(explosion);
   }
 
-  /// Generic helper to find enemies sorted by distance from a position
-  /// Optimized to use cached enemy list and avoid sorting when maxCount=1
+  /// Find nearest enemies using centralized targeting system
   List<BaseEnemy> _findNearestEnemies({
     required Vector2 fromPosition,
     BaseEnemy? excludeEnemy,
     double? maxDistance,
     int? maxCount,
   }) {
-    // Use cached enemy list from game (refreshed once per frame)
-    final allEnemies = gameRef.activeEnemies;
-
-    // Optimized path for finding single nearest enemy (most common case)
-    if (maxCount == 1) {
-      BaseEnemy? nearest;
-      double nearestDist = maxDistance ?? double.infinity;
-
-      for (final enemy in allEnemies) {
-        // Skip excluded enemy
-        if (enemy == excludeEnemy) continue;
-
-        final dist = fromPosition.distanceTo(enemy.position);
-        if (dist < nearestDist) {
-          nearestDist = dist;
-          nearest = enemy;
-        }
-      }
-
-      return nearest != null ? [nearest] : [];
-    }
-
-    // General path for multiple enemies (used by chain lightning)
-    final filteredEnemies = <BaseEnemy>[];
-    for (final enemy in allEnemies) {
-      if (enemy == excludeEnemy) continue;
-
-      if (maxDistance != null) {
-        final distance = fromPosition.distanceTo(enemy.position);
-        if (distance > maxDistance) continue;
-      }
-
-      filteredEnemies.add(enemy);
-    }
-
-    // Sort by distance
-    filteredEnemies.sort((a, b) {
-      final distA = fromPosition.distanceTo(a.position);
-      final distB = fromPosition.distanceTo(b.position);
-      return distA.compareTo(distB);
-    });
-
-    // Limit count if specified
-    if (maxCount != null && filteredEnemies.length > maxCount) {
-      return filteredEnemies.sublist(0, maxCount);
-    }
-
-    return filteredEnemies;
+    return TargetingSystem.findNearestEnemies(
+      game: game,
+      fromPosition: fromPosition,
+      maxDistance: maxDistance,
+      maxCount: maxCount,
+      excludeEnemy: excludeEnemy,
+      onlyTargetable: true,
+    );
   }
 
   /// Generic helper to deal damage to an enemy with visual effects
@@ -310,7 +270,7 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
         startPos: currentEnemy.position.clone(),
         endPos: nextEnemy.position.clone(),
       );
-      gameRef.world.add(lightning);
+      game.world.add(lightning);
 
       currentEnemy = nextEnemy; // Next chain starts from this enemy
       chainedCount++;
@@ -335,7 +295,7 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
     // Add glow effect for critical hits
     if (isCrit) {
       final glowPaint = Paint()
-        ..color = color.withOpacity(0.3)
+        ..color = color.withValues(alpha: 0.3)
         ..style = PaintingStyle.fill;
       canvas.drawCircle(center, radius * 1.5, glowPaint);
     }
@@ -343,7 +303,7 @@ class Bullet extends BaseRenderedComponent with HasGameRef<SpaceShooterGame>, Co
 }
 
 /// Visual explosion effect
-class ExplosionEffect extends PositionComponent with HasGameRef<SpaceShooterGame> {
+class ExplosionEffect extends PositionComponent with HasGameReference<SpaceShooterGame> {
   final double radius;
   double lifetime = 0;
   static const double maxLifetime = 0.3; // Short duration
@@ -378,7 +338,7 @@ class ExplosionEffect extends PositionComponent with HasGameRef<SpaceShooterGame
     final alpha = (1 - progress) * 0.6;
 
     final paint = Paint()
-      ..color = const Color(0xFFFF6600).withOpacity(alpha)
+      ..color = const Color(0xFFFF6600).withValues(alpha: alpha)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0;
 
@@ -391,7 +351,7 @@ class ExplosionEffect extends PositionComponent with HasGameRef<SpaceShooterGame
 }
 
 /// Visual lightning effect for chain lightning
-class LightningEffect extends PositionComponent with HasGameRef<SpaceShooterGame> {
+class LightningEffect extends PositionComponent with HasGameReference<SpaceShooterGame> {
   final Vector2 startPos;
   final Vector2 endPos;
   double lifetime = 0;
@@ -449,14 +409,14 @@ class LightningEffect extends PositionComponent with HasGameRef<SpaceShooterGame
 
     // Main lightning bolt (bright cyan)
     final mainPaint = Paint()
-      ..color = const Color(0xFF00FFFF).withOpacity(alpha)
+      ..color = const Color(0xFF00FFFF).withValues(alpha: alpha)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0
       ..strokeCap = StrokeCap.round;
 
     // Glow effect (wider, more transparent)
     final glowPaint = Paint()
-      ..color = const Color(0xFF88FFFF).withOpacity(alpha * 0.5)
+      ..color = const Color(0xFF88FFFF).withValues(alpha: alpha * 0.5)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 6.0
       ..strokeCap = StrokeCap.round;

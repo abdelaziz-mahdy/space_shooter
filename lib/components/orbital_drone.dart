@@ -8,7 +8,7 @@ import 'player_ship.dart';
 import 'enemies/base_enemy.dart';
 
 /// Orbital drone that circles the player and shoots at enemies
-class OrbitalDrone extends PositionComponent with HasGameRef<SpaceShooterGame> {
+class OrbitalDrone extends PositionComponent with HasGameReference<SpaceShooterGame> {
   final PlayerShip player;
   final int index; // Which orbital this is (0, 1, 2, etc.)
   final int totalOrbitals; // Total number of orbitals
@@ -71,7 +71,10 @@ class OrbitalDrone extends PositionComponent with HasGameRef<SpaceShooterGame> {
     double nearestDistance = shootRange;
 
     // Use whereType to properly filter for BaseEnemy instances
-    for (final enemy in gameRef.world.children.whereType<BaseEnemy>()) {
+    for (final enemy in game.world.children.whereType<BaseEnemy>()) {
+      // Skip non-targetable enemies (e.g., invulnerable bosses)
+      if (!enemy.isTargetable) continue;
+
       final distance = position.distanceTo(enemy.position);
       if (distance < nearestDistance) {
         nearestDistance = distance;
@@ -91,7 +94,7 @@ class OrbitalDrone extends PositionComponent with HasGameRef<SpaceShooterGame> {
         speed: player.bulletSpeed,
         homingStrength: player.homingStrength,
       );
-      gameRef.world.add(bullet);
+      game.world.add(bullet);
     }
   }
 
@@ -105,7 +108,7 @@ class OrbitalDrone extends PositionComponent with HasGameRef<SpaceShooterGame> {
       ..style = PaintingStyle.fill;
 
     final glowPaint = Paint()
-      ..color = const Color(0xFF00FFFF).withOpacity(0.3)
+      ..color = const Color(0xFF00FFFF).withValues(alpha: 0.3)
       ..style = PaintingStyle.fill;
 
     // Glow effect

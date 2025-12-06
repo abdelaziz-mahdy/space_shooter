@@ -7,6 +7,7 @@ import '../components/enemies/base_enemy.dart';
 import '../game/space_shooter_game.dart';
 import '../factories/weapon_factory.dart';
 import '../config/weapon_unlock_config.dart';
+import '../config/balance_config.dart';
 import '../utils/position_util.dart';
 import 'weapon.dart';
 
@@ -30,8 +31,8 @@ class TeslaCoil extends Weapon {
     Vector2 targetDirection,
     PositionComponent? targetEnemy,
   ) {
-    final gameRef = (player.parent?.parent as SpaceShooterGame?);
-    if (gameRef == null) return;
+    final game = (player.parent?.parent as SpaceShooterGame?);
+    if (game == null) return;
 
     // Start from the nearest enemy within range
     if (targetEnemy == null || targetEnemy is! BaseEnemy) return;
@@ -64,8 +65,8 @@ class TeslaCoil extends Weapon {
       BaseEnemy? nextTarget;
       double nearestDistance = double.infinity;
 
-      final allEnemies = gameRef.world.children.whereType<BaseEnemy>();
-      for (final enemy in allEnemies) {
+      // Use cached active enemies list instead of querying world children
+      for (final enemy in game.activeEnemies) {
         if (hitEnemies.contains(enemy)) continue;
 
         final distance = PositionUtil.getDistance(currentTarget, enemy);
@@ -98,12 +99,37 @@ class TeslaCoil extends Weapon {
 
     // Create visual chain lightning effect
     if (chainPath.length >= 2) {
-      final lightning = ChainLightningEffect(
-        path: chainPath,
-        lightningColor: const Color(0xFF00FFFF), // Cyan lightning
-      );
-      gameRef.world.add(lightning);
+      // Check for nearby chain lightning effects to merge with
+      final nearbyLightning = _findNearbyChainLightning(game, player.position);
+
+      if (nearbyLightning != null) {
+        // Merge: extend existing chain instead of creating new effect
+        nearbyLightning.mergeWith(chainPath);
+      } else {
+        // No nearby effect, create new visual effect
+        final lightning = ChainLightningEffect(
+          path: chainPath,
+          lightningColor: const Color(0xFF00FFFF), // Cyan lightning
+        );
+        game.world.add(lightning);
+      }
     }
+  }
+
+  /// Find a nearby chain lightning effect to merge with
+  ChainLightningEffect? _findNearbyChainLightning(
+    SpaceShooterGame game,
+    Vector2 position,
+  ) {
+    final allLightning = game.world.children.whereType<ChainLightningEffect>();
+
+    for (final lightning in allLightning) {
+      final distance = position.distanceTo(lightning.position);
+      if (distance <= BalanceConfig.effectMergeRadius) {
+        return lightning;
+      }
+    }
+    return null;
   }
 
   /// Register this weapon with the factory and config

@@ -4,7 +4,7 @@ import '../game/space_shooter_game.dart';
 import '../components/star_particle.dart';
 import '../components/player_ship.dart';
 
-class StarManager extends Component with HasGameRef<SpaceShooterGame> {
+class StarManager extends Component with HasGameReference<SpaceShooterGame> {
   final PlayerShip player;
   final Random random = Random();
   final Set<String> spawnedChunks = {};
@@ -65,7 +65,7 @@ class StarManager extends Component with HasGameRef<SpaceShooterGame> {
           baseY + random.nextDouble() * chunkSize,
         ),
       );
-      gameRef.world.add(star);
+      game.world.add(star);
     }
   }
 
@@ -73,7 +73,7 @@ class StarManager extends Component with HasGameRef<SpaceShooterGame> {
     final baseX = chunkX * chunkSize;
     final baseY = chunkY * chunkSize;
 
-    final stars = gameRef.world.children.whereType<StarParticle>();
+    final stars = game.world.children.whereType<StarParticle>();
     for (final star in stars.toList()) {
       if (star.position.x >= baseX &&
           star.position.x < baseX + chunkSize &&

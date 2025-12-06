@@ -167,7 +167,7 @@ class FortressBoss extends BaseEnemy {
         speed: bulletSpeed,
       );
 
-      gameRef.world.add(bullet);
+      game.world.add(bullet);
     }
 
     print('[FortressBoss] Fired 8-way spread from central body');
@@ -285,7 +285,7 @@ class FortressBoss extends BaseEnemy {
 }
 
 /// Turret component for the Fortress Boss
-class _FortressTurret extends PositionComponent with HasGameRef<SpaceShooterGame> {
+class _FortressTurret extends PositionComponent with HasGameReference<SpaceShooterGame> {
   final FortressBoss parent;
   final Vector2 offset;
 
@@ -307,7 +307,7 @@ class _FortressTurret extends PositionComponent with HasGameRef<SpaceShooterGame
   void update(double dt) {
     super.update(dt);
 
-    if (gameRef.isPaused) return;
+    if (game.isPaused) return;
 
     // Update fire timer
     fireTimer += dt;
@@ -346,7 +346,7 @@ class _FortressTurret extends PositionComponent with HasGameRef<SpaceShooterGame
       speed: FortressBoss.bulletSpeed,
     );
 
-    gameRef.world.add(bullet);
+    game.world.add(bullet);
   }
 
   @override
@@ -381,7 +381,7 @@ class _FortressTurret extends PositionComponent with HasGameRef<SpaceShooterGame
 
 /// Orbital mine component for the Fortress Boss
 class _OrbitalMine extends PositionComponent
-    with HasGameRef<SpaceShooterGame>, CollisionCallbacks {
+    with HasGameReference<SpaceShooterGame>, CollisionCallbacks {
   final FortressBoss parent;
   final int orbitIndex;
 
@@ -408,7 +408,7 @@ class _OrbitalMine extends PositionComponent
   void update(double dt) {
     super.update(dt);
 
-    if (gameRef.isPaused || isExploding) return;
+    if (game.isPaused || isExploding) return;
 
     // Update position to orbit around parent
     final angle = (orbitIndex * 2 * pi / FortressBoss.maxOrbitalMines) +
@@ -486,7 +486,7 @@ class _OrbitalMine extends PositionComponent
 
     // Draw red warning light
     final lightPaint = Paint()
-      ..color = const Color(0xFFFF0000).withOpacity(0.8)
+      ..color = const Color(0xFFFF0000).withValues(alpha: 0.8)
       ..style = PaintingStyle.fill;
 
     canvas.drawCircle(

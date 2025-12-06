@@ -8,7 +8,7 @@ import '../game/space_shooter_game.dart';
 
 /// Bullet fired by enemy ships (like Ranger)
 class EnemyBullet extends BaseRenderedComponent
-    with HasGameRef<SpaceShooterGame>, CollisionCallbacks, HasVisualCenter {
+    with CollisionCallbacks, HasVisualCenter {
   final Vector2 direction;
   final double damage;
   final double speed;
@@ -38,7 +38,7 @@ class EnemyBullet extends BaseRenderedComponent
     super.update(dt);
 
     // Don't update if game is paused
-    if (gameRef.isPaused) return;
+    if (game.isPaused) return;
 
     position += direction * speed * dt;
     lifetime += dt;

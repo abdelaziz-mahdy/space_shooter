@@ -31,7 +31,7 @@ class PlasmaSpreader extends Weapon {
     final bulletSpawnPosition = _getBulletSpawnPosition(player);
 
     // Get the game reference
-    final game = player.gameRef;
+    final game = player.game;
 
     // Base number of projectiles (3) + player's multi-shot upgrades
     final baseProjectiles = 3;

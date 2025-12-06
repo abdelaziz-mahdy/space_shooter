@@ -3,8 +3,7 @@ import '../services/score_service.dart';
 import '../services/leaderboard_service.dart';
 import '../config/env_config.dart';
 import '../managers/audio_manager.dart';
-import '../utils/upgrade_lookup.dart';
-import '../upgrades/upgrade.dart';
+import 'widgets/upgrade_display_widget.dart';
 
 class LeaderboardScreen extends StatefulWidget {
   const LeaderboardScreen({super.key});
@@ -583,7 +582,7 @@ class _ScoreDetailsDialog extends StatelessWidget {
   final int wave;
   final int kills;
   final double timeAlive;
-  final List<String> upgrades;
+  final Map<String, int> upgrades;
   final String? weaponUsed;
   final String? platform;
   final int rank;
@@ -600,22 +599,8 @@ class _ScoreDetailsDialog extends StatelessWidget {
     required this.rank,
   });
 
-  Color _getRarityColor(UpgradeRarity rarity) {
-    switch (rarity) {
-      case UpgradeRarity.common:
-        return const Color(0xFFCCCCCC);
-      case UpgradeRarity.rare:
-        return const Color(0xFF00AAFF);
-      case UpgradeRarity.epic:
-        return const Color(0xFFAA00FF);
-      case UpgradeRarity.legendary:
-        return const Color(0xFFFFAA00);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final upgradeInfos = UpgradeLookup.getUpgradesForIds(upgrades);
     final mins = (timeAlive / 60).floor();
     final secs = (timeAlive % 60).floor();
     final timeStr = '${mins}m ${secs}s';
@@ -786,7 +771,7 @@ class _ScoreDetailsDialog extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Upgrades section
-            if (upgradeInfos.isNotEmpty) ...[
+            if (upgrades.isNotEmpty) ...[
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
@@ -815,47 +800,11 @@ class _ScoreDetailsDialog extends StatelessWidget {
                   margin: const EdgeInsets.symmetric(horizontal: 16),
                   constraints: const BoxConstraints(maxHeight: 200),
                   child: SingleChildScrollView(
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: upgradeInfos.map((info) {
-                        return Tooltip(
-                          message: info.description,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: _getRarityColor(info.rarity)
-                                  .withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: _getRarityColor(info.rarity)
-                                    .withValues(alpha: 0.5),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  info.icon,
-                                  style: const TextStyle(fontSize: 16),
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  info.name,
-                                  style: TextStyle(
-                                    color: _getRarityColor(info.rarity),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                    child: UpgradeDisplayWidget(
+                      upgrades: upgrades,
+                      scale: 1.0,
+                      showTooltip: true,
+                      displayMode: DisplayMode.wrap,
                     ),
                   ),
                 ),

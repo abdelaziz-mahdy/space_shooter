@@ -6,11 +6,12 @@ import '../utils/visual_center_mixin.dart';
 import '../utils/position_util.dart';
 import 'base_rendered_component.dart';
 import 'enemies/base_enemy.dart';
-import '../game/space_shooter_game.dart';
+import 'power_ups/bomb_power_up.dart';
+import '../config/balance_config.dart';
 
 /// Homing missile component
 class Missile extends BaseRenderedComponent
-    with HasGameRef<SpaceShooterGame>, CollisionCallbacks, HasVisualCenter {
+    with CollisionCallbacks, HasVisualCenter {
   Vector2 direction;
   final double damage;
   final double speed;
@@ -50,7 +51,7 @@ class Missile extends BaseRenderedComponent
   void update(double dt) {
     super.update(dt);
 
-    if (gameRef.isPaused) return;
+    if (game.isPaused) return;
 
     // Find nearest enemy to home in on
     _findNearestEnemy();
@@ -78,10 +79,8 @@ class Missile extends BaseRenderedComponent
     PositionComponent? nearest;
     double nearestDistance = double.infinity;
 
-    // Get all enemies
-    final allEnemies = gameRef.world.children.whereType<BaseEnemy>();
-
-    for (final enemy in allEnemies) {
+    // Use cached active enemies list instead of querying world children
+    for (final enemy in game.activeEnemies) {
       final distance = PositionUtil.getDistance(this, enemy);
       if (distance < nearestDistance && distance <= 400) {
         // 400px homing range
@@ -125,10 +124,8 @@ class Missile extends BaseRenderedComponent
   }
 
   void _explode() {
-    // Find all enemies within explosion radius
-    final allEnemies = gameRef.world.children.whereType<BaseEnemy>();
-
-    for (final enemy in allEnemies) {
+    // Find all enemies within explosion radius using cached active enemies
+    for (final enemy in game.activeEnemies) {
       final distance = PositionUtil.getDistance(this, enemy);
       if (distance <= explosionRadius) {
         // Apply explosion damage
@@ -137,8 +134,34 @@ class Missile extends BaseRenderedComponent
       }
     }
 
-    // TODO: Add visual explosion effect here
-    // For now, the explosion is just damage without visual
+    // Create visual bomb explosion effect
+    // Check for nearby bomb effects to merge with instead of creating new ones
+    final nearbyBombEffect = _findNearbyBombEffect(position);
+
+    if (nearbyBombEffect != null) {
+      // Merge: expand existing effect instead of creating a new one
+      nearbyBombEffect.mergeWith(explosionRadius);
+    } else {
+      // No nearby effect, create new visual wave effect
+      final waveEffect = BombWaveEffect(
+        position: position.clone(),
+        maxRadius: explosionRadius,
+      );
+      game.world.add(waveEffect);
+    }
+  }
+
+  /// Find a nearby bomb effect to merge with
+  BombWaveEffect? _findNearbyBombEffect(Vector2 position) {
+    final allEffects = game.world.children.whereType<BombWaveEffect>();
+
+    for (final effect in allEffects) {
+      final distance = position.distanceTo(effect.position);
+      if (distance <= BalanceConfig.effectMergeRadius) {
+        return effect;
+      }
+    }
+    return null;
   }
 
   @override
@@ -170,7 +193,7 @@ class Missile extends BaseRenderedComponent
 
     // Exhaust trail (yellow/orange glow)
     final exhaustPaint = Paint()
-      ..color = const Color(0xFFFFAA00).withOpacity(0.7)
+      ..color = const Color(0xFFFFAA00).withValues(alpha: 0.7)
       ..style = PaintingStyle.fill;
 
     final exhaustRect = Rect.fromCenter(

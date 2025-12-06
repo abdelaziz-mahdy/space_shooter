@@ -125,7 +125,7 @@ class TankEnemy extends BaseEnemy {
     if (timeSinceLastDamage < regenDelay) {
       // Draw damage reduction indicator
       final armorPaint = Paint()
-        ..color = const Color(0xFFFFFFFF).withOpacity(0.3)
+        ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.3)
         ..style = PaintingStyle.fill;
 
       canvas.drawCircle(
@@ -136,7 +136,7 @@ class TankEnemy extends BaseEnemy {
     } else {
       // Draw regeneration indicator
       final regenPaint = Paint()
-        ..color = const Color(0xFF00FF00).withOpacity(0.4)
+        ..color = const Color(0xFF00FF00).withValues(alpha: 0.4)
         ..style = PaintingStyle.fill;
 
       canvas.drawCircle(

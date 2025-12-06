@@ -196,7 +196,7 @@ class SplitterBoss extends BaseEnemy {
     clone.health = cloneHealth;
 
     // Add to game world
-    gameRef.world.add(clone);
+    game.world.add(clone);
 
     print('[SplitterBoss] Spawned ${level} clone at $spawnPos with health $cloneHealth');
   }
@@ -283,7 +283,7 @@ class SplitterBoss extends BaseEnemy {
         homingStrength: 30.0, // Slight homing
       );
 
-      gameRef.world.add(bullet);
+      game.world.add(bullet);
     }
 
     print('[SplitterBoss] Fired triple shot');

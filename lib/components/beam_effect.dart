@@ -6,7 +6,7 @@ import '../game/space_shooter_game.dart';
 
 /// Visual beam effect for railgun
 class BeamEffect extends BaseRenderedComponent
-    with HasGameRef<SpaceShooterGame>, HasVisualCenter {
+    with HasVisualCenter {
   final Vector2 startPosition;
   final Vector2 endPosition;
   final Color beamColor;
@@ -37,7 +37,7 @@ class BeamEffect extends BaseRenderedComponent
   void update(double dt) {
     super.update(dt);
 
-    if (gameRef.isPaused) return;
+    if (game.isPaused) return;
 
     lifetime += dt;
 
@@ -53,21 +53,21 @@ class BeamEffect extends BaseRenderedComponent
 
     // Draw outer glow
     final glowPaint = Paint()
-      ..color = beamColor.withOpacity(alpha * 0.3)
+      ..color = beamColor.withValues(alpha: alpha * 0.3)
       ..strokeWidth = beamWidth * 3
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
     // Draw main beam
     final beamPaint = Paint()
-      ..color = beamColor.withOpacity(alpha)
+      ..color = beamColor.withValues(alpha: alpha)
       ..strokeWidth = beamWidth
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
     // Draw inner core (bright)
     final corePaint = Paint()
-      ..color = const Color(0xFFFFFFFF).withOpacity(alpha)
+      ..color = const Color(0xFFFFFFFF).withValues(alpha: alpha)
       ..strokeWidth = beamWidth * 0.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;

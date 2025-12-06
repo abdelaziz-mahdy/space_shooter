@@ -59,12 +59,12 @@ class ComboMeter extends StatelessWidget {
               color: comboColor,
               shadows: [
                 Shadow(
-                  color: Colors.black.withOpacity(0.8),
+                  color: Colors.black.withValues(alpha: 0.8),
                   offset: const Offset(2, 2),
                   blurRadius: 4,
                 ),
                 Shadow(
-                  color: comboColor.withOpacity(0.5),
+                  color: comboColor.withValues(alpha: 0.5),
                   offset: const Offset(0, 0),
                   blurRadius: 20,
                 ),
@@ -82,7 +82,7 @@ class ComboMeter extends StatelessWidget {
               letterSpacing: 2,
               shadows: [
                 Shadow(
-                  color: Colors.black.withOpacity(0.8),
+                  color: Colors.black.withValues(alpha: 0.8),
                   offset: const Offset(1, 1),
                   blurRadius: 2,
                 ),
@@ -102,7 +102,7 @@ class ComboMeter extends StatelessWidget {
                 letterSpacing: 1.5,
                 shadows: [
                   Shadow(
-                    color: Colors.black.withOpacity(0.8),
+                    color: Colors.black.withValues(alpha: 0.8),
                     offset: const Offset(1, 1),
                     blurRadius: 2,
                   ),
@@ -132,7 +132,7 @@ class ComboMeter extends StatelessWidget {
                     gradient: LinearGradient(
                       colors: [
                         comboColor,
-                        comboColor.withOpacity(0.6),
+                        comboColor.withValues(alpha: 0.6),
                       ],
                     ),
                   ),
@@ -150,7 +150,7 @@ class ComboMeter extends StatelessWidget {
               color: Colors.white60,
               shadows: [
                 Shadow(
-                  color: Colors.black.withOpacity(0.8),
+                  color: Colors.black.withValues(alpha: 0.8),
                   offset: const Offset(1, 1),
                   blurRadius: 2,
                 ),
@@ -163,7 +163,7 @@ class ComboMeter extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.7),
+              color: Colors.black.withValues(alpha: 0.7),
               borderRadius: BorderRadius.circular(4),
               border: Border.all(color: comboColor, width: 2),
             ),

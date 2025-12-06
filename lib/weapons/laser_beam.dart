@@ -3,10 +3,10 @@ import 'dart:ui';
 import 'package:flame/components.dart';
 import '../components/beam_effect.dart';
 import '../components/player_ship.dart';
-import '../components/enemies/base_enemy.dart';
 import '../game/space_shooter_game.dart';
 import '../factories/weapon_factory.dart';
 import '../config/weapon_unlock_config.dart';
+import '../utils/targeting_system.dart';
 import 'weapon.dart';
 
 /// Laser Beam - continuous damage beam with shorter range than railgun
@@ -29,40 +29,26 @@ class LaserBeam extends Weapon {
     Vector2 targetDirection,
     PositionComponent? targetEnemy,
   ) {
-    final gameRef = (player.parent?.parent as SpaceShooterGame?);
-    if (gameRef == null) return;
+    // PlayerShip extends BaseRenderedComponent which has HasGameReference<SpaceShooterGame>
+    final game = player.game as SpaceShooterGame?;
+    if (game == null) return;
 
     final bulletSpawnPosition = _getBulletSpawnPosition(player);
     final damage = getDamage(player);
 
     // Shorter beam range than railgun
     const beamMaxRange = 350.0;
+    const coneAngle = 0.02; // ~11 degree cone (dotProduct 0.98 ≈ cos(11°) ≈ 0.98)
 
-    // Find all enemies in beam path within range
-    final hitEnemies = <BaseEnemy>[];
-    final allEnemies = gameRef.world.children.whereType<BaseEnemy>();
-
-    for (final enemy in allEnemies) {
-      final toEnemy = enemy.position - bulletSpawnPosition;
-      final distance = toEnemy.length;
-
-      // Skip enemies beyond range
-      if (distance > beamMaxRange) continue;
-
-      // Calculate if enemy is in beam path
-      final dotProduct = toEnemy.normalized().dot(targetDirection.normalized());
-      if (dotProduct > 0.98) {
-        // Roughly 11 degrees cone
-        hitEnemies.add(enemy);
-      }
-    }
-
-    // Sort by distance and damage all
-    hitEnemies.sort((a, b) {
-      final distA = (a.position - bulletSpawnPosition).length;
-      final distB = (b.position - bulletSpawnPosition).length;
-      return distA.compareTo(distB);
-    });
+    // Use centralized targeting system to find all enemies in cone
+    final hitEnemies = TargetingSystem.findEnemiesInCone(
+      game: game,
+      origin: bulletSpawnPosition,
+      direction: targetDirection,
+      maxRange: beamMaxRange,
+      coneAngle: coneAngle,
+      onlyTargetable: true,
+    );
 
     // Deal damage to all enemies in beam
     for (final enemy in hitEnemies) {
@@ -90,7 +76,7 @@ class LaserBeam extends Weapon {
       beamColor: const Color(0xFFFF0000), // Red laser beam
       beamWidth: 3.0,
     );
-    gameRef.world.add(beam);
+    game.world.add(beam);
   }
 
   Vector2 _getBulletSpawnPosition(PlayerShip player) {

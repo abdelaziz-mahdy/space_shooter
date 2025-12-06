@@ -8,7 +8,7 @@ import 'enemies/base_enemy.dart';
 import 'boss_ship.dart';
 
 /// Shows arrows at screen edges pointing to off-screen enemies
-class EnemyIndicator extends PositionComponent with HasGameRef<SpaceShooterGame> {
+class EnemyIndicator extends PositionComponent with HasGameReference<SpaceShooterGame> {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
@@ -20,10 +20,10 @@ class EnemyIndicator extends PositionComponent with HasGameRef<SpaceShooterGame>
     super.render(canvas);
 
     // Don't render if game is paused
-    if (gameRef.isPaused) return;
+    if (game.isPaused) return;
 
-    final player = gameRef.player;
-    final screenSize = gameRef.size;
+    final player = game.player;
+    final screenSize = game.size;
 
     // Percentage-based sizing for responsive design (CLAUDE.md line 86)
     final edgeOffset = screenSize.x * 0.025; // 2.5% of screen width
@@ -32,7 +32,7 @@ class EnemyIndicator extends PositionComponent with HasGameRef<SpaceShooterGame>
 
     // Get all enemies from cached list (refreshed once per frame for performance)
     // CLAUDE.md line 222: Use cached enemy list to avoid expensive queries every frame
-    final allEnemies = gameRef.activeEnemies;
+    final allEnemies = game.activeEnemies;
 
     // Filter to only off-screen enemies
     final offScreenEnemies = allEnemies.where((enemy) {

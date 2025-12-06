@@ -1,7 +1,7 @@
 import 'package:flame/components.dart';
 import '../game/space_shooter_game.dart';
 
-class StatsManager extends Component with HasGameRef<SpaceShooterGame> {
+class StatsManager extends Component with HasGameReference<SpaceShooterGame> {
   int enemiesKilled = 0;
   double timeAlive = 0;
   int currentWave = 1;
@@ -35,7 +35,7 @@ class StatsManager extends Component with HasGameRef<SpaceShooterGame> {
     super.update(dt);
 
     // Don't update if game is paused
-    if (gameRef.isPaused) return;
+    if (game.isPaused) return;
 
     timeAlive += dt;
   }

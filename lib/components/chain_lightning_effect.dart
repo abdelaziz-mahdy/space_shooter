@@ -2,12 +2,11 @@ import 'dart:ui';
 import 'package:flame/components.dart';
 import '../utils/visual_center_mixin.dart';
 import 'base_rendered_component.dart';
-import '../game/space_shooter_game.dart';
 
 /// Visual chain lightning effect
 class ChainLightningEffect extends BaseRenderedComponent
-    with HasGameRef<SpaceShooterGame>, HasVisualCenter {
-  final List<Vector2> path; // Chain path from start to all targets
+    with HasVisualCenter {
+  List<Vector2> path; // Non-final to allow merging
   final Color lightningColor;
   double lifetime = 0;
   static const double maxLifetime = 0.2; // Lightning lasts 200ms
@@ -35,12 +34,27 @@ class ChainLightningEffect extends BaseRenderedComponent
   void update(double dt) {
     super.update(dt);
 
-    if (gameRef.isPaused) return;
+    if (game.isPaused) return;
 
     lifetime += dt;
     if (lifetime >= maxLifetime) {
       removeFromParent();
     }
+  }
+
+  /// Merge with another chain lightning effect - extend the path instead of creating new effect
+  void mergeWith(List<Vector2> newPath) {
+    // Add new targets from the incoming chain lightning
+    if (newPath.isNotEmpty && path.isNotEmpty) {
+      for (final point in newPath) {
+        if (!path.contains(point)) {
+          path.add(point);
+        }
+      }
+    }
+
+    // Reset lifetime to show the merged effect longer
+    lifetime = 0;
   }
 
   @override
@@ -53,14 +67,14 @@ class ChainLightningEffect extends BaseRenderedComponent
 
     // Draw main lightning bolt
     final mainPaint = Paint()
-      ..color = lightningColor.withOpacity(opacity * 0.8)
+      ..color = lightningColor.withValues(alpha: opacity * 0.8)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0
       ..strokeCap = StrokeCap.round;
 
     // Draw glow
     final glowPaint = Paint()
-      ..color = lightningColor.withOpacity(opacity * 0.3)
+      ..color = lightningColor.withValues(alpha: opacity * 0.3)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8.0
       ..strokeCap = StrokeCap.round;
@@ -86,7 +100,7 @@ class ChainLightningEffect extends BaseRenderedComponent
 
     // Draw arc points (energy nodes at each chain point)
     final nodePaint = Paint()
-      ..color = lightningColor.withOpacity(opacity)
+      ..color = lightningColor.withValues(alpha: opacity)
       ..style = PaintingStyle.fill;
 
     for (final worldPos in path) {
