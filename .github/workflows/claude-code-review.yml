@@ -109,3 +109,8 @@ jobs:
             - Always run the fixes, don't just suggest them
             - You're working directly on the PR branch, not creating a new one
 
+          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
+          # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options
+          # Allow file operations and git/gh commands
+          claude_args: '--model claude-haiku-4-5-20251001 --allowedTools "Read,Write,Edit,Glob,Grep,Bash(gh:*),Bash(git:*)"'
+

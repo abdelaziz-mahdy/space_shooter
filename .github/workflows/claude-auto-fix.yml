@@ -109,3 +109,5 @@ jobs:
             - Git commands to create branches and commits
             - `gh pr create` to create the fix PR
             - `gh pr comment` to communicate progress
+
+          claude_args: '--model claude-haiku-4-5-20251001 --allowedTools "Read,Write,Edit,Glob,Grep,Bash(gh:*),Bash(git:*)"'
