@@ -6,7 +6,6 @@ import '../utils/visual_center_mixin.dart';
 import '../utils/position_util.dart';
 import 'base_rendered_component.dart';
 import 'enemies/base_enemy.dart';
-import '../game/space_shooter_game.dart';
 import 'power_ups/bomb_power_up.dart';
 import '../config/balance_config.dart';
 
