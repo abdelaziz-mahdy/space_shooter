@@ -78,8 +78,8 @@ class DamageNumber extends PositionComponent with HasGameRef<SpaceShooterGame> {
   void render(Canvas canvas) {
     super.render(canvas);
 
-    // Calculate opacity based on lifetime (fade out)
-    final opacity = 1.0 - (lifetime / maxLifetime);
+    // Calculate opacity based on lifetime (fade out), clamped to valid range [0.0, 1.0]
+    final opacity = (1.0 - (lifetime / maxLifetime)).clamp(0.0, 1.0);
 
     // Update text color with current opacity
     final color = _getColor().withOpacity(opacity);
