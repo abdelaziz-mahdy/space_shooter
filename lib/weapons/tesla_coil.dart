@@ -64,8 +64,8 @@ class TeslaCoil extends Weapon {
       BaseEnemy? nextTarget;
       double nearestDistance = double.infinity;
 
-      final allEnemies = gameRef.world.children.whereType<BaseEnemy>();
-      for (final enemy in allEnemies) {
+      // Use cached active enemies list instead of querying world children
+      for (final enemy in gameRef.activeEnemies) {
         if (hitEnemies.contains(enemy)) continue;
 
         final distance = PositionUtil.getDistance(currentTarget, enemy);

@@ -78,10 +78,8 @@ class Missile extends BaseRenderedComponent
     PositionComponent? nearest;
     double nearestDistance = double.infinity;
 
-    // Get all enemies
-    final allEnemies = gameRef.world.children.whereType<BaseEnemy>();
-
-    for (final enemy in allEnemies) {
+    // Use cached active enemies list instead of querying world children
+    for (final enemy in gameRef.activeEnemies) {
       final distance = PositionUtil.getDistance(this, enemy);
       if (distance < nearestDistance && distance <= 400) {
         // 400px homing range
@@ -125,10 +123,8 @@ class Missile extends BaseRenderedComponent
   }
 
   void _explode() {
-    // Find all enemies within explosion radius
-    final allEnemies = gameRef.world.children.whereType<BaseEnemy>();
-
-    for (final enemy in allEnemies) {
+    // Find all enemies within explosion radius using cached active enemies
+    for (final enemy in gameRef.activeEnemies) {
       final distance = PositionUtil.getDistance(this, enemy);
       if (distance <= explosionRadius) {
         // Apply explosion damage

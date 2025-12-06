@@ -29,8 +29,8 @@ class BombPowerUp extends BasePowerUp {
     final playerPosition = player.position;
     final bombRange = _config.value;
 
-    // Get all enemies (BaseEnemy includes BossShip and all enemy types)
-    final allEnemies = gameRef.world.children.whereType<BaseEnemy>().toList();
+    // Use cached active enemies list instead of querying world children
+    final allEnemies = gameRef.activeEnemies;
 
     int enemiesDamaged = 0;
 

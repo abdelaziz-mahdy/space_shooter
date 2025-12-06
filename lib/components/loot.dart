@@ -11,7 +11,7 @@ import '../game/space_shooter_game.dart';
 class Loot extends BaseRenderedComponent
     with HasGameRef<SpaceShooterGame>, CollisionCallbacks, HasVisualCenter {
   static const double attractionRange = 100;
-  final int xpValue;
+  int xpValue;
 
   // Wave-end collection state
   bool isWaveEndCollecting = false;
@@ -53,6 +53,12 @@ class Loot extends BaseRenderedComponent
   @override
   void update(double dt) {
     super.update(dt);
+
+    // Update size if xpValue changed due to merging
+    final newSize = Vector2.all(_getSizeForXP(xpValue));
+    if (size != newSize) {
+      size = newSize;
+    }
 
     // Don't update if game is paused
     if (gameRef.isPaused) return;
