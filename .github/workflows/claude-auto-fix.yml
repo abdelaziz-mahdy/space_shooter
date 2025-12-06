@@ -24,7 +24,7 @@ on:
   workflow_dispatch:
     inputs:
       pr_number:
-        description: "PR number to fix"
+        description: 'PR number to fix'
         required: true
         type: number
 
@@ -47,7 +47,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Need full history to create branches
+          fetch-depth: 0  # Need full history to create branches
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Git
@@ -74,8 +74,6 @@ jobs:
             actions: read
             contents: write
             pull-requests: write
-
-          claude_args: '--model claude-haiku-4-5-20251001 --allowedTools "Read,Write,Edit,Glob,Grep,Bash(gh:*),Bash(git:*)"'
 
           prompt: |
             REPO: ${{ github.repository }}
@@ -110,6 +108,4 @@ jobs:
             - `gh pr create` to create the fix PR
             - `gh pr comment` to communicate progress
 
-          claude_args: |
-            --model claude-haiku-4-5-20251001
-            --allowedTools Read,Write,Edit,Glob,Grep,Bash(gh:*),Bash(git:*)
+          claude_args: '--model claude-haiku-4-5-20251001 --allowedTools "Read,Write,Edit,Glob,Grep,Bash(gh:*),Bash(git:*)"'
