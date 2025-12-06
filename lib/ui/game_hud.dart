@@ -3,7 +3,7 @@ import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import '../game/space_shooter_game.dart';
 
-class GameHUD extends PositionComponent with HasGameRef<SpaceShooterGame> {
+class GameHUD extends PositionComponent with HasGameReference<SpaceShooterGame> {
   late TextPaint levelText;
   late TextPaint xpText;
   late TextPaint waveText;
@@ -17,7 +17,7 @@ class GameHUD extends PositionComponent with HasGameRef<SpaceShooterGame> {
 
     anchor = Anchor.topLeft;
     position = Vector2.zero();
-    size = gameRef.camera.viewport.size;
+    size = game.camera.viewport.size;
 
     levelText = TextPaint(
       style: TextStyle(
@@ -64,17 +64,17 @@ class GameHUD extends PositionComponent with HasGameRef<SpaceShooterGame> {
   void update(double dt) {
     super.update(dt);
     // Continuously sync size with viewport for window resizing
-    size = gameRef.camera.viewport.size;
+    size = game.camera.viewport.size;
   }
 
   @override
   void render(Canvas canvas) {
     super.render(canvas);
 
-    final levelManager = gameRef.levelManager;
-    final statsManager = gameRef.statsManager;
-    final enemyManager = gameRef.enemyManager;
-    final player = gameRef.player;
+    final levelManager = game.levelManager;
+    final statsManager = game.statsManager;
+    final enemyManager = game.enemyManager;
+    final player = game.player;
 
     // Responsive scaling
     final scale = (size.x / 1920).clamp(0.8, 1.5);

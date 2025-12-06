@@ -23,7 +23,7 @@ class MagnetPowerUp extends BasePowerUp {
     final playerPosition = player.position;
 
     // Get all loot components in the game world
-    final allLoot = gameRef.world.children.whereType<Loot>().toList();
+    final allLoot = game.world.children.whereType<Loot>().toList();
 
     // Teleport all loot to the player position to trigger collection
     for (final loot in allLoot) {
@@ -33,7 +33,7 @@ class MagnetPowerUp extends BasePowerUp {
         endPosition: playerPosition.clone(),
         lootSize: loot.size.clone(),
       );
-      gameRef.world.add(lootEffect);
+      game.world.add(lootEffect);
 
       // Teleport the loot to the player to trigger collection
       loot.position.setFrom(playerPosition);

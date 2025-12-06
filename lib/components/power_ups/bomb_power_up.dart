@@ -30,7 +30,7 @@ class BombPowerUp extends BasePowerUp {
     final bombRange = _config.value;
 
     // Use cached active enemies list instead of querying world children
-    final allEnemies = gameRef.activeEnemies;
+    final allEnemies = game.activeEnemies;
 
     int enemiesDamaged = 0;
 
@@ -54,7 +54,7 @@ class BombPowerUp extends BasePowerUp {
       position: playerPosition.clone(),
       maxRadius: bombRange,
     );
-    gameRef.world.add(waveEffect);
+    game.world.add(waveEffect);
 
     print('[PowerUp] Bomb activated: $enemiesDamaged/${allEnemies.length} enemies damaged (within ${bombRange.toInt()}px)');
   }
@@ -164,7 +164,7 @@ class BombWaveEffect extends PositionComponent {
 
     // Draw expanding ring/wave effect with cyan/blue color
     final paint = Paint()
-      ..color = const Color(0xFF00FFFF).withOpacity(_opacity * 0.6)
+      ..color = const Color(0xFF00FFFF).withValues(alpha: _opacity * 0.6)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 6.0;
 
@@ -177,7 +177,7 @@ class BombWaveEffect extends PositionComponent {
 
     // Draw inner wave (slightly smaller, for depth effect)
     final innerPaint = Paint()
-      ..color = const Color(0xFF00AAFF).withOpacity(_opacity * 0.4)
+      ..color = const Color(0xFF00AAFF).withValues(alpha: _opacity * 0.4)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4.0;
 
@@ -189,7 +189,7 @@ class BombWaveEffect extends PositionComponent {
 
     // Draw fill with gradient effect (very transparent)
     final fillPaint = Paint()
-      ..color = const Color(0xFF00FFFF).withOpacity(_opacity * 0.1)
+      ..color = const Color(0xFF00FFFF).withValues(alpha: _opacity * 0.1)
       ..style = PaintingStyle.fill;
 
     canvas.drawCircle(

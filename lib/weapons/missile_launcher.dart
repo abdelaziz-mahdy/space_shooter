@@ -30,7 +30,7 @@ class MissileLauncher extends Weapon {
     final bulletSpawnPosition = _getBulletSpawnPosition(player);
 
     // Get the game reference
-    final game = player.gameRef;
+    final game = player.game;
 
     // Fire missiles (respect multi-shot upgrade)
     for (int i = 0; i < player.projectileCount; i++) {

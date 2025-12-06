@@ -255,7 +255,7 @@ class VortexBoss extends BaseEnemy {
         speed: bulletSpeed,
       );
 
-      gameRef.world.add(bullet);
+      game.world.add(bullet);
     }
 
     print('[VortexBoss] Fired 6-way radial burst after teleport');
@@ -271,7 +271,7 @@ class VortexBoss extends BaseEnemy {
       speed: missileSpeed,
     );
 
-    gameRef.world.add(missile);
+    game.world.add(missile);
   }
 
   void _addAfterimage() {
@@ -307,7 +307,7 @@ class VortexBoss extends BaseEnemy {
         afterimage.position.y - position.y,
       );
       canvas.rotate(afterimage.angle);
-      _drawHexagram(canvas, color.withOpacity(afterimage.opacity * 0.5));
+      _drawHexagram(canvas, color.withValues(alpha: afterimage.opacity * 0.5));
       canvas.restore();
     }
 
@@ -318,13 +318,13 @@ class VortexBoss extends BaseEnemy {
 
     // Draw main hexagram
     final mainOpacity = isTeleporting ? (1.0 - portalEffect * 0.7) : 1.0;
-    _drawHexagram(canvas, color.withOpacity(mainOpacity));
+    _drawHexagram(canvas, color.withValues(alpha: mainOpacity));
 
     // Draw glow effect
     if (!isTeleporting) {
       final glowIntensity = (sin(glowPulse) + 1) / 2;
       final glowPaint = Paint()
-        ..color = color.withOpacity(glowIntensity * 0.4)
+        ..color = color.withValues(alpha: glowIntensity * 0.4)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 3
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
@@ -344,7 +344,7 @@ class VortexBoss extends BaseEnemy {
     if (isInCooldown) {
       final cooldownPercent = cooldownTimer / cooldownDuration;
       final indicatorPaint = Paint()
-        ..color = const Color(0xFFFFFF00).withOpacity(0.7)
+        ..color = const Color(0xFFFFFF00).withValues(alpha: 0.7)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 4;
 
@@ -428,7 +428,7 @@ class VortexBoss extends BaseEnemy {
       final ringOpacity = (1.0 - ringProgress) * 0.6;
 
       final ringPaint = Paint()
-        ..color = const Color(0xFF00FFFF).withOpacity(ringOpacity)
+        ..color = const Color(0xFF00FFFF).withValues(alpha: ringOpacity)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 3;
 
@@ -448,7 +448,7 @@ class VortexBoss extends BaseEnemy {
       final particleY = centerY + sin(particleAngle) * particleDistance;
 
       final particlePaint = Paint()
-        ..color = const Color(0xFF00FFFF).withOpacity(0.8)
+        ..color = const Color(0xFF00FFFF).withValues(alpha: 0.8)
         ..style = PaintingStyle.fill;
 
       canvas.drawCircle(

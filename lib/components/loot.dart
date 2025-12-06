@@ -9,7 +9,7 @@ import 'player_ship.dart';
 import '../game/space_shooter_game.dart';
 
 class Loot extends BaseRenderedComponent
-    with HasGameRef<SpaceShooterGame>, CollisionCallbacks, HasVisualCenter {
+    with CollisionCallbacks, HasVisualCenter {
   static const double attractionRange = 100;
   int xpValue;
 
@@ -61,10 +61,10 @@ class Loot extends BaseRenderedComponent
     }
 
     // Don't update if game is paused
-    if (gameRef.isPaused) return;
+    if (game.isPaused) return;
 
     // Attract to player using PositionUtil
-    final player = gameRef.player;
+    final player = game.player;
     final distanceToPlayer = PositionUtil.getDistance(this, player);
 
     // Wave-end collection: pull all XP aggressively
@@ -89,7 +89,7 @@ class Loot extends BaseRenderedComponent
     super.onCollisionStart(intersectionPoints, other);
 
     if (other is PlayerShip) {
-      gameRef.levelManager.addXP(xpValue);
+      game.levelManager.addXP(xpValue);
       removeFromParent();
     }
   }
@@ -114,7 +114,7 @@ class Loot extends BaseRenderedComponent
       ..style = PaintingStyle.fill;
 
     final glow = Paint()
-      ..color = coreColor.withOpacity(0.3)
+      ..color = coreColor.withValues(alpha: 0.3)
       ..style = PaintingStyle.fill;
 
     // Draw circle in center of bounding box (from top-left)

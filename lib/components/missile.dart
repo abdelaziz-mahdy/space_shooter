@@ -10,7 +10,7 @@ import '../game/space_shooter_game.dart';
 
 /// Homing missile component
 class Missile extends BaseRenderedComponent
-    with HasGameRef<SpaceShooterGame>, CollisionCallbacks, HasVisualCenter {
+    with CollisionCallbacks, HasVisualCenter {
   Vector2 direction;
   final double damage;
   final double speed;
@@ -50,7 +50,7 @@ class Missile extends BaseRenderedComponent
   void update(double dt) {
     super.update(dt);
 
-    if (gameRef.isPaused) return;
+    if (game.isPaused) return;
 
     // Find nearest enemy to home in on
     _findNearestEnemy();
@@ -79,7 +79,7 @@ class Missile extends BaseRenderedComponent
     double nearestDistance = double.infinity;
 
     // Use cached active enemies list instead of querying world children
-    for (final enemy in gameRef.activeEnemies) {
+    for (final enemy in game.activeEnemies) {
       final distance = PositionUtil.getDistance(this, enemy);
       if (distance < nearestDistance && distance <= 400) {
         // 400px homing range
@@ -124,7 +124,7 @@ class Missile extends BaseRenderedComponent
 
   void _explode() {
     // Find all enemies within explosion radius using cached active enemies
-    for (final enemy in gameRef.activeEnemies) {
+    for (final enemy in game.activeEnemies) {
       final distance = PositionUtil.getDistance(this, enemy);
       if (distance <= explosionRadius) {
         // Apply explosion damage
@@ -166,7 +166,7 @@ class Missile extends BaseRenderedComponent
 
     // Exhaust trail (yellow/orange glow)
     final exhaustPaint = Paint()
-      ..color = const Color(0xFFFFAA00).withOpacity(0.7)
+      ..color = const Color(0xFFFFAA00).withValues(alpha: 0.7)
       ..style = PaintingStyle.fill;
 
     final exhaustRect = Rect.fromCenter(

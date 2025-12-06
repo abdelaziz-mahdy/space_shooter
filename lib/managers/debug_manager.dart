@@ -13,7 +13,7 @@ import '../upgrades/upgrade.dart';
 /// - Spawn enemies/bosses on demand
 /// - Grant upgrades
 /// - Modify player state (health, resources, invincibility)
-class DebugManager extends Component with HasGameRef<SpaceShooterGame> {
+class DebugManager extends Component with HasGameReference<SpaceShooterGame> {
   final PlayerShip player;
 
   bool isInvincible = false;
@@ -26,17 +26,17 @@ class DebugManager extends Component with HasGameRef<SpaceShooterGame> {
     if (targetWave < 1) return;
 
     // Update enemy manager - set directly to target wave
-    gameRef.enemyManager.currentWave = targetWave;
-    gameRef.enemyManager.isWaveActive = false;
-    gameRef.enemyManager.waveTimer = 0;
+    game.enemyManager.currentWave = targetWave;
+    game.enemyManager.isWaveActive = false;
+    game.enemyManager.waveTimer = 0;
 
-    // Clear all enemies (use gameRef.activeEnemies which is the cached enemy list)
-    for (final enemy in gameRef.activeEnemies.toList()) {
+    // Clear all enemies (use game.activeEnemies which is the cached enemy list)
+    for (final enemy in game.activeEnemies.toList()) {
       enemy.removeFromParent();
     }
 
     // Start the wave (startNextWave uses currentWave directly, doesn't increment)
-    gameRef.enemyManager.startNextWave();
+    game.enemyManager.startNextWave();
 
     print('[DebugManager] Jumped to wave $targetWave');
   }
@@ -49,12 +49,12 @@ class DebugManager extends Component with HasGameRef<SpaceShooterGame> {
       final enemy = EnemyFactory.create(
         enemyId,
         player,
-        gameRef.enemyManager.currentWave,
+        game.enemyManager.currentWave,
         spawnPos,
-        scale: gameRef.entityScale,
+        scale: game.entityScale,
       );
 
-      gameRef.world.add(enemy);
+      game.world.add(enemy);
       print('[DebugManager] Spawned $enemyId at $spawnPos');
     } catch (e) {
       print('[DebugManager] Failed to spawn $enemyId: $e');
@@ -82,7 +82,7 @@ class DebugManager extends Component with HasGameRef<SpaceShooterGame> {
 
   /// Add XP to player
   void addXP(int amount) {
-    gameRef.levelManager.addXP(amount);
+    game.levelManager.addXP(amount);
     print('[DebugManager] Added $amount XP');
   }
 
@@ -98,7 +98,7 @@ class DebugManager extends Component with HasGameRef<SpaceShooterGame> {
         ),
         xpValue: 10,
       );
-      gameRef.world.add(loot);
+      game.world.add(loot);
     }
     print('[DebugManager] Spawned loot worth $amount XP');
   }
@@ -118,7 +118,7 @@ class DebugManager extends Component with HasGameRef<SpaceShooterGame> {
   /// Toggle hitbox rendering
   void toggleHitboxes() {
     showHitboxes = !showHitboxes;
-    gameRef.debugMode = showHitboxes; // Flame's built-in debug mode
+    game.debugMode = showHitboxes; // Flame's built-in debug mode
     print('[DebugManager] Hitboxes: $showHitboxes');
   }
 
@@ -130,7 +130,7 @@ class DebugManager extends Component with HasGameRef<SpaceShooterGame> {
 
   /// Kill all enemies
   void killAllEnemies() {
-    final enemies = gameRef.activeEnemies.toList();
+    final enemies = game.activeEnemies.toList();
     int count = 0;
     for (final enemy in enemies) {
       enemy.takeDamage(999999);

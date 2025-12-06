@@ -29,8 +29,8 @@ class LaserBeam extends Weapon {
     Vector2 targetDirection,
     PositionComponent? targetEnemy,
   ) {
-    final gameRef = (player.parent?.parent as SpaceShooterGame?);
-    if (gameRef == null) return;
+    final game = (player.parent?.parent as SpaceShooterGame?);
+    if (game == null) return;
 
     final bulletSpawnPosition = _getBulletSpawnPosition(player);
     final damage = getDamage(player);
@@ -41,7 +41,7 @@ class LaserBeam extends Weapon {
 
     // Use centralized targeting system to find all enemies in cone
     final hitEnemies = TargetingSystem.findEnemiesInCone(
-      game: gameRef,
+      game: game,
       origin: bulletSpawnPosition,
       direction: targetDirection,
       maxRange: beamMaxRange,
@@ -75,7 +75,7 @@ class LaserBeam extends Weapon {
       beamColor: const Color(0xFFFF0000), // Red laser beam
       beamWidth: 3.0,
     );
-    gameRef.world.add(beam);
+    game.world.add(beam);
   }
 
   Vector2 _getBulletSpawnPosition(PlayerShip player) {

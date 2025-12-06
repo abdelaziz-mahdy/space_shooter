@@ -29,7 +29,7 @@ class SettingsDialog extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.black.withOpacity(0.95),
+        backgroundColor: Colors.black.withValues(alpha: 0.95),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16 * scale),
           side: BorderSide(
@@ -75,7 +75,7 @@ class SettingsDialog extends StatelessWidget {
               onSurrender(); // Call surrender callback
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF6600).withOpacity(0.2),
+              backgroundColor: const Color(0xFFFF6600).withValues(alpha: 0.2),
               foregroundColor: const Color(0xFFFF6600),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8 * scale),
@@ -101,7 +101,7 @@ class SettingsDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black.withOpacity(0.7),
+      color: Colors.black.withValues(alpha: 0.7),
       child: LayoutBuilder(
         builder: (context, constraints) {
           // Calculate responsive scale based on screen width
@@ -115,7 +115,7 @@ class SettingsDialog extends StatelessWidget {
               width: dialogWidth,
               padding: EdgeInsets.all(24 * scale),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.95),
+                color: Colors.black.withValues(alpha: 0.95),
                 borderRadius: BorderRadius.circular(16 * scale),
                 border: Border.all(
                   color: const Color(0xFF00FFFF),
@@ -123,7 +123,7 @@ class SettingsDialog extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF00FFFF).withOpacity(0.4),
+                    color: const Color(0xFF00FFFF).withValues(alpha: 0.4),
                     blurRadius: 20 * scale,
                     spreadRadius: 4 * scale,
                   ),
@@ -178,7 +178,7 @@ class SettingsDialog extends StatelessWidget {
                       value: !isAudioMuted,
                       onChanged: (value) => onAudioMuteChanged(!value),
                       activeColor: const Color(0xFF00FFFF),
-                      activeTrackColor: const Color(0xFF00FFFF).withOpacity(0.5),
+                      activeTrackColor: const Color(0xFF00FFFF).withValues(alpha: 0.5),
                     ),
                   ),
 
@@ -224,7 +224,7 @@ class SettingsDialog extends StatelessWidget {
                       vertical: 6 * scale,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFFF00).withOpacity(0.2),
+                      color: const Color(0xFFFFFF00).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8 * scale),
                       border: Border.all(
                         color: const Color(0xFFFFFF00),
@@ -272,10 +272,10 @@ class SettingsDialog extends StatelessWidget {
         vertical: 12 * scale,
       ),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.5),
+        color: Colors.black.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(8 * scale),
         border: Border.all(
-          color: const Color(0xFF00FFFF).withOpacity(0.3),
+          color: const Color(0xFF00FFFF).withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -317,7 +317,7 @@ class SettingsDialog extends StatelessWidget {
           onPressed();
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: color.withOpacity(0.2),
+          backgroundColor: color.withValues(alpha: 0.2),
           foregroundColor: color,
           padding: EdgeInsets.symmetric(
             horizontal: 20 * scale,

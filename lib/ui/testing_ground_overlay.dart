@@ -52,7 +52,7 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
       icon: const Icon(Icons.science, size: 20),
       label: const Text('Testing Ground'),
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.purple.withOpacity(0.9),
+        backgroundColor: Colors.purple.withValues(alpha: 0.9),
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
@@ -64,7 +64,7 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
       width: 400,
       height: 500,
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.9),
+        color: Colors.black.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.purple, width: 2),
       ),
@@ -74,7 +74,7 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.purple.withOpacity(0.3),
+              color: Colors.purple.withValues(alpha: 0.3),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(10),
                 topRight: Radius.circular(10),
@@ -136,7 +136,7 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? Colors.purple.withOpacity(0.5) : Colors.transparent,
+            color: isSelected ? Colors.purple.withValues(alpha: 0.5) : Colors.transparent,
             border: Border(
               bottom: BorderSide(
                 color: isSelected ? Colors.purple : Colors.transparent,
@@ -193,9 +193,9 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: 'Enter wave number',
-                  hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                  hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
                   filled: true,
-                  fillColor: Colors.white.withOpacity(0.1),
+                  fillColor: Colors.white.withValues(alpha: 0.1),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide.none,
@@ -296,7 +296,7 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
           icon: const Icon(Icons.delete_sweep, size: 18),
           label: const Text('Kill All Enemies'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red.withOpacity(0.8),
+            backgroundColor: Colors.red.withValues(alpha: 0.8),
             foregroundColor: Colors.white,
           ),
         ),
@@ -423,7 +423,7 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
                   setState(() {});
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green.withOpacity(0.8),
+                  backgroundColor: Colors.green.withValues(alpha: 0.8),
                   foregroundColor: Colors.white,
                 ),
                 child: const Text('Heal to Full'),
@@ -438,8 +438,8 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: invincible
-                      ? Colors.amber.withOpacity(0.8)
-                      : Colors.grey.withOpacity(0.6),
+                      ? Colors.amber.withValues(alpha: 0.8)
+                      : Colors.grey.withValues(alpha: 0.6),
                   foregroundColor: Colors.white,
                 ),
                 child: Text(invincible ? 'Invincible ON' : 'Invincible OFF'),
@@ -460,8 +460,8 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: debugManager!.showHitboxes
-                  ? Colors.cyan.withOpacity(0.8)
-                  : Colors.grey.withOpacity(0.6),
+                  ? Colors.cyan.withValues(alpha: 0.8)
+                  : Colors.grey.withValues(alpha: 0.6),
               foregroundColor: Colors.white,
             ),
             child: Text(debugManager!.showHitboxes ? 'Hitboxes ON' : 'Hitboxes OFF'),
@@ -553,7 +553,7 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
           setState(() {});
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.purple.withOpacity(0.7),
+          backgroundColor: Colors.purple.withValues(alpha: 0.7),
           foregroundColor: Colors.white,
           padding: const EdgeInsets.all(4),
         ),
@@ -573,7 +573,7 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
         setState(() {});
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.blue.withOpacity(0.7),
+        backgroundColor: Colors.blue.withValues(alpha: 0.7),
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),
@@ -595,7 +595,7 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
         setState(() {});
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.amber.withOpacity(0.7),
+        backgroundColor: Colors.amber.withValues(alpha: 0.7),
         foregroundColor: Colors.black87,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),
@@ -610,7 +610,7 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
         setState(() {});
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.cyan.withOpacity(0.7),
+        backgroundColor: Colors.cyan.withValues(alpha: 0.7),
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),
@@ -625,7 +625,7 @@ class _TestingGroundOverlayState extends State<TestingGroundOverlay> {
         setState(() {});
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.green.withOpacity(0.7),
+        backgroundColor: Colors.green.withValues(alpha: 0.7),
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),

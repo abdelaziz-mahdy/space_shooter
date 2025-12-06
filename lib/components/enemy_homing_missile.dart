@@ -10,7 +10,7 @@ import '../game/space_shooter_game.dart';
 
 /// Homing missile fired by enemies that tracks the player
 class EnemyHomingMissile extends BaseRenderedComponent
-    with HasGameRef<SpaceShooterGame>, CollisionCallbacks, HasVisualCenter {
+    with CollisionCallbacks, HasVisualCenter {
   Vector2 direction;
   final double damage;
   final double speed;
@@ -42,7 +42,7 @@ class EnemyHomingMissile extends BaseRenderedComponent
   void update(double dt) {
     super.update(dt);
 
-    if (gameRef.isPaused) return;
+    if (game.isPaused) return;
 
     // Apply homing toward player
     _applyHoming(dt);
@@ -63,7 +63,7 @@ class EnemyHomingMissile extends BaseRenderedComponent
 
   void _applyHoming(double dt) {
     // Calculate direction to player
-    final toPlayer = PositionUtil.getDirectionTo(this, gameRef.player);
+    final toPlayer = PositionUtil.getDirectionTo(this, game.player);
 
     // Smoothly turn towards player
     direction = (direction + (toPlayer * homingStrength * dt)).normalized();
@@ -111,7 +111,7 @@ class EnemyHomingMissile extends BaseRenderedComponent
 
     // Exhaust trail (dark blue glow)
     final exhaustPaint = Paint()
-      ..color = const Color(0xFF0000AA).withOpacity(0.7)
+      ..color = const Color(0xFF0000AA).withValues(alpha: 0.7)
       ..style = PaintingStyle.fill;
 
     final exhaustRect = Rect.fromCenter(

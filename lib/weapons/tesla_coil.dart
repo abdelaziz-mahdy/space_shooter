@@ -30,8 +30,8 @@ class TeslaCoil extends Weapon {
     Vector2 targetDirection,
     PositionComponent? targetEnemy,
   ) {
-    final gameRef = (player.parent?.parent as SpaceShooterGame?);
-    if (gameRef == null) return;
+    final game = (player.parent?.parent as SpaceShooterGame?);
+    if (game == null) return;
 
     // Start from the nearest enemy within range
     if (targetEnemy == null || targetEnemy is! BaseEnemy) return;
@@ -65,7 +65,7 @@ class TeslaCoil extends Weapon {
       double nearestDistance = double.infinity;
 
       // Use cached active enemies list instead of querying world children
-      for (final enemy in gameRef.activeEnemies) {
+      for (final enemy in game.activeEnemies) {
         if (hitEnemies.contains(enemy)) continue;
 
         final distance = PositionUtil.getDistance(currentTarget, enemy);
@@ -102,7 +102,7 @@ class TeslaCoil extends Weapon {
         path: chainPath,
         lightningColor: const Color(0xFF00FFFF), // Cyan lightning
       );
-      gameRef.world.add(lightning);
+      game.world.add(lightning);
     }
   }
 

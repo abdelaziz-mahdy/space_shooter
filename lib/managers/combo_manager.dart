@@ -4,7 +4,7 @@ import '../game/space_shooter_game.dart';
 
 /// Manages the combo/kill streak system
 /// Tracks consecutive kills and provides XP multipliers
-class ComboManager extends Component with HasGameRef<SpaceShooterGame> {
+class ComboManager extends Component with HasGameReference<SpaceShooterGame> {
   int combo = 0;
   double timeSinceLastKill = 0;
   static const double resetTime = 3.0; // Combo resets after 3 seconds
@@ -19,7 +19,7 @@ class ComboManager extends Component with HasGameRef<SpaceShooterGame> {
     super.update(dt);
 
     // Don't update if game is paused
-    if (gameRef.isPaused) return;
+    if (game.isPaused) return;
 
     if (combo > 0) {
       timeSinceLastKill += dt;

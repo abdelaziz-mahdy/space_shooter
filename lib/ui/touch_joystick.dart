@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../game/space_shooter_game.dart';
 
 class TouchJoystick extends PositionComponent
-    with HasGameRef<SpaceShooterGame>, DragCallbacks {
+    with DragCallbacks, HasGameReference<SpaceShooterGame> {
   Vector2? touchStartPosition; // World position where touch started
   Vector2? currentTouchOffset;
   final double maxOffset = 80.0; // Maximum drag distance
@@ -17,7 +17,7 @@ class TouchJoystick extends PositionComponent
   Future<void> onLoad() async {
     await super.onLoad();
     // Cover entire viewport to capture touches anywhere
-    size = gameRef.camera.viewport.size.clone();
+    size = game.camera.viewport.size.clone();
     position = Vector2.zero();
   }
 
@@ -25,7 +25,7 @@ class TouchJoystick extends PositionComponent
   void update(double dt) {
     super.update(dt);
     // Keep size synced with viewport
-    size = gameRef.camera.viewport.size.clone();
+    size = game.camera.viewport.size.clone();
   }
 
   @override
@@ -35,7 +35,7 @@ class TouchJoystick extends PositionComponent
     touchStartPosition = event.localPosition.clone();
     currentTouchOffset = Vector2.zero();
     isDragging = true;
-    gameRef.player.handleTouchStart(touchStartPosition!);
+    game.player.handleTouchStart(touchStartPosition!);
   }
 
   @override
@@ -50,7 +50,7 @@ class TouchJoystick extends PositionComponent
       }
 
       currentTouchOffset = offset;
-      gameRef.player.handleTouchMove(touchStartPosition! + offset);
+      game.player.handleTouchMove(touchStartPosition! + offset);
     }
   }
 
@@ -60,7 +60,7 @@ class TouchJoystick extends PositionComponent
     touchStartPosition = null;
     currentTouchOffset = null;
     isDragging = false;
-    gameRef.player.handleTouchEnd();
+    game.player.handleTouchEnd();
   }
 
   @override

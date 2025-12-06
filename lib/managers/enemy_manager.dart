@@ -9,7 +9,7 @@ import '../factories/enemy_factory.dart';
 import '../config/enemy_spawn_config.dart';
 import '../utils/game_logger.dart';
 
-class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
+class EnemyManager extends Component with HasGameReference<SpaceShooterGame> {
   final PlayerShip player;
   final Random random = Random();
 
@@ -75,18 +75,18 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
       enemiesToSpawnInWave = getBossCountForWave(currentWave);
 
       // Switch to boss music and play boss appearance sound (MUSIC DISABLED)
-      // gameRef.audioManager.playMusic(boss: true);
-      gameRef.audioManager.playBossAppear();
+      // game.audioManager.playMusic(boss: true);
+      game.audioManager.playBossAppear();
     } else {
       // Reduced enemy count for faster pacing: 5 + (wave * 1)
       // Wave 1: 6 enemies, Wave 2: 7 enemies, Wave 10: 15 enemies
       enemiesToSpawnInWave = 5 + currentWave;
 
       // Switch back to normal music (DISABLED)
-      // gameRef.audioManager.playMusic(boss: false);
+      // game.audioManager.playMusic(boss: false);
     }
 
-    gameRef.statsManager.startWave(currentWave, enemiesToSpawnInWave);
+    game.statsManager.startWave(currentWave, enemiesToSpawnInWave);
 
     GameLogger.event('Wave $currentWave started - Enemies: $enemiesToSpawnInWave', tag: 'EnemyManager');
   }
@@ -107,7 +107,7 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
     super.update(dt);
 
     // Don't update if game is paused
-    if (gameRef.isPaused) return;
+    if (game.isPaused) return;
 
     if (!isSpawning) return;
 
@@ -137,12 +137,12 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
 
       // Check if wave is complete (all enemies killed)
       // Use cached enemy list for consistency (refreshed once per frame)
-      final totalEnemyCount = gameRef.activeEnemies.length;
+      final totalEnemyCount = game.activeEnemies.length;
       final allEnemiesKilled = (totalEnemyCount == 0);
 
       // Debug: Log when enemy count changes
       if (totalEnemyCount != _lastEnemyCount) {
-        final enemyTypes = gameRef.activeEnemies.map((e) => e.runtimeType.toString()).join(', ');
+        final enemyTypes = game.activeEnemies.map((e) => e.runtimeType.toString()).join(', ');
         print('[EnemyManager] Enemy count changed: wave=$currentWave, spawned=$enemiesSpawnedInWave/$enemiesToSpawnInWave, alive=$totalEnemyCount (was $_lastEnemyCount)');
         print('[EnemyManager] Active enemies: [$enemyTypes]');
         GameLogger.debug(
@@ -198,7 +198,7 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
   void spawnBoss() {
     // Spawn boss at top center relative to player position in world coordinates
     final playerPos = player.position;
-    final spawnPos = Vector2(playerPos.x, playerPos.y - gameRef.size.y / 2 - 100);
+    final spawnPos = Vector2(playerPos.x, playerPos.y - game.size.y / 2 - 100);
 
     // Get spawn weights for current wave from config
     final weights = EnemySpawnConfig.getWeightsForWave(currentWave);
@@ -219,7 +219,7 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
         wave: currentWave,
         color: const Color(0xFFFF0000),
       );
-      gameRef.world.add(boss);
+      game.world.add(boss);
       GameLogger.debug('Spawned fallback BossShip at wave $currentWave', tag: 'EnemyManager');
       return;
     }
@@ -230,9 +230,9 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
       currentWave,
       spawnPos,
       bossWeights,
-      scale: gameRef.entityScale,
+      scale: game.entityScale,
     );
-    gameRef.world.add(boss);
+    game.world.add(boss);
     print('[EnemyManager] *** BOSS SPAWNED *** ${boss.runtimeType} at wave $currentWave, isMounted=${boss.isMounted}');
     GameLogger.debug('Spawned ${boss.runtimeType} at wave $currentWave', tag: 'EnemyManager');
   }
@@ -247,10 +247,10 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
     final bossId = bossPool[random.nextInt(bossPool.length)];
 
     // Calculate spawn position (top center with some horizontal variance)
-    final xVariance = (random.nextDouble() - 0.5) * gameRef.size.x * 0.4;
+    final xVariance = (random.nextDouble() - 0.5) * game.size.x * 0.4;
     final spawnPos = Vector2(
       playerPos.x + xVariance,
-      playerPos.y - gameRef.size.y / 2 - 100,
+      playerPos.y - game.size.y / 2 - 100,
     );
 
     // Create boss using factory
@@ -259,10 +259,10 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
       player,
       currentWave,
       spawnPos,
-      scale: gameRef.entityScale,
+      scale: game.entityScale,
     );
 
-    gameRef.world.add(boss);
+    game.world.add(boss);
     GameLogger.debug(
       'Spawned ${boss.runtimeType} ($bossId) at wave $currentWave (${enemiesSpawnedInWave + 1}/$enemiesToSpawnInWave)',
       tag: 'EnemyManager',
@@ -280,26 +280,26 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
     switch (side) {
       case 0: // Top
         spawnPos = Vector2(
-          playerPos.x + (random.nextDouble() * gameRef.size.x) - (gameRef.size.x / 2),
-          playerPos.y - gameRef.size.y / 2 - 50
+          playerPos.x + (random.nextDouble() * game.size.x) - (game.size.x / 2),
+          playerPos.y - game.size.y / 2 - 50
         );
         break;
       case 1: // Right
         spawnPos = Vector2(
-          playerPos.x + gameRef.size.x / 2 + 50,
-          playerPos.y + (random.nextDouble() * gameRef.size.y) - (gameRef.size.y / 2),
+          playerPos.x + game.size.x / 2 + 50,
+          playerPos.y + (random.nextDouble() * game.size.y) - (game.size.y / 2),
         );
         break;
       case 2: // Bottom
         spawnPos = Vector2(
-          playerPos.x + (random.nextDouble() * gameRef.size.x) - (gameRef.size.x / 2),
-          playerPos.y + gameRef.size.y / 2 + 50,
+          playerPos.x + (random.nextDouble() * game.size.x) - (game.size.x / 2),
+          playerPos.y + game.size.y / 2 + 50,
         );
         break;
       case 3: // Left
         spawnPos = Vector2(
-          playerPos.x - gameRef.size.x / 2 - 50,
-          playerPos.y + (random.nextDouble() * gameRef.size.y) - (gameRef.size.y / 2)
+          playerPos.x - game.size.x / 2 - 50,
+          playerPos.y + (random.nextDouble() * game.size.y) - (game.size.y / 2)
         );
         break;
       default:
@@ -316,12 +316,12 @@ class EnemyManager extends Component with HasGameRef<SpaceShooterGame> {
     final weights = EnemySpawnConfig.getWeightsForWave(currentWave);
 
     // Create enemy using factory with weighted random selection and entity scale
-    final enemy = EnemyFactory.createWeightedRandom(player, currentWave, spawnPos, weights, scale: gameRef.entityScale);
+    final enemy = EnemyFactory.createWeightedRandom(player, currentWave, spawnPos, weights, scale: game.entityScale);
 
-    gameRef.world.add(enemy);
+    game.world.add(enemy);
     print('[EnemyManager] Spawned ${enemy.runtimeType} (${enemiesSpawnedInWave + 1}/$enemiesToSpawnInWave) at wave $currentWave');
     GameLogger.debug(
-      'Spawned ${enemy.runtimeType} at wave $currentWave with scale ${gameRef.entityScale}',
+      'Spawned ${enemy.runtimeType} at wave $currentWave with scale ${game.entityScale}',
       tag: 'EnemyManager',
     );
   }

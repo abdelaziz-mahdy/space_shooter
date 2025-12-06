@@ -229,7 +229,7 @@ class BerserkerBoss extends BaseEnemy {
         speed: bulletSpeed,
       );
 
-      gameRef.world.add(bullet);
+      game.world.add(bullet);
     }
 
     print('[BerserkerBoss] Fired spread shot ($pauseSpreadCount bullets)');
@@ -249,7 +249,7 @@ class BerserkerBoss extends BaseEnemy {
       speed: bulletSpeed * 0.7, // Slower bullets for trail
     );
 
-    gameRef.world.add(bullet);
+    game.world.add(bullet);
   }
 
   /// Shoot in all directions (rage mode)
@@ -268,7 +268,7 @@ class BerserkerBoss extends BaseEnemy {
         speed: bulletSpeed,
       );
 
-      gameRef.world.add(bullet);
+      game.world.add(bullet);
     }
 
     print('[BerserkerBoss] Fired omnidirectional burst! ($directions bullets)');
@@ -292,7 +292,7 @@ class BerserkerBoss extends BaseEnemy {
     // Draw glow effect when enraged
     if (rageLevel > 0) {
       final glowPaint = Paint()
-        ..color = renderColor.withOpacity(0.4)
+        ..color = renderColor.withValues(alpha: 0.4)
         ..style = PaintingStyle.fill
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
 
@@ -347,7 +347,7 @@ class BerserkerBoss extends BaseEnemy {
     // Draw charge indicator
     if (isCharging && chargeDirection != null) {
       final chargePaint = Paint()
-        ..color = const Color(0xFFFFFF00).withOpacity(0.6)
+        ..color = const Color(0xFFFFFF00).withValues(alpha: 0.6)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 3;
 

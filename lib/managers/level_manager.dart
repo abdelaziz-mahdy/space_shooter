@@ -4,7 +4,7 @@ import '../game/space_shooter_game.dart';
 import '../upgrades/upgrade.dart';
 import '../config/weapon_unlock_config.dart';
 
-class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
+class LevelManager extends Component with HasGameReference<SpaceShooterGame> {
   /// Maximum number of weapon unlocks that can appear in a single upgrade selection
   /// This ensures players always have stat upgrade options available
   static const int maxWeaponUpgradesPerSelection = 2;
@@ -29,7 +29,7 @@ class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
     xpToNextLevel = (xpToNextLevel * 1.2).round(); // Reduced from 1.5x to 1.2x for faster leveling
 
     // Play level up sound
-    gameRef.audioManager.playLevelUp();
+    game.audioManager.playLevelUp();
 
     // Show upgrade selection
     showUpgradeSelection();
@@ -39,13 +39,13 @@ class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
     print('[LevelManager] showUpgradeSelection called');
 
     // Just pause the game - Flutter UI will handle the rest via callbacks
-    gameRef.pauseForUpgrade();
+    game.pauseForUpgrade();
     print('[LevelManager] Game paused - waiting for Flutter UI');
   }
 
   List<Upgrade> getRandomUpgrades(int count) {
     final random = Random();
-    final player = gameRef.player;
+    final player = game.player;
 
     // Check if this level should offer weapon unlocks
     final allWeaponUpgrades = _getWeaponUpgradesForLevel();
@@ -84,7 +84,7 @@ class LevelManager extends Component with HasGameRef<SpaceShooterGame> {
   }
 
   List<Upgrade> _getWeaponUpgradesForLevel() {
-    final player = gameRef.player;
+    final player = game.player;
     final unlockedWeapons = player.weaponManager.getUnlockedWeapons();
     final options = <Upgrade>[];
 

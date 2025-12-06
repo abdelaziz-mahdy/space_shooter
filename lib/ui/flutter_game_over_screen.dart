@@ -319,7 +319,7 @@ class _FlutterGameOverScreenState extends State<FlutterGameOverScreen> {
                     Navigator.of(context).pushNamed('/leaderboard');
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF9370DB).withOpacity(0.2),
+                    backgroundColor: const Color(0xFF9370DB).withValues(alpha: 0.2),
                     foregroundColor: const Color(0xFF9370DB),
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     shape: RoundedRectangleBorder(

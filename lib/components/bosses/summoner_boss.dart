@@ -176,7 +176,7 @@ class SummonerBoss extends BaseEnemy {
       // Make bullets larger
       bullet.size = Vector2(bulletSize, bulletSize);
 
-      gameRef.world.add(bullet);
+      game.world.add(bullet);
     }
 
     print('[SummonerBoss] Fired 3-bullet spread');
@@ -240,7 +240,7 @@ class SummonerBoss extends BaseEnemy {
         minion.health = minion.health * minionScale;
 
         // Add to world and track
-        gameRef.world.add(minion);
+        game.world.add(minion);
         summonedMinions.add(minion);
 
         print('[SummonerBoss] Summoned $enemyId minion (${aliveMinionsCount}/$maxActiveMinions)');
@@ -300,7 +300,7 @@ class SummonerBoss extends BaseEnemy {
           scale: 1.0, // Full size kamikaze for final attack
         );
 
-        gameRef.world.add(kamikaze);
+        game.world.add(kamikaze);
         print('[SummonerBoss] Spawned kamikaze $i/$kamikazeCount');
       } catch (e) {
         print('[SummonerBoss] Failed to spawn kamikaze: $e');
@@ -316,7 +316,7 @@ class SummonerBoss extends BaseEnemy {
 
     // Draw outer glow
     final glowPaint = Paint()
-      ..color = const Color(0xFF00FF00).withOpacity(0.3 + pulseEffect * 0.2)
+      ..color = const Color(0xFF00FF00).withValues(alpha: 0.3 + pulseEffect * 0.2)
       ..style = PaintingStyle.fill
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 15);
 
@@ -356,7 +356,7 @@ class SummonerBoss extends BaseEnemy {
     // Draw summoning indicator
     if (isSummoning) {
       final summonPaint = Paint()
-        ..color = const Color(0xFF00FF00).withOpacity(0.6)
+        ..color = const Color(0xFF00FF00).withValues(alpha: 0.6)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 3;
 

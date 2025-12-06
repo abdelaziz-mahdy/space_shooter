@@ -181,7 +181,7 @@ class NexusBoss extends BaseEnemy {
     _updateHitboxForPhase();
 
     // Award partial XP for completing phase
-    gameRef.levelManager.addXP(20);
+    game.levelManager.addXP(20);
   }
 
   @override
@@ -284,7 +284,7 @@ class NexusBoss extends BaseEnemy {
         speed: 140.0,
       );
 
-      gameRef.world.add(bullet);
+      game.world.add(bullet);
     }
 
     print('[NexusBoss] Phase 1: Fired spiral pattern');
@@ -319,7 +319,7 @@ class NexusBoss extends BaseEnemy {
         speed: 180.0,
       );
 
-      gameRef.world.add(missile);
+      game.world.add(missile);
     }
 
     print('[NexusBoss] Phase 2: Fired homing missiles');
@@ -336,7 +336,7 @@ class NexusBoss extends BaseEnemy {
       speed: 220.0,
     );
 
-    gameRef.world.add(bullet);
+    game.world.add(bullet);
   }
 
   void _spawnMine() {
@@ -382,7 +382,7 @@ class NexusBoss extends BaseEnemy {
         // Reduce health to 40%
         miniBoss.health = miniBoss.health * 0.4;
 
-        gameRef.world.add(miniBoss);
+        game.world.add(miniBoss);
         print('[NexusBoss] Summoned mini-boss: $bossId');
       } catch (e) {
         print('[NexusBoss] Failed to summon $bossId: $e');
@@ -458,7 +458,7 @@ class NexusBoss extends BaseEnemy {
 
     // Glow effect
     final glowPaint = Paint()
-      ..color = fillColor.withOpacity(0.6)
+      ..color = fillColor.withValues(alpha: 0.6)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
@@ -473,7 +473,7 @@ class NexusBoss extends BaseEnemy {
         final ringOpacity = (1.0 - ringProgress) * 0.8;
 
         final ringPaint = Paint()
-          ..color = prismColor.withOpacity(ringOpacity)
+          ..color = prismColor.withValues(alpha: ringOpacity)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 3;
 
@@ -556,7 +556,7 @@ enum _NexusPhase {
 
 /// Area mine component for Phase 3
 class _AreaMine extends PositionComponent
-    with HasGameRef<SpaceShooterGame>, CollisionCallbacks {
+    with HasGameReference<SpaceShooterGame>, CollisionCallbacks {
   final NexusBoss parent;
 
   double lifeTimer = 0;
@@ -579,7 +579,7 @@ class _AreaMine extends PositionComponent
   void update(double dt) {
     super.update(dt);
 
-    if (gameRef.isPaused) return;
+    if (game.isPaused) return;
 
     lifeTimer += dt;
     if (lifeTimer >= maxLifetime) {
@@ -630,7 +630,7 @@ class _AreaMine extends PositionComponent
 
     // Draw danger indicator
     final dangerPaint = Paint()
-      ..color = const Color(0xFFFF0000).withOpacity(pulseIntensity)
+      ..color = const Color(0xFFFF0000).withValues(alpha: pulseIntensity)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 

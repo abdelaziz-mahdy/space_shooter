@@ -217,7 +217,7 @@ class GunshipBoss extends BaseEnemy {
           speed: bulletSpeed,
         );
 
-        gameRef.world.add(bullet);
+        game.world.add(bullet);
       }
 
       // Rotate spiral for next shot
@@ -253,7 +253,7 @@ class GunshipBoss extends BaseEnemy {
           speed: bulletSpeed,
         );
 
-        gameRef.world.add(bullet);
+        game.world.add(bullet);
       }
 
       print('[GunshipBoss] Fired wave $wavesFired');
@@ -286,7 +286,7 @@ class GunshipBoss extends BaseEnemy {
           speed: bulletSpeed,
         );
 
-        gameRef.world.add(bullet);
+        game.world.add(bullet);
       }
 
       print('[GunshipBoss] Fired shotgun burst');
@@ -327,7 +327,7 @@ class GunshipBoss extends BaseEnemy {
     if (!isVulnerable) {
       final glowColor = _getPatternColor();
       final glowPaint = Paint()
-        ..color = glowColor.withOpacity(glowIntensity * 0.8)
+        ..color = glowColor.withValues(alpha: glowIntensity * 0.8)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 3;
 
@@ -351,7 +351,7 @@ class GunshipBoss extends BaseEnemy {
     // Draw vulnerability indicator
     if (isVulnerable) {
       final vulnPaint = Paint()
-        ..color = const Color(0xFFFFFF00).withOpacity(0.6)
+        ..color = const Color(0xFFFFFF00).withValues(alpha: 0.6)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 4;
 
