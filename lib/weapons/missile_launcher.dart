@@ -35,10 +35,12 @@ class MissileLauncher extends Weapon {
     // Fire missiles (respect multi-shot upgrade)
     for (int i = 0; i < player.projectileCount; i++) {
       Vector2 missileDirection;
+      Vector2 missileSpawnPos;
 
       if (player.projectileCount == 1) {
         // Single missile - fire straight
         missileDirection = targetDirection.normalized();
+        missileSpawnPos = bulletSpawnPosition.clone();
       } else {
         // Multiple missiles - tighter spread since missiles are homing
         final angleSpread = 0.1; // ~5.7° between missiles
@@ -46,10 +48,17 @@ class MissileLauncher extends Weapon {
         final offset = (i - (player.projectileCount - 1) / 2) * angleSpread;
         final missileAngle = baseAngle + offset;
         missileDirection = Vector2(cos(missileAngle), sin(missileAngle));
+
+        // Apply small circular offset to spawn position for visual spread
+        const double spawnOffsetRadius = 15.0;
+        final spawnOffsetAngle = (i / player.projectileCount) * 2 * pi;
+        final spawnOffsetX = cos(spawnOffsetAngle) * spawnOffsetRadius;
+        final spawnOffsetY = sin(spawnOffsetAngle) * spawnOffsetRadius;
+        missileSpawnPos = bulletSpawnPosition + Vector2(spawnOffsetX, spawnOffsetY);
       }
 
       final missile = Missile(
-        position: bulletSpawnPosition.clone(),
+        position: missileSpawnPos,
         direction: missileDirection.normalized(),
         damage: getDamage(player),
         speed: getProjectileSpeed(player),

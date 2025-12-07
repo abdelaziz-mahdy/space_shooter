@@ -289,8 +289,8 @@ class SpaceShooterGame extends FlameGame
   }
 
   void pauseForUpgrade() {
-    // Don't actually pause the engine - just set a flag
-    // The overlay will block interactions and we stop spawning enemies
+    // Pause the entire game engine using Flame's built-in pause
+    pauseEngine();
     isPaused = true;
     enemyManager.stopSpawning();
     GameLogger.debug('Game paused for upgrade', tag: 'SpaceShooterGame');
@@ -302,7 +302,8 @@ class SpaceShooterGame extends FlameGame
   }
 
   void resumeFromUpgrade() {
-    // Resume spawning without starting new wave
+    // Resume the game engine and spawning
+    resumeEngine();
     isPaused = false;
     enemyManager.resumeSpawning();
     GameLogger.debug('Game resumed from upgrade', tag: 'SpaceShooterGame');
@@ -323,7 +324,8 @@ class SpaceShooterGame extends FlameGame
     if (isGameOver) return;
     isGameOver = true;
 
-    // Pause the game to stop all movement and updates
+    // Pause the entire game engine using Flame's built-in pause
+    pauseEngine();
     isPaused = true;
     enemyManager.stopSpawning();
 
@@ -350,6 +352,9 @@ class SpaceShooterGame extends FlameGame
   }
 
   Future<void> restart() async {
+    // Resume the game engine if it was paused
+    resumeEngine();
+
     // Reset flags
     isGameOver = false;
     isPaused = false;

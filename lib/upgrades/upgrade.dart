@@ -424,6 +424,14 @@ class HomingUpgrade extends Upgrade {
   }
 
   @override
+  bool get isStackable => false; // Only take once
+
+  @override
+  bool isValidFor(PlayerShip player) {
+    return player.homingStrength == 0; // Only if player doesn't have homing yet
+  }
+
+  @override
   List<String> getStatusChanges() => ['+${homingStrength.toInt()} tracking power'];
 }
 

@@ -61,8 +61,16 @@ class PulseCannon extends Weapon {
         final bulletAngle = baseAngle + offset;
         final bulletDirection = Vector2(cos(bulletAngle), sin(bulletAngle));
 
+        // Apply small circular offset to spawn position for visual spread with homing
+        // This keeps bullets visually separate even when they converge on same target
+        const double spawnOffsetRadius = 15.0;
+        final spawnOffsetAngle = (i / player.projectileCount) * 2 * pi;
+        final spawnOffsetX = cos(spawnOffsetAngle) * spawnOffsetRadius;
+        final spawnOffsetY = sin(spawnOffsetAngle) * spawnOffsetRadius;
+        final offsetSpawnPos = bulletSpawnPosition + Vector2(spawnOffsetX, spawnOffsetY);
+
         final bullet = Bullet(
-          position: bulletSpawnPosition.clone(),
+          position: offsetSpawnPos,
           direction: bulletDirection.normalized(),
           baseDamage: getDamage(player),
           speed: getProjectileSpeed(player),
