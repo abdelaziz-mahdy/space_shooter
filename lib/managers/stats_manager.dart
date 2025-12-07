@@ -34,7 +34,10 @@ class StatsManager extends Component with HasGameReference<SpaceShooterGame> {
   void update(double dt) {
     super.update(dt);
 
-    timeAlive += dt;
+    // Only count time when game is not paused
+    if (!game.isPaused) {
+      timeAlive += dt;
+    }
   }
 
   String getTimeAliveFormatted() {

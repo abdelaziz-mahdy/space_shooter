@@ -98,7 +98,7 @@ class Missile extends BaseRenderedComponent
 
     // Smoothly turn towards target
     // Scale by dt and factor for consistent turn rate with bullets
-    final turnRate = homingStrength * dt * 0.01; // Adjusted for missile physics
+    final turnRate = (homingStrength * dt * 0.01).clamp(0.0, 1.0); // Clamp to prevent overshooting
     direction = (direction + (toTarget * turnRate)).normalized();
   }
 

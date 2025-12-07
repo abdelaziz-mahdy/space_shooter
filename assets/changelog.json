@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.3.17",
+    "title": "Game Fixes & Polish",
+    "date": "2025-12-07",
+    "sections": [
+      {
+        "title": "Bug Fixes",
+        "emoji": "🐛",
+        "items": [
+          "Fixed chain lightning not working with single upgrade",
+          "Fixed time and score counting during pause/game over",
+          "Fixed game continuing to run when paused (enemies, player, shooting)",
+          "Fixed smart bullets oscillating with weird movement patterns",
+          "Fixed multi-shot bullets overlapping when using smart bullets",
+          "Fixed multi-shot missiles overlapping when using homing"
+        ]
+      },
+      {
+        "title": "Improvements",
+        "emoji": "✨",
+        "items": [
+          "Smart bullets upgrade now only appears once (non-stackable)",
+          "Multi-shot projectiles now stay visually distinct with homing",
+          "Game properly freezes during settings, upgrades, and game over"
+        ]
+      }
+    ]
+  },
+  {
     "version": "0.3.16",
     "title": "Upgrade Rate Balance",
     "date": "2025-12-07",

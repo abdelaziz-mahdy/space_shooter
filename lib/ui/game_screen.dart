@@ -86,11 +86,13 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
     setState(() {
       _showStatsPanel = !_showStatsPanel;
 
-      // Pause/resume game when stats panel is toggled
+      // Pause/resume game engine when stats panel is toggled
       if (_showStatsPanel) {
+        game.pauseEngine();
         game.isPaused = true;
         game.enemyManager.stopSpawning();
       } else {
+        game.resumeEngine();
         game.isPaused = false;
         game.enemyManager.startSpawning();
       }
@@ -101,11 +103,13 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
     setState(() {
       _showSettingsDialog = !_showSettingsDialog;
 
-      // Pause/resume game when settings dialog is toggled
+      // Pause/resume game engine when settings dialog is toggled
       if (_showSettingsDialog) {
+        game.pauseEngine();
         game.isPaused = true;
         game.enemyManager.stopSpawning();
       } else {
+        game.resumeEngine();
         game.isPaused = false;
         game.enemyManager.resumeSpawning(); // Resume without starting new wave
       }

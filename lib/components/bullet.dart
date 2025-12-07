@@ -111,7 +111,7 @@ class Bullet extends BaseRenderedComponent with CollisionCallbacks, HasVisualCen
 
     final targetEnemy = nearestEnemies.first;
 
-    // Calculate direction to target enemy
+    // Calculate direction to target (no offset on target, offset handled at spawn)
     final toTarget = targetEnemy.position - position;
     if (toTarget.length < 0.01) return; // Too close, avoid division by zero
 
@@ -120,7 +120,7 @@ class Bullet extends BaseRenderedComponent with CollisionCallbacks, HasVisualCen
     // Lerp current direction towards target direction
     // homingStrength controls how much the bullet can turn
     // Higher values = sharper turns, lower values = gentle curves
-    final turnRate = homingStrength * dt * 3.0; // Scale by dt and a factor for smooth turning
+    final turnRate = (homingStrength * dt * 3.0).clamp(0.0, 1.0); // Clamp to prevent overshooting
 
     // Lerp the direction vector
     direction.x = direction.x + (targetDirection.x - direction.x) * turnRate;

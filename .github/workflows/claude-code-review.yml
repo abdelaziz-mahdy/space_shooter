@@ -1,14 +1,15 @@
 name: Claude Code Review
 
 on:
-  pull_request:
-    types: [opened, synchronize]
-    # Optional: Only run on specific file changes
-    # paths:
-    #   - "src/**/*.ts"
-    #   - "src/**/*.tsx"
-    #   - "src/**/*.js"
-    #   - "src/**/*.jsx"
+  # Disabled automatic trigger - only manual
+  # pull_request:
+  #   types: [opened, synchronize]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to review"
+        required: true
+        type: number
 
 jobs:
   claude-review:
@@ -21,10 +22,16 @@ jobs:
       actions: read
 
     steps:
+      - name: Get PR details
+        id: pr-details
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number || inputs.pr_number }}
+          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.ref }}  # Checkout the PR branch directly
+          ref: ${{ github.event.pull_request.head.ref || format('refs/pull/{0}/head', steps.pr-details.outputs.pr_number) }}
           fetch-depth: 0  # Need full history
 
       - name: Check if last commit was by Claude
@@ -59,7 +66,7 @@ jobs:
 
           prompt: |
             REPO: ${{ github.repository }}
-            PR NUMBER: ${{ github.event.pull_request.number }}
+            PR NUMBER: ${{ steps.pr-details.outputs.pr_number }}
 
             **TASK: Review PR and automatically create a fix PR**
 

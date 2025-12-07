@@ -18,9 +18,9 @@ name: Claude Auto-Fix from Review
 #   - Repository needs write permissions for contents and pull-requests
 
 on:
-  pull_request_review:
-    types: [submitted]
-  # You can also trigger manually via workflow_dispatch
+  # Disabled automatic trigger - only manual via workflow_dispatch
+  # pull_request_review:
+  #   types: [submitted]
   workflow_dispatch:
     inputs:
       pr_number:

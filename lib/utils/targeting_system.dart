@@ -13,6 +13,7 @@ class TargetingSystem {
     required Vector2 fromPosition,
     double maxRange = double.infinity,
     bool onlyTargetable = true,
+    BaseEnemy? excludeEnemy,
   }) {
     BaseEnemy? nearest;
     double nearestDistance = maxRange;
@@ -20,6 +21,9 @@ class TargetingSystem {
     final allEnemies = game.activeEnemies;
 
     for (final enemy in allEnemies) {
+      // Skip excluded enemy
+      if (enemy == excludeEnemy) continue;
+
       // Skip non-targetable enemies if requested
       if (onlyTargetable && !enemy.isTargetable) continue;
 
@@ -54,9 +58,10 @@ class TargetingSystem {
         fromPosition: fromPosition,
         maxRange: maxDistance ?? double.infinity,
         onlyTargetable: onlyTargetable,
+        excludeEnemy: excludeEnemy,
       );
 
-      if (nearest != null && nearest != excludeEnemy) {
+      if (nearest != null) {
         return [nearest];
       }
       return [];
