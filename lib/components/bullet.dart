@@ -6,7 +6,6 @@ import '../utils/visual_center_mixin.dart';
 import '../utils/targeting_system.dart';
 import '../config/balance_config.dart';
 import 'base_rendered_component.dart';
-import 'base_game_component.dart';
 import 'enemies/base_enemy.dart';
 import 'damage_number.dart'; // Still needed for healing numbers
 import '../game/space_shooter_game.dart';
@@ -323,7 +322,7 @@ class Bullet extends BaseRenderedComponent with CollisionCallbacks, HasVisualCen
 }
 
 /// Visual explosion effect
-class ExplosionEffect extends BaseGameComponent {
+class ExplosionEffect extends BaseRenderedComponent {
   double radius;
   double lifetime = 0;
   static const double maxLifetime = 0.3; // Short duration
@@ -332,7 +331,9 @@ class ExplosionEffect extends BaseGameComponent {
   ExplosionEffect({
     required Vector2 position,
     required this.radius,
-  }) : super(position: position, size: Vector2.all(radius * 2), anchor: Anchor.center);
+  }) : super(position: position, size: Vector2.all(radius * 2)) {
+    anchor = Anchor.center;
+  }
 
   @override
   void update(double dt) {
@@ -375,9 +376,7 @@ class ExplosionEffect extends BaseGameComponent {
   }
 
   @override
-  void render(Canvas canvas) {
-    super.render(canvas);
-
+  void renderShape(Canvas canvas) {
     final progress = lifetime / maxLifetime;
     final currentRadius = radius; // Match visual to damage radius
     final alpha = (1 - progress) * 0.6;
@@ -415,7 +414,7 @@ class ExplosionEffect extends BaseGameComponent {
 }
 
 /// Visual lightning effect for chain lightning
-class LightningEffect extends BaseGameComponent {
+class LightningEffect extends BaseRenderedComponent {
   final Vector2 startPos;
   final Vector2 endPos;
   double lifetime = 0;
@@ -426,7 +425,8 @@ class LightningEffect extends BaseGameComponent {
   LightningEffect({
     required this.startPos,
     required this.endPos,
-  }) : super(position: startPos.clone(), anchor: Anchor.center) {
+  }) : super(position: startPos.clone(), size: Vector2.zero()) {
+    anchor = Anchor.center;
     _generateLightningSegments();
   }
 
@@ -464,9 +464,7 @@ class LightningEffect extends BaseGameComponent {
   }
 
   @override
-  void render(Canvas canvas) {
-    super.render(canvas);
-
+  void renderShape(Canvas canvas) {
     final progress = lifetime / maxLifetime;
     final alpha = (1 - progress).clamp(0.0, 1.0);
 

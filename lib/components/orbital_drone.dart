@@ -3,13 +3,13 @@ import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import '../game/space_shooter_game.dart';
-import 'base_game_component.dart';
+import 'base_rendered_component.dart';
 import 'bullet.dart';
 import 'player_ship.dart';
 import 'enemies/base_enemy.dart';
 
 /// Orbital drone that circles the player and shoots at enemies
-class OrbitalDrone extends BaseGameComponent {
+class OrbitalDrone extends BaseRenderedComponent {
   final PlayerShip player;
   final int index; // Which orbital this is (0, 1, 2, etc.)
   final int totalOrbitals; // Total number of orbitals
@@ -24,11 +24,12 @@ class OrbitalDrone extends BaseGameComponent {
     required this.index,
     required this.totalOrbitals,
   }) : super(
+          position: Vector2.zero(),
           size: Vector2.all(16),
-          anchor: Anchor.center,
         ) {
     // Evenly space orbitals around the player
     angle = (index / totalOrbitals) * 2 * pi;
+    anchor = Anchor.center;
   }
 
   @override
@@ -100,9 +101,7 @@ class OrbitalDrone extends BaseGameComponent {
   }
 
   @override
-  void render(Canvas canvas) {
-    super.render(canvas);
-
+  void renderShape(Canvas canvas) {
     // Draw orbital drone as a glowing circle
     final paint = Paint()
       ..color = const Color(0xFF00FFFF)
