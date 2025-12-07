@@ -1,5 +1,20 @@
 [
   {
+    "version": "0.3.13",
+    "title": "Pause Handling Fix",
+    "date": "2025-12-07",
+    "sections": [
+      {
+        "title": "Bug Fixes",
+        "emoji": "🐛",
+        "items": [
+          "Fixed orbital drones and effects continuing to fire during pause",
+          "Improved pause handling reliability across all game components"
+        ]
+      }
+    ]
+  },
+  {
     "version": "0.3.12",
     "title": "Stability & Balance Fixes",
     "date": "2025-12-06",

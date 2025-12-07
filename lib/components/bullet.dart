@@ -6,7 +6,6 @@ import '../utils/visual_center_mixin.dart';
 import '../utils/targeting_system.dart';
 import '../config/balance_config.dart';
 import 'base_rendered_component.dart';
-import 'base_game_component.dart';
 import 'enemies/base_enemy.dart';
 import 'damage_number.dart'; // Still needed for healing numbers
 import '../game/space_shooter_game.dart';
