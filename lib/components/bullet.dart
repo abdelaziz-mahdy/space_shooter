@@ -6,6 +6,7 @@ import '../utils/visual_center_mixin.dart';
 import '../utils/targeting_system.dart';
 import '../config/balance_config.dart';
 import 'base_rendered_component.dart';
+import 'base_game_component.dart';
 import 'enemies/base_enemy.dart';
 import 'damage_number.dart'; // Still needed for healing numbers
 import '../game/space_shooter_game.dart';
@@ -79,12 +80,7 @@ class Bullet extends BaseRenderedComponent with CollisionCallbacks, HasVisualCen
   Vector2 getVisualCenter() => position.clone();
 
   @override
-  void update(double dt) {
-    super.update(dt);
-
-    // Don't update if game is paused
-    if (game.isPaused) return;
-
+  void updateGame(double dt) {
     // Apply homing behavior if homingStrength > 0
     if (homingStrength > 0) {
       _applyHoming(dt);
@@ -325,7 +321,7 @@ class Bullet extends BaseRenderedComponent with CollisionCallbacks, HasVisualCen
 }
 
 /// Visual explosion effect
-class ExplosionEffect extends PositionComponent with HasGameReference<SpaceShooterGame> {
+class ExplosionEffect extends BaseGameComponent {
   double radius;
   double lifetime = 0;
   static const double maxLifetime = 0.3; // Short duration
@@ -334,17 +330,10 @@ class ExplosionEffect extends PositionComponent with HasGameReference<SpaceShoot
   ExplosionEffect({
     required Vector2 position,
     required this.radius,
-  }) : super(position: position, size: Vector2.all(radius * 2));
+  }) : super(position: position, size: Vector2.all(radius * 2), anchor: Anchor.center);
 
   @override
-  Future<void> onLoad() async {
-    await super.onLoad();
-    anchor = Anchor.center;
-  }
-
-  @override
-  void update(double dt) {
-    super.update(dt);
+  void updateGame(double dt) {
     lifetime += dt;
 
     if (lifetime >= maxLifetime) {
@@ -423,7 +412,7 @@ class ExplosionEffect extends PositionComponent with HasGameReference<SpaceShoot
 }
 
 /// Visual lightning effect for chain lightning
-class LightningEffect extends PositionComponent with HasGameReference<SpaceShooterGame> {
+class LightningEffect extends BaseGameComponent {
   final Vector2 startPos;
   final Vector2 endPos;
   double lifetime = 0;
@@ -434,8 +423,7 @@ class LightningEffect extends PositionComponent with HasGameReference<SpaceShoot
   LightningEffect({
     required this.startPos,
     required this.endPos,
-  }) : super(position: startPos.clone()) {
-    anchor = Anchor.center;
+  }) : super(position: startPos.clone(), anchor: Anchor.center) {
     _generateLightningSegments();
   }
 
@@ -463,8 +451,7 @@ class LightningEffect extends PositionComponent with HasGameReference<SpaceShoot
   }
 
   @override
-  void update(double dt) {
-    super.update(dt);
+  void updateGame(double dt) {
     lifetime += dt;
 
     if (lifetime >= maxLifetime) {

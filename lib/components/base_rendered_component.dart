@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import '../game/space_shooter_game.dart';
+import 'base_game_component.dart';
 
 /// Base class for all components that need custom rendering.
 /// This ensures consistent rendering behavior across all game components.
@@ -9,11 +10,16 @@ import '../game/space_shooter_game.dart';
 /// Instead of overriding `render()`, subclasses should override `renderShape()`.
 /// The canvas is already transformed by Flame to the component's position and rotation,
 /// so hitboxes and rendering will align correctly.
-abstract class BaseRenderedComponent extends PositionComponent with HasGameReference<SpaceShooterGame> {
+///
+/// Also extends BaseGameComponent to enforce pause state handling automatically.
+abstract class BaseRenderedComponent extends BaseGameComponent {
   BaseRenderedComponent({
-    required super.position,
-    required super.size,
-  });
+    required Vector2 position,
+    required Vector2 size,
+  }) : super(
+    position: position,
+    size: size,
+  );
 
   @override
   void render(Canvas canvas) {

@@ -572,7 +572,131 @@ class PulseCannon extends Weapon {
 
 ---
 
-### 8. **Centralized Balance Configuration - Use Static Config Classes**
+### 8. **Pause Handling - Enforce at Base Class Level**
+
+**Why:** Game components must respect pause state. Forgetting to check `game.isPaused` in any component leads to subtle bugs (e.g., orbital drones firing during pause).
+
+**Pattern: Use `BaseGameComponent` for all game logic components**
+
+All game components should extend from the pause-aware hierarchy:
+- `BaseGameComponent` - Base for all game components (enforces pause)
+- `BaseRenderedComponent` (extends `BaseGameComponent`) - For rendered components
+- `BaseEnemy` (extends `BaseRenderedComponent`) - For all enemies
+
+**✅ GOOD - New Components:**
+
+```dart
+// Extend BaseGameComponent for simple game components
+class OrbitalDrone extends BaseGameComponent {
+  @override
+  void updateGame(double dt) {
+    // This is NEVER called when game is paused
+    // Pause check is automatic in base class
+    angle += rotationSpeed * dt;
+    shootTimer += dt;
+    if (shootTimer >= shootInterval) {
+      _shootAtNearestEnemy();
+    }
+  }
+}
+
+// Extend BaseRenderedComponent for rendered components
+class Bullet extends BaseRenderedComponent {
+  @override
+  void updateGame(double dt) {
+    // Pause check automatic - no manual check needed!
+    position += direction * speed * dt;
+    lifetime += dt;
+  }
+}
+
+// All enemy types automatically inherit pause handling
+class SquareEnemy extends BaseEnemy {
+  @override
+  void updateGame(double dt) {
+    // Pause is handled automatically by BaseEnemy
+    // which extends BaseRenderedComponent
+    // which extends BaseGameComponent
+    updateMovement(dt); // Safe - won't be called during pause
+  }
+}
+```
+
+**❌ BAD - Old Pattern (Don't Use):**
+
+```dart
+// Manually checking pause in every component (error-prone!)
+class OrbitalDrone extends PositionComponent {
+  @override
+  void update(double dt) {
+    if (game.isPaused) return; // Easy to forget!
+    // ... update logic
+  }
+}
+```
+
+**How It Works:**
+
+The pause check is enforced in `BaseGameComponent.update()`:
+
+```dart
+abstract class BaseGameComponent extends PositionComponent {
+  @override
+  void update(double dt) {
+    // Check pause FIRST - all game logic is prevented during pause
+    if (game.isPaused) return;
+
+    // Only call updateGame() if not paused
+    updateGame(dt);
+
+    super.update(dt);
+  }
+
+  // Subclasses override this instead of update()
+  void updateGame(double dt) { }
+}
+```
+
+**Migration Steps for Existing Components:**
+
+1. Change `extends PositionComponent` to `extends BaseGameComponent`
+   - Or better: `extends BaseRenderedComponent` if it needs rendering
+   - Or: `extends BaseEnemy` if it's an enemy type
+
+2. Change `void update(double dt)` to `void updateGame(double dt)`
+   - Remove any manual `if (game.isPaused) return;` checks
+   - Pause check is now automatic
+
+3. Remove manual pause checks since they're handled by base class:
+   ```dart
+   // BEFORE
+   @override
+   void update(double dt) {
+     if (game.isPaused) return;
+     // ... logic
+   }
+
+   // AFTER
+   @override
+   void updateGame(double dt) {
+     // No pause check needed - handled by base class!
+     // ... logic
+   }
+   ```
+
+**Benefits:**
+
+1. ✅ **Can't forget pause check** - Enforced by base class, not optional
+2. ✅ **Single source of truth** - One place where pause logic lives
+3. ✅ **Cleaner code** - No repeated pause checks in every component
+4. ✅ **Safer refactoring** - New components automatically safe
+5. ✅ **Consistent behavior** - All components pause together
+
+**Rule:** ALL components that have game logic MUST extend from the pause-aware hierarchy and override `updateGame(dt)` instead of `update(dt)`. This is non-negotiable for consistency.
+
+---
+
+### 9. **Centralized Balance Configuration - Use Static Config Classes**
 
 **Why:** Balance values used across multiple files should be centralized in one place for easy tuning.
 
@@ -663,33 +787,13 @@ class BaseEnemy {
 
 ---
 
-### 9. **Coordinate Systems - Be Consistent**
+### 10. **Coordinate Systems - Be Consistent**
 
 **Rule:**
 
 - World coordinates for positions (infinite scrolling)
 - Local/relative coordinates for rendering (top-left origin)
 - Use `PositionUtil` for all distance/direction calculations between components
-
----
-
-### 10. **Pause Handling**
-
-**✅ GOOD:**
-
-```dart
-@override
-void update(double dt) {
-  super.update(dt);
-
-  // Check pause state at the start
-  if (gameRef.isPaused) return;
-
-  // Rest of update logic...
-}
-```
-
-**Rule:** All components that should pause must check `gameRef.isPaused` at the start of `update()`.
 
 ---
 
