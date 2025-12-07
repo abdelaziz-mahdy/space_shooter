@@ -48,11 +48,7 @@ class Missile extends BaseRenderedComponent
   Vector2 getVisualCenter() => position.clone();
 
   @override
-  void update(double dt) {
-    super.update(dt);
-
-    if (game.isPaused) return;
-
+  void updateGame(double dt) {
     // Find nearest enemy to home in on
     _findNearestEnemy();
 
