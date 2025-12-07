@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.3.14",
+    "title": "Chain Lightning Bug Fix",
+    "date": "2025-12-07",
+    "sections": [
+      {
+        "title": "Bug Fixes",
+        "emoji": "🐛",
+        "items": [
+          "Fixed chain lightning effect not triggering on bullet hits"
+        ]
+      }
+    ]
+  },
+  {
     "version": "0.3.13",
     "title": "Upgrade Stacking & Visual Effects",
     "date": "2025-12-06",
