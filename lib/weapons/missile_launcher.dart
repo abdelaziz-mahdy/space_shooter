@@ -49,7 +49,7 @@ class MissileLauncher extends Weapon {
         final missileAngle = baseAngle + offset;
         missileDirection = Vector2(cos(missileAngle), sin(missileAngle));
 
-        // Apply small circular offset to spawn position for visual spread
+        // Missiles always have built-in homing, so always apply spawn offset for visual spread
         const double spawnOffsetRadius = 15.0;
         final spawnOffsetAngle = (i / player.projectileCount) * 2 * pi;
         final spawnOffsetX = cos(spawnOffsetAngle) * spawnOffsetRadius;
