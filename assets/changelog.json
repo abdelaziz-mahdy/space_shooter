@@ -1,5 +1,21 @@
 [
   {
+    "version": "0.3.18",
+    "title": "Consistent Multi-Shot Spread",
+    "date": "2025-12-07",
+    "sections": [
+      {
+        "title": "Improvements",
+        "emoji": "✨",
+        "items": [
+          "Multi-shot bullets now spawn consistently from same position",
+          "Spawn offset only applies when smart bullets upgrade is active",
+          "Missiles always spread properly (built-in homing)"
+        ]
+      }
+    ]
+  },
+  {
     "version": "0.3.17",
     "title": "Game Fixes & Polish",
     "date": "2025-12-07",
