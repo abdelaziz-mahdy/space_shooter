@@ -331,7 +331,11 @@ class ExplosionEffect extends BaseRenderedComponent {
   ExplosionEffect({
     required Vector2 position,
     required this.radius,
-  }) : super(position: position, size: Vector2.all(radius * 2)) {
+  }) : super(position: position, size: Vector2.all(radius * 2));
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
     anchor = Anchor.center;
   }
 
@@ -425,7 +429,11 @@ class LightningEffect extends BaseRenderedComponent {
   LightningEffect({
     required this.startPos,
     required this.endPos,
-  }) : super(position: startPos.clone(), size: Vector2.zero()) {
+  }) : super(position: startPos.clone(), size: Vector2.zero());
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
     anchor = Anchor.center;
     _generateLightningSegments();
   }
