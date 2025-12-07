@@ -406,8 +406,6 @@ class _ArchitectBarrier extends PositionComponent
   void update(double dt) {
     super.update(dt);
 
-    if (game.isPaused) return;
-
     // Update position to orbit around parent
     final angle = (orbitIndex * 2 * pi / ArchitectBoss.maxBarriers);
     final offset = Vector2(

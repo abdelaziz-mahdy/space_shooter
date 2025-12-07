@@ -176,9 +176,6 @@ class PlayerShip extends BaseRenderedComponent
   void update(double dt) {
     super.update(dt);
 
-    // Don't update if game is paused
-    if (game.isPaused) return;
-
     // Update invulnerability timer
     if (isInvulnerable) {
       invulnerabilityTimer -= dt;

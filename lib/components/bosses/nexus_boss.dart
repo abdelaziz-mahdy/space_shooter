@@ -579,8 +579,6 @@ class _AreaMine extends PositionComponent
   void update(double dt) {
     super.update(dt);
 
-    if (game.isPaused) return;
-
     lifeTimer += dt;
     if (lifeTimer >= maxLifetime) {
       explode();

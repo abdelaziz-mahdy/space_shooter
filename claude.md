@@ -572,7 +572,102 @@ class PulseCannon extends Weapon {
 
 ---
 
-### 8. **Centralized Balance Configuration - Use Static Config Classes**
+### 8. **Pause Handling - Enforce at Base Class Level**
+
+**Why:** Game components must respect pause state. Forgetting to check `game.isPaused` in any component leads to subtle bugs (e.g., orbital drones firing during pause).
+
+**Pattern: Use `BaseGameComponent` for all game logic components - ZERO code changes needed!**
+
+All game components should extend from the pause-aware hierarchy:
+- `BaseGameComponent` - Base for all game components (enforces pause automatically)
+- `BaseRenderedComponent` (extends `BaseGameComponent`) - For rendered components (rendered stuff automatically pauses)
+- `BaseEnemy` (extends `BaseRenderedComponent`) - For all enemies (all enemies automatically pause)
+
+**✅ GOOD - Migration is SIMPLE (just change parent class):**
+
+```dart
+// BEFORE: Manual pause check
+class OrbitalDrone extends PositionComponent {
+  @override
+  void update(double dt) {
+    if (game.isPaused) return; // Easy to forget!
+    // ... game logic
+  }
+}
+
+// AFTER: Just change parent class, keep update() as-is!
+class OrbitalDrone extends BaseGameComponent {
+  @override
+  void update(double dt) {
+    super.update(dt); // This calls pause check automatically!
+    // ... game logic (pause check already happened)
+  }
+}
+```
+
+**How It Works - Simple and Elegant:**
+
+The pause check is enforced in `BaseGameComponent.update()`:
+
+```dart
+abstract class BaseGameComponent extends PositionComponent {
+  @override
+  void update(double dt) {
+    // Check pause FIRST
+    if (game.isPaused) return; // Blocks all further updates
+
+    // Only call super.update() if not paused
+    // This allows ALL subclass update() methods to run normally
+    super.update(dt);
+  }
+}
+```
+
+When a component overrides `update()`:
+1. `BaseGameComponent.update(dt)` is called first
+2. Pause check happens - if paused, returns immediately
+3. If not paused, calls `super.update(dt)` which continues the chain
+4. Subclass's `update()` method runs normally
+
+**Migration Steps (Super Simple!):**
+
+1. Change `extends PositionComponent` to `extends BaseGameComponent`
+   - Or better: `extends BaseRenderedComponent` if it needs rendering
+   - Or: `extends BaseEnemy` if it's an enemy type
+   - **That's it!** No other changes needed.
+
+2. Remove any manual pause checks:
+   ```dart
+   // BEFORE
+   @override
+   void update(double dt) {
+     if (game.isPaused) return; // Remove this!
+     // ... logic
+   }
+
+   // AFTER
+   @override
+   void update(double dt) {
+     super.update(dt); // Pause check happens automatically here
+     // ... logic
+   }
+   ```
+
+**Benefits:**
+
+1. ✅ **Zero code changes** - Just change parent class, everything works
+2. ✅ **Can't forget pause check** - Enforced by base class, not optional
+3. ✅ **Single source of truth** - One place where pause logic lives
+4. ✅ **Cleaner code** - No repeated pause checks in every component
+5. ✅ **Safer refactoring** - New components automatically safe
+6. ✅ **Consistent behavior** - All components pause together
+7. ✅ **Backward compatible** - Works with existing `update()` overrides
+
+**Rule:** ALL components that have game logic MUST extend from the pause-aware hierarchy (`BaseGameComponent`, `BaseRenderedComponent`, or `BaseEnemy`). Just change the parent class - zero other code changes needed!
+
+---
+
+### 9. **Centralized Balance Configuration - Use Static Config Classes**
 
 **Why:** Balance values used across multiple files should be centralized in one place for easy tuning.
 
@@ -663,33 +758,13 @@ class BaseEnemy {
 
 ---
 
-### 9. **Coordinate Systems - Be Consistent**
+### 10. **Coordinate Systems - Be Consistent**
 
 **Rule:**
 
 - World coordinates for positions (infinite scrolling)
 - Local/relative coordinates for rendering (top-left origin)
 - Use `PositionUtil` for all distance/direction calculations between components
-
----
-
-### 10. **Pause Handling**
-
-**✅ GOOD:**
-
-```dart
-@override
-void update(double dt) {
-  super.update(dt);
-
-  // Check pause state at the start
-  if (gameRef.isPaused) return;
-
-  // Rest of update logic...
-}
-```
-
-**Rule:** All components that should pause must check `gameRef.isPaused` at the start of `update()`.
 
 ---
 

@@ -37,9 +37,6 @@ class EnemyBullet extends BaseRenderedComponent
   void update(double dt) {
     super.update(dt);
 
-    // Don't update if game is paused
-    if (game.isPaused) return;
-
     position += direction * speed * dt;
     lifetime += dt;
 

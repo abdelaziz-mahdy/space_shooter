@@ -106,9 +106,6 @@ class EnemyManager extends Component with HasGameReference<SpaceShooterGame> {
   void update(double dt) {
     super.update(dt);
 
-    // Don't update if game is paused
-    if (game.isPaused) return;
-
     if (!isSpawning) return;
 
     if (isWaveActive) {

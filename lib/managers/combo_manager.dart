@@ -18,9 +18,6 @@ class ComboManager extends Component with HasGameReference<SpaceShooterGame> {
   void update(double dt) {
     super.update(dt);
 
-    // Don't update if game is paused
-    if (game.isPaused) return;
-
     if (combo > 0) {
       timeSinceLastKill += dt;
       if (timeSinceLastKill >= resetTime) {

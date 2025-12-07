@@ -82,9 +82,6 @@ class Bullet extends BaseRenderedComponent with CollisionCallbacks, HasVisualCen
   void update(double dt) {
     super.update(dt);
 
-    // Don't update if game is paused
-    if (game.isPaused) return;
-
     // Apply homing behavior if homingStrength > 0
     if (homingStrength > 0) {
       _applyHoming(dt);
@@ -325,7 +322,7 @@ class Bullet extends BaseRenderedComponent with CollisionCallbacks, HasVisualCen
 }
 
 /// Visual explosion effect
-class ExplosionEffect extends PositionComponent with HasGameReference<SpaceShooterGame> {
+class ExplosionEffect extends BaseRenderedComponent {
   double radius;
   double lifetime = 0;
   static const double maxLifetime = 0.3; // Short duration
@@ -383,9 +380,7 @@ class ExplosionEffect extends PositionComponent with HasGameReference<SpaceShoot
   }
 
   @override
-  void render(Canvas canvas) {
-    super.render(canvas);
-
+  void renderShape(Canvas canvas) {
     final progress = lifetime / maxLifetime;
     final currentRadius = radius; // Match visual to damage radius
     final alpha = (1 - progress) * 0.6;
@@ -423,7 +418,7 @@ class ExplosionEffect extends PositionComponent with HasGameReference<SpaceShoot
 }
 
 /// Visual lightning effect for chain lightning
-class LightningEffect extends PositionComponent with HasGameReference<SpaceShooterGame> {
+class LightningEffect extends BaseRenderedComponent {
   final Vector2 startPos;
   final Vector2 endPos;
   double lifetime = 0;
@@ -434,7 +429,11 @@ class LightningEffect extends PositionComponent with HasGameReference<SpaceShoot
   LightningEffect({
     required this.startPos,
     required this.endPos,
-  }) : super(position: startPos.clone()) {
+  }) : super(position: startPos.clone(), size: Vector2.zero());
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
     anchor = Anchor.center;
     _generateLightningSegments();
   }
@@ -473,9 +472,7 @@ class LightningEffect extends PositionComponent with HasGameReference<SpaceShoot
   }
 
   @override
-  void render(Canvas canvas) {
-    super.render(canvas);
-
+  void renderShape(Canvas canvas) {
     final progress = lifetime / maxLifetime;
     final alpha = (1 - progress).clamp(0.0, 1.0);
 

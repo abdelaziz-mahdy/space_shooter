@@ -42,8 +42,6 @@ class EnemyHomingMissile extends BaseRenderedComponent
   void update(double dt) {
     super.update(dt);
 
-    if (game.isPaused) return;
-
     // Apply homing toward player
     _applyHoming(dt);
 

@@ -51,8 +51,6 @@ class Missile extends BaseRenderedComponent
   void update(double dt) {
     super.update(dt);
 
-    if (game.isPaused) return;
-
     // Find nearest enemy to home in on
     _findNearestEnemy();
 

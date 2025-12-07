@@ -1,5 +1,28 @@
 [
   {
+    "version": "0.3.15",
+    "title": "Pause Handling Architecture",
+    "date": "2025-12-07",
+    "sections": [
+      {
+        "title": "Bug Fixes",
+        "emoji": "🐛",
+        "items": [
+          "Fixed orbital drones and effects continuing during pause",
+          "Improved pause handling reliability across all components"
+        ]
+      },
+      {
+        "title": "Architecture",
+        "emoji": "🏗️",
+        "items": [
+          "Centralized pause handling in base component class",
+          "Removed manual pause checks from 15+ files"
+        ]
+      }
+    ]
+  },
+  {
     "version": "0.3.14",
     "title": "Chain Lightning Bug Fix",
     "date": "2025-12-07",
