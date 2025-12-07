@@ -19,9 +19,6 @@ class EnemyIndicator extends PositionComponent with HasGameReference<SpaceShoote
   void render(Canvas canvas) {
     super.render(canvas);
 
-    // Don't render if game is paused
-    if (game.isPaused) return;
-
     final player = game.player;
     final screenSize = game.size;
 

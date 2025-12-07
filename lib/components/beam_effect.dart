@@ -37,8 +37,6 @@ class BeamEffect extends BaseRenderedComponent
   void update(double dt) {
     super.update(dt);
 
-    if (game.isPaused) return;
-
     lifetime += dt;
 
     if (lifetime >= maxLifetime) {

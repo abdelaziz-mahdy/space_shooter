@@ -41,9 +41,6 @@ class HomingEnemyBullet extends BaseRenderedComponent
   void update(double dt) {
     super.update(dt);
 
-    // Don't update if game is paused
-    if (game.isPaused) return;
-
     // Apply slight homing toward player
     _applyHoming(dt);
 

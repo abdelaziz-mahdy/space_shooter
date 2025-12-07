@@ -307,8 +307,6 @@ class _FortressTurret extends PositionComponent with HasGameReference<SpaceShoot
   void update(double dt) {
     super.update(dt);
 
-    if (game.isPaused) return;
-
     // Update fire timer
     fireTimer += dt;
 

@@ -60,9 +60,6 @@ class Loot extends BaseRenderedComponent
       size = newSize;
     }
 
-    // Don't update if game is paused
-    if (game.isPaused) return;
-
     // Attract to player using PositionUtil
     final player = game.player;
     final distanceToPlayer = PositionUtil.getDistance(this, player);
