@@ -159,8 +159,8 @@ class Bullet extends BaseRenderedComponent with CollisionCallbacks, HasVisualCen
       }
 
       // Chain Lightning - jump to nearby enemies
-      // Only trigger chain if enemy actually took damage (not invulnerable)
-      if (player.chainCount > 0 && other.modifyIncomingDamage(actualDamage) > 0) {
+      // Only trigger chain if player has chain upgrades
+      if (player.chainCount > 0) {
         _createChainLightning(other, player.chainCount);
       }
 

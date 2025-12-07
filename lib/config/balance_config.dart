@@ -27,4 +27,7 @@ class BalanceConfig {
   // When multiple impacts happen in same location (e.g., 10 rockets at once),
   // merge effects instead of creating duplicates
   static const double effectMergeRadius = 350.0; // Merge visual effects within this radius
+
+  // Wave Scaling
+  static const double bleedDamageWaveMultiplier = 0.3; // Bleed damage increases 0.3x per wave after wave 1
 }

@@ -5,6 +5,7 @@ import 'package:flame/components.dart';
 import '../../utils/position_util.dart';
 import '../../factories/enemy_factory.dart';
 import '../../config/enemy_spawn_config.dart';
+import '../../config/balance_config.dart';
 import '../../game/space_shooter_game.dart';
 import '../enemies/base_enemy.dart';
 import '../player_ship.dart';
@@ -80,9 +81,8 @@ class HydraBoss extends BaseEnemy {
     // Spawn cores after the boss is fully mounted and positioned
     _spawnAllCores();
 
-    // Mark cores as initialized after spawning
-    // (they'll mount asynchronously but we can start checking them now)
-    Future.delayed(Duration.zero, () {
+    // Mark cores as initialized in next microtask to ensure all cores have started mounting
+    Future.microtask(() {
       _coresInitialized = true;
     });
   }
@@ -394,11 +394,8 @@ class _HydraCore extends BaseEnemy {
 
   @override
   Future<void> addHitbox() async {
-    // Use simple CircleHitbox with RELATIVE positioning
-    add(CircleHitbox.relative(
-      0.9, // 90% of component size
-      parentSize: size,
-    ));
+    // Use CircleHitbox with radius relative to component size
+    add(CircleHitbox(radius: size.x * 0.45)); // 0.9 means 90% diameter = 0.45 radius
   }
 
   @override
@@ -478,7 +475,7 @@ class _HydraCore extends BaseEnemy {
     // Apply bleed effect if player has bleed damage
     if (player.bleedDamage > 0) {
       // Scale bleed damage with current wave (1 + 0.3 per wave after wave 1)
-      final waveMultiplier = 1.0 + ((game.enemyManager.getCurrentWave() - 1) * 0.3);
+      final waveMultiplier = 1.0 + ((game.enemyManager.getCurrentWave() - 1) * BalanceConfig.bleedDamageWaveMultiplier);
       final scaledBleedDamage = player.bleedDamage * waveMultiplier;
       applyBleed(scaledBleedDamage);
     }
