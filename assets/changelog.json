@@ -1,5 +1,22 @@
 [
   {
+    "version": "0.3.16",
+    "title": "Upgrade Rate Balance",
+    "date": "2025-12-07",
+    "sections": [
+      {
+        "title": "Balance",
+        "emoji": "⚖️",
+        "items": [
+          "Legendary upgrades much rarer - drop rate reduced from 3% to 1%",
+          "Epic upgrades reduced from 12% to 4%",
+          "Common upgrades increased from 60% to 75% for steadier progression",
+          "Rare upgrades remain at 20%"
+        ]
+      }
+    ]
+  },
+  {
     "version": "0.3.15",
     "title": "Pause Handling Architecture",
     "date": "2025-12-07",
