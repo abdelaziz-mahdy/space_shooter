@@ -50,15 +50,21 @@ class PlasmaSpreader extends Weapon {
       final bulletAngle = baseAngle + offset;
       final bulletDirection = Vector2(cos(bulletAngle), sin(bulletAngle));
 
-      // Apply small circular offset to spawn position for visual spread with homing
-      const double spawnOffsetRadius = 15.0;
-      final spawnOffsetAngle = (i / totalProjectiles) * 2 * pi;
-      final spawnOffsetX = cos(spawnOffsetAngle) * spawnOffsetRadius;
-      final spawnOffsetY = sin(spawnOffsetAngle) * spawnOffsetRadius;
-      final offsetSpawnPos = bulletSpawnPosition + Vector2(spawnOffsetX, spawnOffsetY);
+      // Only apply spawn offset if homing is active (to keep bullets visually separate)
+      Vector2 spawnPos;
+      if (player.homingStrength > 0) {
+        const double spawnOffsetRadius = 15.0;
+        final spawnOffsetAngle = (i / totalProjectiles) * 2 * pi;
+        final spawnOffsetX = cos(spawnOffsetAngle) * spawnOffsetRadius;
+        final spawnOffsetY = sin(spawnOffsetAngle) * spawnOffsetRadius;
+        spawnPos = bulletSpawnPosition + Vector2(spawnOffsetX, spawnOffsetY);
+      } else {
+        // No homing - use regular spawn position
+        spawnPos = bulletSpawnPosition.clone();
+      }
 
       final bullet = Bullet(
-        position: offsetSpawnPos,
+        position: spawnPos,
         direction: bulletDirection.normalized(),
         baseDamage: getDamage(player),
         speed: getProjectileSpeed(player),
