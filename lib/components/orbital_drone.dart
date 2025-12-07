@@ -40,7 +40,9 @@ class OrbitalDrone extends BaseGameComponent {
   }
 
   @override
-  void updateGame(double dt) {
+  void update(double dt) {
+    super.update(dt);
+
     // Rotate around the player
     angle += rotationSpeed * dt;
     if (angle > 2 * pi) {

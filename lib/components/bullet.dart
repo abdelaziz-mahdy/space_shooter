@@ -80,7 +80,9 @@ class Bullet extends BaseRenderedComponent with CollisionCallbacks, HasVisualCen
   Vector2 getVisualCenter() => position.clone();
 
   @override
-  void updateGame(double dt) {
+  void update(double dt) {
+    super.update(dt);
+
     // Apply homing behavior if homingStrength > 0
     if (homingStrength > 0) {
       _applyHoming(dt);
@@ -333,7 +335,8 @@ class ExplosionEffect extends BaseGameComponent {
   }) : super(position: position, size: Vector2.all(radius * 2), anchor: Anchor.center);
 
   @override
-  void updateGame(double dt) {
+  void update(double dt) {
+    super.update(dt);
     lifetime += dt;
 
     if (lifetime >= maxLifetime) {
@@ -451,7 +454,8 @@ class LightningEffect extends BaseGameComponent {
   }
 
   @override
-  void updateGame(double dt) {
+  void update(double dt) {
+    super.update(dt);
     lifetime += dt;
 
     if (lifetime >= maxLifetime) {

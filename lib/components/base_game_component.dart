@@ -3,13 +3,15 @@ import '../game/space_shooter_game.dart';
 
 /// Base class for all game components that should respect game pause state.
 ///
-/// This class automatically handles pause state checking to ensure consistent
-/// behavior across all components. Subclasses should override updateGame() instead
-/// of update() to implement their game logic.
+/// This class automatically enforces pause state checking without requiring
+/// any changes to subclasses. The pause check happens transparently in the
+/// update() method - subclasses just inherit this behavior automatically.
 ///
-/// The pause check happens at the start of update():
-/// - If game is paused, update() returns immediately
-/// - If game is not paused, updateGame(dt) is called with the delta time
+/// How it works:
+/// 1. BaseGameComponent.update() checks if game.isPaused
+/// 2. If paused, returns immediately (stops all updates)
+/// 3. If not paused, calls super.update(dt) which continues the update chain
+/// 4. Subclasses override update() normally - pause check is automatic!
 ///
 /// This ensures ALL components stop updating when the game is paused,
 /// preventing bugs like orbital drones firing during pause.
@@ -25,19 +27,12 @@ abstract class BaseGameComponent extends PositionComponent with HasGameReference
   @override
   void update(double dt) {
     // Check pause state FIRST - this is critical for consistency
+    // If paused, return immediately without calling super.update()
+    // This prevents ALL child component updates from running
     if (game.isPaused) return;
 
-    // Call the game-specific update logic
-    updateGame(dt);
-
+    // Only call super.update() if not paused
+    // This allows subclasses' update() methods to run normally
     super.update(dt);
-  }
-
-  /// Override this method instead of update() to implement game logic.
-  /// This method will NOT be called when the game is paused.
-  ///
-  /// dt is the delta time in seconds since the last frame.
-  void updateGame(double dt) {
-    // Default implementation - subclasses override as needed
   }
 }
