@@ -3,12 +3,13 @@ import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import '../game/space_shooter_game.dart';
+import 'base_game_component.dart';
 import 'bullet.dart';
 import 'player_ship.dart';
 import 'enemies/base_enemy.dart';
 
 /// Orbital drone that circles the player and shoots at enemies
-class OrbitalDrone extends PositionComponent with HasGameReference<SpaceShooterGame> {
+class OrbitalDrone extends BaseGameComponent {
   final PlayerShip player;
   final int index; // Which orbital this is (0, 1, 2, etc.)
   final int totalOrbitals; // Total number of orbitals
@@ -39,12 +40,7 @@ class OrbitalDrone extends PositionComponent with HasGameReference<SpaceShooterG
   }
 
   @override
-  void update(double dt) {
-    super.update(dt);
-
-    // Don't update if game is paused
-    if (game.isPaused) return;
-
+  void updateGame(double dt) {
     // Rotate around the player
     angle += rotationSpeed * dt;
     if (angle > 2 * pi) {
