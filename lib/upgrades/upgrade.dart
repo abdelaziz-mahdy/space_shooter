@@ -1023,11 +1023,11 @@ class UpgradeFactory {
       final rarityRoll = random.nextDouble();
       UpgradeRarity targetRarity;
 
-      if (rarityRoll < 0.75) {
+      if (rarityRoll < BalanceConfig.upgradeCommonThreshold) {
         targetRarity = UpgradeRarity.common;
-      } else if (rarityRoll < 0.95) {
+      } else if (rarityRoll < BalanceConfig.upgradeRareThreshold) {
         targetRarity = UpgradeRarity.rare;
-      } else if (rarityRoll < 0.99) {
+      } else if (rarityRoll < BalanceConfig.upgradeEpicThreshold) {
         targetRarity = UpgradeRarity.epic;
       } else {
         targetRarity = UpgradeRarity.legendary;

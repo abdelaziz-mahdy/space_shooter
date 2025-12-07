@@ -30,4 +30,10 @@ class BalanceConfig {
 
   // Wave Scaling
   static const double bleedDamageWaveMultiplier = 0.3; // Bleed damage increases 0.3x per wave after wave 1
+
+  // Upgrade Rarity Distribution
+  static const double upgradeCommonThreshold = 0.75; // 75% common
+  static const double upgradeRareThreshold = 0.95; // 20% rare (75-95)
+  static const double upgradeEpicThreshold = 0.99; // 4% epic (95-99)
+  // Remaining 1% is legendary (99-100)
 }
