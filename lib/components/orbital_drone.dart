@@ -42,6 +42,9 @@ class OrbitalDrone extends PositionComponent with HasGameReference<SpaceShooterG
   void update(double dt) {
     super.update(dt);
 
+    // Don't update if game is paused
+    if (game.isPaused) return;
+
     // Rotate around the player
     angle += rotationSpeed * dt;
     if (angle > 2 * pi) {
