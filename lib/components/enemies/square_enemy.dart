@@ -7,6 +7,7 @@ import '../../factories/enemy_factory.dart';
 import '../../config/enemy_spawn_config.dart';
 import 'base_enemy.dart';
 import '../player_ship.dart';
+import '../../rendering/holographic.dart';
 
 /// Square Enemy: Medium speed, medium health basic enemy
 /// - Square shape, orange color
@@ -56,19 +57,9 @@ class SquareEnemy extends BaseEnemy {
 
   @override
   void renderShape(Canvas canvas) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-
-    final strokePaint = Paint()
-      ..color = const Color(0xFFFFFFFF)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-
     // Draw square from top-left (0,0) to (size.x, size.y)
-    final rect = Rect.fromLTWH(0, 0, size.x, size.y);
-    canvas.drawRect(rect, paint);
-    canvas.drawRect(rect, strokePaint);
+    final path = Path()..addRect(Rect.fromLTWH(0, 0, size.x, size.y));
+    Holo.drawShape(canvas, path, color: Holo.blue);
 
     // Draw status effects
     renderFreezeEffect(canvas);

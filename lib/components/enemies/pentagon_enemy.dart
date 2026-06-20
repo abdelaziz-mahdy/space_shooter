@@ -7,6 +7,7 @@ import '../../factories/enemy_factory.dart';
 import '../../config/enemy_spawn_config.dart';
 import 'base_enemy.dart';
 import '../player_ship.dart';
+import '../../rendering/holographic.dart';
 
 /// Pentagon Enemy: Slow, high health basic enemy
 /// - Pentagon shape, magenta color
@@ -60,15 +61,6 @@ class PentagonEnemy extends BaseEnemy {
 
   @override
   void renderShape(Canvas canvas) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-
-    final strokePaint = Paint()
-      ..color = const Color(0xFFFFFFFF)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-
     // Draw pentagon centered in the bounding box
     final sides = 5;
     final path = Path();
@@ -85,8 +77,7 @@ class PentagonEnemy extends BaseEnemy {
       }
     }
     path.close();
-    canvas.drawPath(path, paint);
-    canvas.drawPath(path, strokePaint);
+    Holo.drawShape(canvas, path, color: Holo.purple);
 
     // Draw status effects
     renderFreezeEffect(canvas);

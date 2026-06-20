@@ -7,6 +7,7 @@ import '../../factories/enemy_factory.dart';
 import '../../config/enemy_spawn_config.dart';
 import 'base_enemy.dart';
 import '../player_ship.dart';
+import '../../rendering/holographic.dart';
 
 /// Triangle Enemy: Fast basic enemy
 /// - Triangle shape, red color
@@ -60,15 +61,6 @@ class TriangleEnemy extends BaseEnemy {
 
   @override
   void renderShape(Canvas canvas) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-
-    final strokePaint = Paint()
-      ..color = const Color(0xFFFFFFFF)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-
     // Draw triangle from top-left coordinate system
     final h = size.y;
     final w = size.x;
@@ -81,8 +73,7 @@ class TriangleEnemy extends BaseEnemy {
       ..lineTo(0, bottomY) // Bottom left
       ..close();
 
-    canvas.drawPath(path, paint);
-    canvas.drawPath(path, strokePaint);
+    Holo.drawShape(canvas, path, color: Holo.teal);
 
     // Draw status effects
     renderFreezeEffect(canvas);
