@@ -35,7 +35,11 @@ class Bullet extends BaseRenderedComponent with CollisionCallbacks, HasVisualCen
 
   double lifetime = 0;
   static const double maxLifetime = 3.0; // 3 seconds before despawn
-  int enemiesHit = 0; // Track how many enemies this bullet has hit
+  int enemiesHit = 0; // Track how many DISTINCT enemies this bullet has hit
+  // Enemies already hit by this bullet - prevents a piercing shot from damaging
+  // (and burning a pierce charge on) the same enemy more than once if the pair
+  // re-collides as they move.
+  final Set<BaseEnemy> _hitEnemies = {};
 
   final bool? forceCrit; // Optional: force crit on/off for multi-shot consistency
 
@@ -151,6 +155,10 @@ class Bullet extends BaseRenderedComponent with CollisionCallbacks, HasVisualCen
 
     // Handle enemy collisions
     if (other is BaseEnemy) {
+      // Skip enemies this bullet has already hit so a single enemy can't be
+      // damaged twice or consume multiple pierce charges (the pierce bug).
+      if (!_hitEnemies.add(other)) return;
+
       final player = game.player;
 
       // Play hit sound effect

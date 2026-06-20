@@ -25,6 +25,7 @@
         "title": "Bug Fixes",
         "emoji": "🐛",
         "items": [
+          "Piercing shots now pass through and hit multiple enemies instead of double-hitting one",
           "Homing shots no longer hover or circle around big targets",
           "Rockets now explode where they actually land",
           "Explosions combine in the correct spot when shots land together",
