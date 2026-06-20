@@ -601,8 +601,9 @@ class BerserkerRageUpgrade extends Upgrade {
   }
 
   @override
-  bool isValidForPlayer(PlayerShip player) {
-    // Don't show if player already has berserk
+  bool isValidFor(PlayerShip player) {
+    // Don't show if player already has berserk (was named isValidForPlayer,
+    // which the selector never calls - so berserk could be offered repeatedly)
     return player.berserkMultiplier == 0;
   }
 
