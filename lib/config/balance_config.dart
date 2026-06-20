@@ -6,6 +6,9 @@ class BalanceConfig {
   // Damage Reduction
   static const double maxDamageReduction = 0.60; // 60% cap
 
+  // Lifesteal (heal-on-hit) - capped to keep sustain in check
+  static const double maxLifesteal = 0.15; // 15% of damage dealt, max
+
   // Damage Numbers (Performance)
   static const double damageNumberCooldown = 0.05; // Show every 50ms (20/sec)
 
