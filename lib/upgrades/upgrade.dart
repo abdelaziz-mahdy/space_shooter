@@ -1030,15 +1030,17 @@ class UpgradeFactory {
 
     for (int i = 0; i < count; i++) {
       // Weighted rarity selection
-      // 75% common, 20% rare, 4% epic, 1% legendary
+      // 70% common, 20% rare, 6% epic, 4% legendary
+      // (epic/legendary were over-cut to 4%/1% - players rarely saw build-defining
+      // upgrades; restored to keep a sense of progression without flooding them)
       final rarityRoll = random.nextDouble();
       UpgradeRarity targetRarity;
 
-      if (rarityRoll < 0.75) {
+      if (rarityRoll < 0.70) {
         targetRarity = UpgradeRarity.common;
-      } else if (rarityRoll < 0.95) {
+      } else if (rarityRoll < 0.90) {
         targetRarity = UpgradeRarity.rare;
-      } else if (rarityRoll < 0.99) {
+      } else if (rarityRoll < 0.96) {
         targetRarity = UpgradeRarity.epic;
       } else {
         targetRarity = UpgradeRarity.legendary;
