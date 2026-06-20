@@ -294,7 +294,7 @@ class CritDamageUpgrade extends Upgrade {
 class LifestealUpgrade extends Upgrade {
   final double lifestealPercent;
 
-  LifestealUpgrade({this.lifestealPercent = 0.1})
+  LifestealUpgrade({this.lifestealPercent = 0.05})
       : super(
           id: 'lifesteal',
           name: 'Lifesteal',
@@ -304,7 +304,8 @@ class LifestealUpgrade extends Upgrade {
 
   @override
   void apply(PlayerShip player) {
-    player.lifesteal += lifestealPercent;
+    player.lifesteal = (player.lifesteal + lifestealPercent)
+        .clamp(0.0, BalanceConfig.maxLifesteal);
   }
 
   @override
@@ -600,8 +601,9 @@ class BerserkerRageUpgrade extends Upgrade {
   }
 
   @override
-  bool isValidForPlayer(PlayerShip player) {
-    // Don't show if player already has berserk
+  bool isValidFor(PlayerShip player) {
+    // Don't show if player already has berserk (was named isValidForPlayer,
+    // which the selector never calls - so berserk could be offered repeatedly)
     return player.berserkMultiplier == 0;
   }
 
@@ -691,7 +693,8 @@ class VampiricAuraUpgrade extends Upgrade {
 
   @override
   void apply(PlayerShip player) {
-    player.lifesteal += 0.2;
+    player.lifesteal = (player.lifesteal + 0.1)
+        .clamp(0.0, BalanceConfig.maxLifesteal);
     player.magnetRadius += 100; // Also increase magnet radius
   }
 
@@ -703,7 +706,7 @@ class VampiricAuraUpgrade extends Upgrade {
 
   @override
   List<String> getStatusChanges() => [
-    '+20% lifesteal',
+    '+10% lifesteal',
     '+100 magnet radius'
   ];
 }
@@ -1027,15 +1030,17 @@ class UpgradeFactory {
 
     for (int i = 0; i < count; i++) {
       // Weighted rarity selection
-      // 75% common, 20% rare, 4% epic, 1% legendary
+      // 70% common, 20% rare, 6% epic, 4% legendary
+      // (epic/legendary were over-cut to 4%/1% - players rarely saw build-defining
+      // upgrades; restored to keep a sense of progression without flooding them)
       final rarityRoll = random.nextDouble();
       UpgradeRarity targetRarity;
 
-      if (rarityRoll < 0.75) {
+      if (rarityRoll < 0.70) {
         targetRarity = UpgradeRarity.common;
-      } else if (rarityRoll < 0.95) {
+      } else if (rarityRoll < 0.90) {
         targetRarity = UpgradeRarity.rare;
-      } else if (rarityRoll < 0.99) {
+      } else if (rarityRoll < 0.96) {
         targetRarity = UpgradeRarity.epic;
       } else {
         targetRarity = UpgradeRarity.legendary;
