@@ -18,8 +18,8 @@ class LaserBeam extends Weapon {
           id: ID,
           name: 'Laser Beam',
           description: 'Continuous damage beam with moderate range',
-          damageMultiplier: 0.4, // Lower damage per tick, but continuous
-          fireRateMultiplier: 0.15, // Very fast fire rate for continuous beam effect
+          damageMultiplier: 0.7, // Buffed from 0.4 - total DPS was far below other weapons
+          fireRateMultiplier: 0.22, // Slightly slower ticks (from 0.15) so the buff lands cleanly
           projectileSpeedMultiplier: 1.0, // Not used for instant beam
         );
 

@@ -1,7 +1,7 @@
 /// Global balance configuration for easy tuning
 class BalanceConfig {
   // Projectile System
-  static const int maxProjectileCount = 5;
+  static const int maxProjectileCount = 7; // Raised from 5 so multi-shot builds have late-game headroom
 
   // Damage Reduction
   static const double maxDamageReduction = 0.60; // 60% cap
