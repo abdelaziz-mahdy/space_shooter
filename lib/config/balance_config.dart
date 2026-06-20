@@ -24,9 +24,11 @@ class BalanceConfig {
   static const double lootMergeRadius = 60.0; // Drops merge if another loot is within this range
 
   // Effect Pooling (Performance) - Merge overlapping visual effects
-  // When multiple impacts happen in same location (e.g., 10 rockets at once),
-  // merge effects instead of creating duplicates
-  static const double effectMergeRadius = 350.0; // Merge visual effects within this radius
+  // When multiple impacts happen in the same place AND within a tiny time window
+  // (e.g., a salvo of rockets landing together), merge them into one effect
+  // instead of stacking duplicates at a stale location.
+  static const double effectMergeRadius = 120.0; // Merge only nearby effects (was 350 - merged distant hits)
+  static const double effectMergeTimeWindow = 0.02; // Only merge effects created < 20ms apart (same burst)
 
   // Wave Scaling
   static const double bleedDamageWaveMultiplier = 0.3; // Bleed damage increases 0.3x per wave after wave 1
