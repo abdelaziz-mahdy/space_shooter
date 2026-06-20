@@ -294,7 +294,7 @@ class CritDamageUpgrade extends Upgrade {
 class LifestealUpgrade extends Upgrade {
   final double lifestealPercent;
 
-  LifestealUpgrade({this.lifestealPercent = 0.1})
+  LifestealUpgrade({this.lifestealPercent = 0.05})
       : super(
           id: 'lifesteal',
           name: 'Lifesteal',
@@ -304,7 +304,8 @@ class LifestealUpgrade extends Upgrade {
 
   @override
   void apply(PlayerShip player) {
-    player.lifesteal += lifestealPercent;
+    player.lifesteal = (player.lifesteal + lifestealPercent)
+        .clamp(0.0, BalanceConfig.maxLifesteal);
   }
 
   @override
@@ -691,7 +692,8 @@ class VampiricAuraUpgrade extends Upgrade {
 
   @override
   void apply(PlayerShip player) {
-    player.lifesteal += 0.2;
+    player.lifesteal = (player.lifesteal + 0.1)
+        .clamp(0.0, BalanceConfig.maxLifesteal);
     player.magnetRadius += 100; // Also increase magnet radius
   }
 
@@ -703,7 +705,7 @@ class VampiricAuraUpgrade extends Upgrade {
 
   @override
   List<String> getStatusChanges() => [
-    '+20% lifesteal',
+    '+10% lifesteal',
     '+100 magnet radius'
   ];
 }
