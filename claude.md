@@ -803,6 +803,13 @@ enemy.takeDamage(999999);  // Calls die() → drops XP → removes
 
 ## Release Process & Version Management
 
+### **Releases Auto-Deploy on `main` — NO Git Tag Needed**
+
+`.github/workflows/deploy.yml` triggers on every push/merge to `main`, builds the web app (`flutter build web --release --wasm --base-href "/space_shooter/"`), and publishes to GitHub Pages. **Merging to `main` IS the release.** Do NOT create a `v*` git tag — this project's CI deploys on `main`, not on tags. Just ensure `pubspec.yaml` + `assets/changelog.json` are bumped in the merged commits.
+
+- Local compile check that matches CI: `flutter build web --no-tree-shake-icons` (catches errors `flutter analyze` misses).
+- Check a deploy ran: `gh run list --workflow=deploy.yml --limit 5`.
+
 ### **When Releasing a New Version**
 
 **CRITICAL:** Always update these files together:
