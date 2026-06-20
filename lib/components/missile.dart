@@ -93,12 +93,19 @@ class Missile extends BaseRenderedComponent
   void _applyHoming(double dt) {
     if (targetEnemy == null) return;
 
+    // Commit-on-approach: once inside the target body, stop steering and fly
+    // straight through so the missile crosses the hitbox instead of orbiting it
+    // (its turn rate is too weak to spiral into large bosses).
+    final distance = PositionUtil.getDistance(this, targetEnemy!);
+    final lockDistance = max(targetEnemy!.size.x * 0.5, 20.0);
+    if (distance <= lockDistance) return;
+
     // Calculate direction to target
     final toTarget = PositionUtil.getDirectionTo(this, targetEnemy!);
 
-    // Smoothly turn towards target
-    // Scale by dt and factor for consistent turn rate with bullets
-    final turnRate = (homingStrength * dt * 0.01).clamp(0.0, 1.0); // Clamp to prevent overshooting
+    // Smoothly turn towards target. 0.05 (was 0.01 - far too weak, missiles
+    // orbited instead of intercepting) gives a usable turn rate.
+    final turnRate = (homingStrength * dt * 0.05).clamp(0.0, 1.0);
     direction = (direction + (toTarget * turnRate)).normalized();
   }
 
