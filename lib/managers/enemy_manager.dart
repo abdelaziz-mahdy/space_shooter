@@ -43,6 +43,7 @@ class EnemyManager extends Component with HasGameReference<SpaceShooterGame> {
     'berserker',         // Wave 35
     'architect_boss',    // Wave 40
     'hydra_boss',        // Wave 45
+    'prism_boss',        // Aegis Prism (holographic) - pool-only
   ];
 
   EnemyManager({required this.player, required SpaceShooterGame game});
