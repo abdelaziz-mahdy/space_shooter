@@ -1,10 +1,13 @@
 /// Global balance configuration for easy tuning
 class BalanceConfig {
   // Projectile System
-  static const int maxProjectileCount = 5;
+  static const int maxProjectileCount = 7; // Raised from 5 so multi-shot builds have late-game headroom
 
   // Damage Reduction
   static const double maxDamageReduction = 0.60; // 60% cap
+
+  // Lifesteal (heal-on-hit) - capped to keep sustain in check
+  static const double maxLifesteal = 0.15; // 15% of damage dealt, max
 
   // Damage Numbers (Performance)
   static const double damageNumberCooldown = 0.05; // Show every 50ms (20/sec)
@@ -25,8 +28,8 @@ class BalanceConfig {
 
   // Effect Pooling (Performance) - Merge overlapping visual effects
   // When multiple impacts happen in the same place AND within a tiny time window
-  // (e.g., a salvo of rockets landing together), merge them into one effect
-  // instead of stacking duplicates at a stale location.
+  // (e.g., a multi-shot burst or rocket salvo landing together), merge them into
+  // one effect instead of stacking duplicates at a stale location.
   static const double effectMergeRadius = 120.0; // Merge only nearby effects (was 350 - merged distant hits)
   static const double effectMergeTimeWindow = 0.02; // Only merge effects created < 20ms apart (same burst)
 

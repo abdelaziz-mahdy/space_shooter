@@ -222,8 +222,9 @@ class Bullet extends BaseRenderedComponent with CollisionCallbacks, HasVisualCen
     final nearbyExplosion = _findNearbyExplosionEffect(position);
 
     if (nearbyExplosion != null) {
-      // Merge: expand existing effect instead of creating a new one
-      nearbyExplosion.mergeWith(player.explosionRadius);
+      // Merge: expand existing effect and pull it toward the new impact so the
+      // combined explosion sits at the correct (averaged) location
+      nearbyExplosion.mergeWith(player.explosionRadius, position);
     } else {
       // No nearby effect, create new visual effect
       final explosion = ExplosionEffect(
@@ -239,6 +240,9 @@ class Bullet extends BaseRenderedComponent with CollisionCallbacks, HasVisualCen
     final allEffects = game.world.children.whereType<ExplosionEffect>();
 
     for (final effect in allEffects) {
+      // Only merge with effects from the same burst: close in space AND created
+      // within the last few milliseconds. Stale effects spawn a fresh explosion.
+      if (effect.age >= BalanceConfig.effectMergeTimeWindow) continue;
       final distance = position.distanceTo(effect.position);
       if (distance <= BalanceConfig.effectMergeRadius) {
         return effect;
@@ -334,6 +338,7 @@ class Bullet extends BaseRenderedComponent with CollisionCallbacks, HasVisualCen
 class ExplosionEffect extends BaseRenderedComponent {
   double radius;
   double lifetime = 0;
+  double age = 0; // Time since spawn (never resets) - gates same-burst merging
   static const double maxLifetime = 0.3; // Short duration
   int mergeCount = 1; // Track how many explosions merged into this one
 
@@ -352,22 +357,28 @@ class ExplosionEffect extends BaseRenderedComponent {
   void update(double dt) {
     super.update(dt);
     lifetime += dt;
+    age += dt;
 
     if (lifetime >= maxLifetime) {
       removeFromParent();
     }
   }
 
-  /// Merge with another explosion - expand radius instead of creating new effect
-  void mergeWith(double newRadius) {
+  /// Merge with another explosion - expand radius and move toward the new impact
+  /// so the combined effect renders at the correct averaged location.
+  void mergeWith(double newRadius, Vector2 newPosition) {
     mergeCount++; // Track merge count for visual feedback
+
+    // Average the position across all merged impacts (incremental mean)
+    position = position + (newPosition - position) / mergeCount.toDouble();
 
     // Expand the radius if the incoming explosion is larger
     if (newRadius > radius) {
       radius = newRadius;
     }
 
-    // Reset lifetime to show effect longer when merging
+    // Reset display lifetime so the merged effect stays visible (merges only
+    // happen within the 20ms window, so this can't make it linger indefinitely)
     lifetime = 0;
   }
 

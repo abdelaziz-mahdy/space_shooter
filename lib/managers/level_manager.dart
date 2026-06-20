@@ -5,9 +5,10 @@ import '../upgrades/upgrade.dart';
 import '../config/weapon_unlock_config.dart';
 
 class LevelManager extends Component with HasGameReference<SpaceShooterGame> {
-  /// Maximum number of weapon unlocks that can appear in a single upgrade selection
-  /// This ensures players always have stat upgrade options available
-  static const int maxWeaponUpgradesPerSelection = 2;
+  /// Maximum number of weapon unlocks that can appear in a single upgrade selection.
+  /// Capped at 1 so a level-up never offers two weapons at once (issue #36.5) and
+  /// always leaves room for stat upgrades.
+  static const int maxWeaponUpgradesPerSelection = 1;
 
   int currentLevel = 1;
   int currentXP = 0;
