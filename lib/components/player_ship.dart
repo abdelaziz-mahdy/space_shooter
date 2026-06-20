@@ -71,7 +71,7 @@ class PlayerShip extends BaseRenderedComponent
   // Invulnerability frames (prevent multiple collision damage)
   bool isInvulnerable = false;
   double invulnerabilityTimer = 0;
-  static const double invulnerabilityDuration = 1.0; // 1 second of immunity after hit
+  static const double invulnerabilityDuration = 0.3; // 0.3s i-frames after hit (was 1.0s - too long, let players face-tank)
 
   // Damage number rate limiting (for performance at high levels)
   double _lastDamageNumberTime = 0;
