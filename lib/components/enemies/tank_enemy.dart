@@ -7,6 +7,7 @@ import '../../factories/enemy_factory.dart';
 import '../../config/enemy_spawn_config.dart';
 import 'base_enemy.dart';
 import '../player_ship.dart';
+import '../../rendering/holographic.dart';
 
 /// Tank Enemy: Slow, high health, damage reduction
 /// - Octagon shape, dark red, size 40x40
@@ -90,15 +91,6 @@ class TankEnemy extends BaseEnemy {
 
   @override
   void renderShape(Canvas canvas) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-
-    final strokePaint = Paint()
-      ..color = const Color(0xFFFFFFFF)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5;
-
     // Draw octagon from top-left coordinate system
     final sides = 8;
     final path = Path();
@@ -118,8 +110,7 @@ class TankEnemy extends BaseEnemy {
     }
     path.close();
 
-    canvas.drawPath(path, paint);
-    canvas.drawPath(path, strokePaint);
+    Holo.drawShape(canvas, path, color: Holo.blue, strokeWidth: 2.0);
 
     // Draw armor indicator (small shield symbol)
     if (timeSinceLastDamage < regenDelay) {

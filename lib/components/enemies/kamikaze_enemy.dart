@@ -7,6 +7,7 @@ import '../../factories/enemy_factory.dart';
 import '../../config/enemy_spawn_config.dart';
 import 'base_enemy.dart';
 import '../player_ship.dart';
+import '../../rendering/holographic.dart';
 
 /// Kamikaze Enemy: Suicide bomber with explosion
 /// - Pulsing circle, red with warning pulses, size 18x18
@@ -108,20 +109,10 @@ class KamikazeEnemy extends BaseEnemy {
     );
 
     // Draw main circle
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-
-    final strokePaint = Paint()
-      ..color = const Color(0xFFFFFFFF)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-
     final center = Offset(size.x / 2, size.y / 2);
     final radius = (size.x / 2) * pulseScale;
 
-    canvas.drawCircle(center, radius, paint);
-    canvas.drawCircle(center, radius, strokePaint);
+    Holo.drawCircle(canvas, center, radius, color: Holo.danger);
 
     // Draw danger symbol (exclamation mark pattern)
     final distanceToPlayer = PositionUtil.getDistance(this, player);

@@ -28,9 +28,9 @@ class BalanceConfig {
 
   // Effect Pooling (Performance) - Merge overlapping visual effects
   // When multiple impacts happen in the same place AND within a tiny time window
-  // (e.g., a multi-shot burst landing together), merge effects into one instead
-  // of stacking duplicates at the wrong spot.
-  static const double effectMergeRadius = 100.0; // Merge only nearby effects (was 350 - too wide, merged distant hits)
+  // (e.g., a multi-shot burst or rocket salvo landing together), merge them into
+  // one effect instead of stacking duplicates at a stale location.
+  static const double effectMergeRadius = 120.0; // Merge only nearby effects (was 350 - merged distant hits)
   static const double effectMergeTimeWindow = 0.02; // Only merge effects created < 20ms apart (same burst)
 
   // Wave Scaling

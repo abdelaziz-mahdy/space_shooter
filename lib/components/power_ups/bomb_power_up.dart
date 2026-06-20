@@ -54,8 +54,8 @@ class BombPowerUp extends BasePowerUp {
     final nearbyBombEffect = _findNearbyBombEffect(playerPosition);
 
     if (nearbyBombEffect != null) {
-      // Merge: expand existing effect instead of creating a new one
-      nearbyBombEffect.mergeWith(bombRange);
+      // Merge: expand existing effect and pull it toward this blast's location
+      nearbyBombEffect.mergeWith(bombRange, playerPosition);
     } else {
       // No nearby effect, create new visual wave effect
       final waveEffect = BombWaveEffect(
@@ -73,6 +73,9 @@ class BombPowerUp extends BasePowerUp {
     final allEffects = game.world.children.whereType<BombWaveEffect>();
 
     for (final effect in allEffects) {
+      // Only merge with same-burst effects: nearby AND just created. Otherwise
+      // a new blast snaps onto a stale wave at the wrong location.
+      if (effect.age >= BalanceConfig.effectMergeTimeWindow) continue;
       final distance = position.distanceTo(effect.position);
       if (distance <= BalanceConfig.effectMergeRadius) {
         return effect;
@@ -148,6 +151,9 @@ class BombWaveEffect extends PositionComponent {
   double _currentRadius = 0.0;
   double _opacity = 1.0;
 
+  /// Time since this effect spawned - used to gate same-burst merging.
+  double get age => _elapsedTime;
+
   BombWaveEffect({
     required Vector2 position,
     this.maxRadius = 400.0,
@@ -175,9 +181,14 @@ class BombWaveEffect extends PositionComponent {
     }
   }
 
-  /// Merge with another bomb explosion - expand radius instead of creating new effect
-  void mergeWith(double newMaxRadius) {
+  /// Merge with another bomb explosion - expand radius and move toward the new
+  /// impact so the combined wave renders at the correct (averaged) location
+  /// instead of staying at the first explosion's spot.
+  void mergeWith(double newMaxRadius, Vector2 newPosition) {
     mergeCount++; // Track merge count for visual feedback
+
+    // Average the position across all merged impacts (incremental mean)
+    position = position + (newPosition - position) / mergeCount.toDouble();
 
     // Expand the max radius if the incoming bomb is larger
     if (newMaxRadius > maxRadius) {
@@ -186,10 +197,8 @@ class BombWaveEffect extends PositionComponent {
       maxRadius = newMaxRadius;
       _currentRadius *= radiusRatio;
     }
-
-    // Reset elapsed time to show the effect longer when merging
-    // This prevents multiple quick merges from instantly completing the effect
-    _elapsedTime = 0;
+    // Note: elapsed time is intentionally NOT reset - `age` gates same-burst
+    // merging, so resetting it would let the effect merge forever.
   }
 
   /// Get color based on merge count for visual feedback

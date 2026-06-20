@@ -113,7 +113,16 @@ class Bullet extends BaseRenderedComponent with CollisionCallbacks, HasVisualCen
 
     // Calculate direction to target (no offset on target, offset handled at spawn)
     final toTarget = targetEnemy.position - position;
-    if (toTarget.length < 0.01) return; // Too close, avoid division by zero
+    final distance = toTarget.length;
+    if (distance < 0.01) return; // Too close, avoid division by zero
+
+    // Commit-on-approach: once the bullet is inside the target's body, stop
+    // steering and let it fly straight through. Steering aims at the exact
+    // center, so without this the bullet overshoots the center and flips back
+    // and forth - jittering/hovering over the target (worst on large enemies
+    // where the center sits deep inside the body) instead of just hitting it.
+    final lockDistance = max(targetEnemy.size.x * 0.5, 20.0);
+    if (distance <= lockDistance) return;
 
     final targetDirection = toTarget.normalized();
 

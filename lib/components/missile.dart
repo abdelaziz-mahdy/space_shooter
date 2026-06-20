@@ -93,12 +93,19 @@ class Missile extends BaseRenderedComponent
   void _applyHoming(double dt) {
     if (targetEnemy == null) return;
 
+    // Commit-on-approach: once inside the target body, stop steering and fly
+    // straight through so the missile crosses the hitbox instead of orbiting it
+    // (its turn rate is too weak to spiral into large bosses).
+    final distance = PositionUtil.getDistance(this, targetEnemy!);
+    final lockDistance = max(targetEnemy!.size.x * 0.5, 20.0);
+    if (distance <= lockDistance) return;
+
     // Calculate direction to target
     final toTarget = PositionUtil.getDirectionTo(this, targetEnemy!);
 
-    // Smoothly turn towards target
-    // Scale by dt and factor for consistent turn rate with bullets
-    final turnRate = (homingStrength * dt * 0.01).clamp(0.0, 1.0); // Clamp to prevent overshooting
+    // Smoothly turn towards target. 0.05 (was 0.01 - far too weak, missiles
+    // orbited instead of intercepting) gives a usable turn rate.
+    final turnRate = (homingStrength * dt * 0.05).clamp(0.0, 1.0);
     direction = (direction + (toTarget * turnRate)).normalized();
   }
 
@@ -144,8 +151,9 @@ class Missile extends BaseRenderedComponent
     final nearbyBombEffect = _findNearbyBombEffect(position);
 
     if (nearbyBombEffect != null) {
-      // Merge: expand existing effect instead of creating a new one
-      nearbyBombEffect.mergeWith(explosionRadius);
+      // Merge: expand existing effect and pull it toward this missile's impact
+      // so the combined wave renders at the correct (averaged) location
+      nearbyBombEffect.mergeWith(explosionRadius, position);
     } else {
       // No nearby effect, create new visual wave effect
       final waveEffect = BombWaveEffect(
@@ -161,8 +169,10 @@ class Missile extends BaseRenderedComponent
     final allEffects = game.world.children.whereType<BombWaveEffect>();
 
     for (final effect in allEffects) {
+      // Must actually be young - otherwise a stale blast from a previous volley
+      // wrongly suppresses this missile's splash damage.
+      if (effect.age >= BalanceConfig.effectMergeTimeWindow) continue;
       final distance = position.distanceTo(effect.position);
-      // If effect is very close and just started (young), it's from a recent missile hit
       if (distance <= explosionRadius * 1.5) {
         return effect;
       }
@@ -175,6 +185,9 @@ class Missile extends BaseRenderedComponent
     final allEffects = game.world.children.whereType<BombWaveEffect>();
 
     for (final effect in allEffects) {
+      // Only merge with same-burst effects: nearby AND just created, so a new
+      // rocket never snaps onto a stale wave at the wrong spot.
+      if (effect.age >= BalanceConfig.effectMergeTimeWindow) continue;
       final distance = position.distanceTo(effect.position);
       if (distance <= BalanceConfig.effectMergeRadius) {
         return effect;

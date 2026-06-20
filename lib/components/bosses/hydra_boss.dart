@@ -395,7 +395,7 @@ class _HydraCore extends BaseEnemy {
   @override
   Future<void> addHitbox() async {
     // Use CircleHitbox with radius relative to component size
-    add(CircleHitbox(radius: size.x * 0.45)); // 0.9 means 90% diameter = 0.45 radius
+    add(CircleHitbox(radius: size.x * 0.5)); // Full body - undersized (0.45) hitbox made homing shots circle the core
   }
 
   @override

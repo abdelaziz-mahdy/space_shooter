@@ -34,9 +34,13 @@ import '../components/enemies/scout_enemy.dart';
 import '../components/enemies/tank_enemy.dart';
 import '../components/enemies/ranger_enemy.dart';
 import '../components/enemies/kamikaze_enemy.dart';
+import '../components/enemies/weaver_enemy.dart';
+import '../components/enemies/lancer_enemy.dart';
+import '../components/enemies/splinter_enemy.dart';
 
 // Import all bosses for factory registration
 import '../components/bosses/shielder_boss.dart';
+import '../components/bosses/prism_boss.dart';
 import '../components/bosses/berserker_boss.dart';
 import '../components/bosses/gunship_boss.dart';
 import '../components/bosses/splitter_boss.dart';
@@ -118,9 +122,13 @@ class SpaceShooterGame extends FlameGame
     TankEnemy.init();
     RangerEnemy.init();
     KamikazeEnemy.init();
+    WeaverEnemy.init();
+    LancerEnemy.init();
+    SplinterEnemy.init();
 
     // Register all bosses
     ShielderBoss.init();
+    PrismBoss.init();
     BerserkerBoss.init();
     GunshipBoss.init();
     SplitterBoss.init();

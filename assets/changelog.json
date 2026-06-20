@@ -1,14 +1,33 @@
 [
   {
-    "version": "0.4.0",
-    "title": "Bug Fixes & Combat Balance",
-    "date": "2026-06-19",
+    "version": "0.5.0",
+    "title": "Holographic Update",
+    "date": "2026-06-20",
     "sections": [
+      {
+        "title": "New Enemies & Boss",
+        "emoji": "👾",
+        "items": [
+          "Weaver: fast enemy that weaves side-to-side as it closes in",
+          "Splinter: breaks into smaller copies when destroyed",
+          "Lancer: winds up, then dashes in a straight line - dodge it!",
+          "New boss: Aegis Prism, with bolt rings and summoned drones"
+        ]
+      },
+      {
+        "title": "New Look",
+        "emoji": "🌌",
+        "items": [
+          "Enemies restyled with a glowing sci-fi holographic look"
+        ]
+      },
       {
         "title": "Bug Fixes",
         "emoji": "🐛",
         "items": [
-          "Explosions now combine in the correct spot when shots land together",
+          "Homing shots no longer hover or circle around big targets",
+          "Rockets now explode where they actually land",
+          "Explosions combine in the correct spot when shots land together",
           "Level-ups offer at most one new weapon at a time",
           "Berserker Rage no longer reappears after you've taken it"
         ]
