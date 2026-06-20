@@ -546,7 +546,38 @@ class PlayerShip extends BaseRenderedComponent
 
     // Draw shield indicator only if player has shield capacity
     if (maxShieldLayers > 0) {
-      final shieldY = xpBarY + xpBarHeight + 2;
+      var shieldY = xpBarY + xpBarHeight + 2;
+
+      // Draw shield recharge progress bar while a layer is charging, so the
+      // player can see how close the next shield is.
+      if (shieldLayers < maxShieldLayers && shieldRegenInterval > 0) {
+        const shieldBarHeight = 3.0;
+        final shieldBarWidth = healthBarWidth;
+        final shieldBarX = (size.x - shieldBarWidth) / 2;
+
+        final shieldBgPaint = Paint()..color = const Color(0xFF333333);
+        canvas.drawRect(
+          Rect.fromLTWH(shieldBarX, shieldY, shieldBarWidth, shieldBarHeight),
+          shieldBgPaint,
+        );
+
+        final shieldProgress =
+            (shieldRegenTimer / shieldRegenInterval).clamp(0.0, 1.0);
+        final shieldProgressPaint = Paint()..color = const Color(0xFF00BFFF); // Light blue
+        canvas.drawRect(
+          Rect.fromLTWH(
+            shieldBarX,
+            shieldY,
+            shieldBarWidth * shieldProgress,
+            shieldBarHeight,
+          ),
+          shieldProgressPaint,
+        );
+
+        // Move the shield count text below the new progress bar
+        shieldY += shieldBarHeight + 2;
+      }
+
       final shieldText = '🛡️ $shieldLayers/$maxShieldLayers';
       final shieldTextPainter = TextPainter(
         text: TextSpan(
